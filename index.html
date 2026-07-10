@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAST - Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="lucide.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #1F2937 0%, #111827 100%);
+            color: #FFFFFF;
+        }
+        .login-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        .logo-wrapper {
+            width: 80px;
+            height: 80px;
+            background: var(--nt-yellow);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            box-shadow: 0 0 20px rgba(255, 200, 0, 0.3);
+        }
+        .logo-wrapper i {
+            color: var(--nt-dark);
+            width: 40px;
+            height: 40px;
+        }
+        h1 { margin: 0 0 8px; font-size: 28px; font-weight: 800; }
+        p.subtitle { color: #9CA3AF; margin-bottom: 32px; }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 24px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            padding: 4px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            color: #9CA3AF;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        .tab-btn.active {
+            background: #374151;
+            color: #fff;
+        }
+        
+        .form-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #D1D5DB;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #4B5563;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            color: white;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus { border-color: var(--nt-yellow); }
+        
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: var(--nt-yellow);
+            color: var(--nt-dark);
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255,200,0,0.3);
+        }
+        .error-msg {
+            color: #EF4444;
+            font-size: 14px;
+            margin-top: 16px;
+            min-height: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <div class="logo-wrapper">
+            <span style="font-size: 32px; font-weight: 900; font-family: 'Inter', sans-serif; color: #1F2937;">NT</span>
+        </div>
+        <h1>FAST System</h1>
+        <p class="subtitle">Field Assistant System For Technician</p>
+        
+        <div class="tabs">
+            <button class="tab-btn active" id="tab-user" onclick="switchTab('user')">User Login</button>
+            <button class="tab-btn" id="tab-admin" onclick="switchTab('admin')">Admin Login</button>
+        </div>
+        
+        <form id="login-form">
+            <div class="form-group">
+                <label id="username-label">รหัสพนักงาน (Employee ID)</label>
+                <input type="text" id="username" required placeholder="กรอกรหัสพนักงาน">
+            </div>
+            <div class="form-group" id="password-group" style="display: none;">
+                <label>รหัสผ่าน (Password)</label>
+                <input type="password" id="password" placeholder="กรอกรหัสผ่าน">
+            </div>
+            <button type="submit" class="btn-submit" id="submit-btn">Login as User</button>
+        </form>
+        
+        <div id="error-msg" class="error-msg"></div>
+    </div>
+
+    <script src="login.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

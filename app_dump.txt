@@ -1,0 +1,539 @@
+let fastData = [];
+
+// Authentication Check
+const token = localStorage.getItem('fast_user_token');
+if (!token) {
+    window.location.href = '/';
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const res = await fetch('/api/scoms', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+            fastData = await res.json();
+        } else {
+            console.error('Failed to fetch data from API');
+        }
+    } catch (err) {
+        console.error('API connection error', err);
+    }
+
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // Elements
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const sidebar = document.querySelector('.sidebar');
+    const navItems = document.querySelectorAll('.nav-item');
+    const contentArea = document.getElementById('content-area');
+    const pageTitle = document.getElementById('page-title');
+
+    // Mobile Menu Toggle
+    mobileMenuBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+    });
+
+    // Desktop Sidebar Collapse Toggle
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            document.querySelector('.main-content').classList.toggle('collapsed');
+            
+            const icon = sidebarToggle.querySelector('i');
+            if (sidebar.classList.contains('collapsed')) {
+                icon.setAttribute('data-lucide', 'chevron-right');
+            } else {
+                icon.setAttribute('data-lucide', 'chevron-left');
+            }
+            lucide.createIcons();
+        });
+    }
+
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', (e) => {
+        if (window.innerWidth <= 1024) {
+            if (!sidebar.contains(e.target) && !mobileMenuBtn.contains(e.target) && sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+            }
+        }
+    });
+
+    // Theme Management
+    const initTheme = () => {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.body.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+    };
+
+    const toggleTheme = () => {
+        const currentTheme = document.body.getAttribute('data-theme');
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        document.body.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        updateThemeIcon(newTheme);
+    };
+
+    const updateThemeIcon = (theme) => {
+        const iconName = theme === 'light' ? 'moon' : 'sun';
+        themeToggleBtn.innerHTML = `<i data-lucide="${iconName}"></i>`;
+        lucide.createIcons();
+    };
+
+    themeToggleBtn.addEventListener('click', toggleTheme);
+    initTheme();
+
+    // View Data
+    const views = {
+        'dashboard': {
+            title: 'à¸«à¸à¹à¸²à¸«à¸¥à¸±à¸',
+            render: () => `
+                <div class="card hero-banner">
+                    <div class="hero-icon-wrapper">
+                        <i data-lucide="book-open" class="hero-icon"></i>
+                    </div>
+                    <h4 class="hero-subtitle">Field Assistant System For Technician (FAST)</h4>
+                    <h3 class="hero-title">à¸à¸¹à¹à¸¡à¸·à¸­à¸à¸²à¸£à¸à¸£à¸§à¸à¸ªà¸­à¸à¹à¸¥à¸°à¹à¸à¹à¹à¸à¸à¸±à¸à¸«à¸²</h3>
+                    <p class="hero-desc">à¹à¸¥à¸·à¸­à¸à¸£à¸°à¸à¸à¸à¸¹à¹à¸¡à¸·à¸­à¸à¸µà¹à¸à¸¸à¸à¸à¹à¸­à¸à¸à¸²à¸£à¹à¸à¹à¸à¸²à¸à¸à¹à¸²à¸à¸¥à¹à¸²à¸</p>
+                </div>
+
+                <!-- Parameters Table -->
+                <div class="card" style="margin-top: 24px; margin-bottom: 24px;">
+                    <h3 class="mb-2" style="font-size: 18px; display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                        <i data-lucide="activity" style="color: var(--nt-yellow);"></i>
+                        à¸à¹à¸­à¸¡à¸¹à¸¥à¸à¸²à¸£à¸²à¸¡à¸´à¹à¸à¸­à¸£à¹à¸­à¹à¸²à¸à¸­à¸´à¸
+                    </h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>à¸à¸£à¸°à¹à¸ à¸à¸­à¸¸à¸à¸à¸£à¸à¹ (Type)</th>
+                                    <th>à¸à¸²à¸£à¸²à¸¡à¸´à¹à¸à¸­à¸£à¹ (Parameter)</th>
+                                    <th>à¹à¸à¸à¸à¹à¸¡à¸²à¸à¸£à¸à¸²à¸ (Standard)</th>
+                                    <th>à¸à¸³à¹à¸à¸°à¸à¸³à¸à¸­à¸à¸£à¸°à¸à¸ (Recommendation)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td data-label="à¸à¸£à¸°à¹à¸ à¸à¸­à¸¸à¸à¸à¸£à¸à¹">Fiber Optic (FTTx)</td>
+                                    <td data-label="à¸à¸²à¸£à¸²à¸¡à¸´à¹à¸à¸­à¸£à¹"><strong style="color: var(--danger);">Rx Power</strong></td>
+                                    <td data-label="à¹à¸à¸à¸à¹à¸¡à¸²à¸à¸£à¸à¸²à¸"><span class="badge danger" style="font-weight: 600; width: fit-content; display: inline-block;">-15 à¸à¸¶à¸ -25 dBm</span></td>
+                                    <td data-label="à¸à¸³à¹à¸à¸°à¸à¸³à¸à¸­à¸à¸£à¸°à¸à¸">à¸«à¸²à¸à¸à¹à¸²à¹à¸à¸´à¸ -25 dBm à¸£à¸°à¸à¸à¹à¸à¸°à¸à¸³à¹à¸«à¹à¹à¸à¹à¸à¸ªà¸²à¸¢à¸à¸±à¸</td>
+                                </tr>
+                                <tr>
+                                    <td data-label="à¸à¸£à¸°à¹à¸ à¸à¸­à¸¸à¸à¸à¸£à¸à¹">Fiber Optic (FTTx)</td>
+                                    <td data-label="à¸à¸²à¸£à¸²à¸¡à¸´à¹à¸à¸­à¸£à¹"><strong style="color: var(--warning);">Tx Power</strong></td>
+                                    <td data-label="à¹à¸à¸à¸à¹à¸¡à¸²à¸à¸£à¸à¸²à¸"><span class="badge warning" style="font-weight: 600; width: fit-content; display: inline-block;">0.5 à¸à¸¶à¸ 5.0 dBm</span></td>
+                                    <td data-label="à¸à¸³à¹à¸à¸°à¸à¸³à¸à¸­à¸à¸£à¸°à¸à¸">à¹à¸«à¹à¸à¸£à¸§à¸à¸ªà¸­à¸à¸à¸¸à¸à¸ à¸²à¸à¸ªà¸²à¸¢ Fiber à¸«à¸²à¸à¸à¹à¸²à¸à¸µà¹à¸ªà¹à¸à¸­à¸­à¸à¸¡à¸µà¸à¸§à¸²à¸¡à¸à¸´à¸à¸à¸à¸à¸´</td>
+                                </tr>
+                                <tr>
+                                    <td data-label="à¸à¸£à¸°à¹à¸ à¸à¸­à¸¸à¸à¸à¸£à¸à¹">Router</td>
+                                    <td data-label="à¸à¸²à¸£à¸²à¸¡à¸´à¹à¸à¸­à¸£à¹"><strong style="color: var(--info);">Client Devices</strong></td>
+                                    <td data-label="à¹à¸à¸à¸à¹à¸¡à¸²à¸à¸£à¸à¸²à¸"><span style="font-weight: 600; font-size: 14px; background: var(--bg-main); padding: 4px 8px; border-radius: 4px; display: inline-block; border: 1px solid var(--border-light); color: var(--text-primary);">à¹à¸à¸´à¸ 15-20 à¹à¸à¸£à¸·à¹à¸­à¸</span></td>
+                                    <td data-label="à¸à¸³à¹à¸à¸°à¸à¸³à¸à¸­à¸à¸£à¸°à¸à¸">à¹à¸à¸°à¸à¸³à¹à¸«à¹à¹à¸à¸¥à¸µà¹à¸¢à¸à¹à¸£à¸²à¹à¸à¸­à¸£à¹à¸à¸µà¹à¸¡à¸µà¸ªà¹à¸à¸à¸ªà¸¹à¸à¸à¸¶à¹à¸</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="mb-4" style="font-size: 18px;">à¹à¸¡à¸à¸¹à¸¥à¸±à¸ (Quick Actions)</h3>
+                    <div class="quick-actions grid" style="margin-top: 16px;">
+                        <button class="quick-action-btn" onclick="app.navigate('troubleshoot')">
+                            <i data-lucide="search" style="width: 32px; height: 32px; color: var(--brand-primary);"></i>
+                            à¸à¸£à¸§à¸à¸ªà¸­à¸à¸­à¸²à¸à¸²à¸£à¹à¸ªà¸µà¸¢
+                        </button>
+                        <button class="quick-action-btn" onclick="app.navigate('onu-setup')">
+                            <i data-lucide="settings" style="width: 32px; height: 32px; color: var(--nt-gray);"></i>
+                            à¸à¸±à¹à¸à¸à¹à¸² ONU à¸£à¸¸à¹à¸à¸à¹à¸²à¸à¹
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 24px;">
+                    <h3 class="mb-2" style="font-size: 18px; display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="bar-chart-2" style="color: var(--info);"></i>
+                        à¸à¹à¸­à¸¡à¸¹à¸¥à¸­à¹à¸²à¸à¸­à¸´à¸: à¸ªà¸à¸´à¸à¸´à¸£à¸°à¸¢à¸°à¹à¸§à¸¥à¸²à¹à¸à¸¥à¸µà¹à¸¢à¸à¸µà¹à¹à¸à¹à¹à¸à¸à¸²à¸£à¹à¸à¹à¹à¸à¹à¸«à¸à¸¸à¹à¸ªà¸µà¸¢
+                    </h3>
+                    <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 16px;">
+                        <i data-lucide="calendar" style="width: 14px; height: 14px; vertical-align: middle;"></i> à¸à¹à¸­à¸¡à¸¹à¸¥à¸à¸­à¸ à¸§à¸±à¸à¸à¸µà¹ 1 à¸¡à¸à¸£à¸²à¸à¸¡ 2568 - 31 à¸à¸±à¸à¸§à¸²à¸à¸¡ 2568
+                    </p>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>à¸à¸¥à¸¸à¹à¸¡à¸­à¸²à¸à¸²à¸£à¹à¸ªà¸µà¸¢</th>
+                                    <th>à¸£à¸²à¸¢à¸¥à¸°à¹à¸­à¸µà¸¢à¸à¸à¸²à¸£à¹à¸à¹à¹à¸</th>
+                                    <th style="text-align: center;">à¸à¸³à¸à¸§à¸à¸à¸²à¸</th>
+                                    <th>à¸à¹à¸²à¹à¸à¸¥à¸µà¹à¸¢à¹à¸§à¸¥à¸²</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td data-label="à¸à¸¥à¸¸à¹à¸¡à¸­à¸²à¸à¸²à¸£à¹à¸ªà¸µà¸¢">connect à¹à¸¡à¹à¹à¸à¹</td>
+                                    <td data-label="à¸£à¸²à¸¢à¸¥à¸°à¹à¸­à¸µà¸¢à¸à¸à¸²à¸£à¹à¸à¹à¹à¸">UN0599 à¹à¸à¸¥à¸µà¹à¸¢à¸à¸à¸¹à¹ ODP/SDP/MSDP à¸à¸µà¹à¹à¸ªà¸µà¸¢à¸«à¸²à¸¢à¸à¸±à¹à¸à¸à¸¹à¹</td>
+                                    <td data-label="à¸à¸³à¸à¸§à¸à¸à¸²à¸" style="text-align: center;">205</td>
+                                    <td data-label="à¸à¹à¸²à¹à¸à¸¥à¸µà¹à¸¢à¹à¸§à¸¥à¸²">3 à¸§à¸±à¸ 22 à¸à¸±à¹à¸§à¹à¸¡à¸ 41 à¸à¸²à¸à¸µ</td>
+                                </tr>
+                                <tr>
+                                    <td data-label="¡ÅØèÁÍÒ¡ÒÃàÊÕÂ">à¹à¸ PON à¹à¸¡à¹à¸à¸´à¸ / à¹à¸¡à¹à¸¡à¸µà¸ªà¸±à¸à¸à¸²à¸</td>
+                                    <td data-label="ÃÒÂÅÐàÍÕÂ´¡ÒÃá¡éä¢">XN0112 à¸¢à¸à¹à¸¥à¸´à¸à¸ªà¸±à¸à¸à¸²</td>
+                                    <td data-label="à¸à¸³à¸à¸§à¸à¸à¸²à¸" style="text-align: center;">3</td>
+                                    <td data-label="à¸à¹à¸²à¹à¸à¸¥à¸µà¹à¸¢à¹à¸§à¸¥à¸²">8 à¸§à¸±à¸ 0 à¸à¸±à¹à¸§à¹à¸¡à¸ 48 à¸à¸²à¸à¸µ</td>
+                                </tr>
+                                <tr>
+                                    <td data-label="¡ÅØèÁÍÒ¡ÒÃàÊÕÂ">à¸à¸§à¸²à¸¡à¹à¸£à¹à¸§à¹à¸¡à¹à¸à¸£à¸à¸à¸²à¸¡à¸à¸µà¹à¸à¸­ / Speed à¸à¸</td>
+                                    <td data-label="ÃÒÂÅÐàÍÕÂ´¡ÒÃá¡éä¢">XN0104 à¸£à¸­à¸à¸±à¸</td>
+                                    <td data-label="à¸à¸³à¸à¸§à¸à¸à¸²à¸" style="text-align: center;">1</td>
+                                    <td data-label="à¸à¹à¸²à¹à¸à¸¥à¸µà¹à¸¢à¹à¸§à¸¥à¸²">3 à¸§à¸±à¸ 21 à¸à¸±à¹à¸§à¹à¸¡à¸ 52 à¸à¸²à¸à¸µ</td>
+                                </tr>
+                                <tr>
+                                    <td data-label="¡ÅØèÁÍÒ¡ÒÃàÊÕÂ">Disconnect à¸à¹à¸­à¸¢</td>
+                                    <td data-label="ÃÒÂÅÐàÍÕÂ´¡ÒÃá¡éä¢">UNC014 à¸à¸£à¸±à¸à¹à¸à¸¥à¸µà¹à¸¢à¸ NAT IP</td>
+                                    <td data-label="à¸à¸³à¸à¸§à¸à¸à¸²à¸" style="text-align: center;">3</td>
+                                    <td data-label="à¸à¹à¸²à¹à¸à¸¥à¸µà¹à¸¢à¹à¸§à¸¥à¸²">3 à¸§à¸±à¸ 9 à¸à¸±à¹à¸§à¹à¸¡à¸ 51 à¸à¸²à¸à¸µ</td>
+                                </tr>
+                                <tr>
+                                    <td data-label="¡ÅØèÁÍÒ¡ÒÃàÊÕÂ">à¹à¸ Pon à¸à¸£à¸°à¸à¸£à¸´à¸</td>
+                                    <td data-label="ÃÒÂÅÐàÍÕÂ´¡ÒÃá¡éä¢">UN0609 à¸à¸¥à¸µà¹à¸à¸±à¸à¸£à¸°à¹à¸à¸µà¸¢à¸à¸ªà¸²à¸¢à¸à¸µà¹à¸à¸¹à¹ OFCCC à¹à¸à¸·à¹à¸­à¸à¸à¸²à¸à¸ªà¸²à¸¢à¹à¸à¹à¸à¸à¸­</td>
+                                    <td data-label="à¸à¸³à¸à¸§à¸à¸à¸²à¸" style="text-align: center;">1</td>
+                                    <td data-label="à¸à¹à¸²à¹à¸à¸¥à¸µà¹à¸¢à¹à¸§à¸¥à¸²">2 à¸§à¸±à¸ 2 à¸à¸±à¹à¸§à¹à¸¡à¸ 5 à¸à¸²à¸à¸µ</td>
+                                </tr>
+                                <tr>
+                                    <td data-label="¡ÅØèÁÍÒ¡ÒÃàÊÕÂ">à¹à¸à¸´à¸à¸«à¸à¹à¸² WEB à¹à¸¡à¹à¹à¸à¹</td>
+                                    <td data-label="ÃÒÂÅÐàÍÕÂ´¡ÒÃá¡éä¢">UN0599 à¹à¸à¸¥à¸µà¹à¸¢à¸à¸à¸¹à¹ ODP/SDP/MSDP à¸à¸µà¹à¹à¸ªà¸µà¸¢à¸«à¸²à¸¢à¸à¸±à¹à¸à¸à¸¹à¹</td>
+                                    <td data-label="à¸à¸³à¸à¸§à¸à¸à¸²à¸" style="text-align: center;">13</td>
+                                    <td data-label="à¸à¹à¸²à¹à¸à¸¥à¸µà¹à¸¢à¹à¸§à¸¥à¸²">5 à¸§à¸±à¸ 13 à¸à¸±à¹à¸§à¹à¸¡à¸ 41 à¸à¸²à¸à¸µ</td>
+                                </tr>
+                                <tr>
+                                    <td data-label="¡ÅØèÁÍÒ¡ÒÃàÊÕÂ">à¸£à¸±à¸-à¸ªà¹à¸ Mail à¹à¸¡à¹à¹à¸à¹</td>
+                                    <td data-label="ÃÒÂÅÐàÍÕÂ´¡ÒÃá¡éä¢">UN0580 à¹à¸à¸¥à¸µà¹à¸¢à¸ Wireless Router/AP à¸à¸µà¹à¹à¸ªà¸µà¸¢</td>
+                                    <td data-label="à¸à¸³à¸à¸§à¸à¸à¸²à¸" style="text-align: center;">1</td>
+                                    <td data-label="à¸à¹à¸²à¹à¸à¸¥à¸µà¹à¸¢à¹à¸§à¸¥à¸²">3 à¸§à¸±à¸ 3 à¸à¸±à¹à¸§à¹à¸¡à¸ 34 à¸à¸²à¸à¸µ</td>
+                                </tr>
+                                <tr>
+                                    <td data-label="¡ÅØèÁÍÒ¡ÒÃàÊÕÂ">à¸­à¸·à¹à¸à¹</td>
+                                    <td data-label="ÃÒÂÅÐàÍÕÂ´¡ÒÃá¡éä¢">UN0606 à¹à¸à¸¥à¸µà¹à¸¢à¸à¸à¸¹à¹ OFCCC à¸à¸µà¹à¹à¸ªà¸µà¸¢à¸«à¸²à¸¢à¸à¸±à¹à¸à¸à¸¹à¹</td>
+                                    <td data-label="à¸à¸³à¸à¸§à¸à¸à¸²à¸" style="text-align: center;">1</td>
+                                    <td data-label="à¸à¹à¸²à¹à¸à¸¥à¸µà¹à¸¢à¹à¸§à¸¥à¸²">3 à¸§à¸±à¸ 1 à¸à¸±à¹à¸§à¹à¸¡à¸ 2 à¸à¸²à¸à¸µ</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="margin-top: 16px; text-align: center; font-size: 13px; color: var(--text-secondary); line-height: 1.6; font-weight: 600;">
+                        ***à¸«à¸¡à¸²à¸¢à¹à¸«à¸à¸¸ à¸£à¸°à¸¢à¸°à¹à¸§à¸¥à¸²à¸à¸­à¸à¸à¹à¸­à¸¡à¸¹à¸¥à¸à¸µà¹à¸à¸³à¸¡à¸²à¹à¸à¹à¸à¸³à¸à¸§à¸ à¸à¸·à¸­ à¸à¸±à¹à¸à¹à¸à¹à¸§à¸±à¸à¸à¸µà¹ 1 à¸¡à¸à¸£à¸²à¸à¸¡ 2568 - 31 à¸à¸±à¸à¸§à¸²à¸à¸¡ 2568
+                    </div>
+                </div>
+            `
+        },
+        'troubleshoot': {
+            title: 'à¸à¸£à¸§à¸à¸ªà¸­à¸à¹à¸¥à¸°à¹à¸à¹à¹à¸à¸à¸²à¸à¹à¸ªà¸µà¸¢',
+            render: () => `
+                <div class="flow-container" id="ts-container">
+                    <!-- Dynamic flow content will be injected here -->
+                </div>
+            `,
+            afterRender: () => window.initTroubleshootFlow()
+        },
+        'onu-setup': {
+            title: 'à¸à¸²à¸£à¸à¸±à¹à¸à¸à¹à¸²à¸­à¸¸à¸à¸à¸£à¸à¹ FTTx (ONU)',
+            render: () => `
+                <div class="mb-4">
+                    <button onclick="window.app.navigate('dashboard')" style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-primary); cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; padding: 10px 20px; box-shadow: var(--shadow-sm); transition: var(--transition);">
+                        <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i> à¸à¸¥à¸±à¸à¸«à¸à¹à¸²à¸«à¸¥à¸±à¸
+                    </button>
+                </div>
+                <div class="card mb-6">
+                    <h3 class="mb-4">à¹à¸¥à¸·à¸­à¸à¸¢à¸µà¹à¸«à¹à¸­à¸­à¸¸à¸à¸à¸£à¸à¹ (Brand)</h3>
+                    <div class="options-grid" id="brand-select">
+                        <button class="option-btn brand-card" onclick="showOnuConfig('Huawei')">
+                            <div class="brand-icon-wrapper"><i data-lucide="monitor"></i></div>
+                            <span>Huawei</span>
+                        </button>
+                        <button class="option-btn brand-card" onclick="showOnuConfig('ZTE')">
+                            <div class="brand-icon-wrapper"><i data-lucide="monitor"></i></div>
+                            <span>ZTE</span>
+                        </button>
+                        <button class="option-btn brand-card" onclick="showOnuConfig('Forth')">
+                            <div class="brand-icon-wrapper"><i data-lucide="monitor"></i></div>
+                            <span>Forth</span>
+                        </button>
+                        <button class="option-btn brand-card" onclick="showOnuConfig('Fiberhome')">
+                            <div class="brand-icon-wrapper"><i data-lucide="monitor"></i></div>
+                            <span>Fiberhome</span>
+                        </button>
+                    </div>
+                </div>
+                <div id="onu-config-result"></div>
+            `
+        }
+    };
+
+    // Troubleshoot Flow Logic
+    window.initTroubleshootFlow = () => {
+        if (typeof fastData === 'undefined') {
+            document.getElementById('ts-container').innerHTML = `<div class="card"><p style="color: var(--danger);">Error: à¹à¸¡à¹à¸à¸à¸à¹à¸­à¸¡à¸¹à¸¥ (data.js) à¸à¸£à¸¸à¸à¸²à¸à¸£à¸§à¸à¸ªà¸­à¸</p></div>`;
+            return;
+        }
+
+        // Group data by 'Group'
+        const groups = {};
+        fastData.forEach(item => {
+            if (item.Group) {
+                if (!groups[item.Group]) {
+                    groups[item.Group] = [];
+                }
+                groups[item.Group].push(item);
+            }
+        });
+
+        let html = `
+            <div class="mb-4">
+                <button onclick="window.app.navigate('dashboard')" style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-primary); cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; padding: 10px 20px; box-shadow: var(--shadow-sm); transition: var(--transition);">
+                    <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i> à¸à¸¥à¸±à¸à¸«à¸à¹à¸²à¸«à¸¥à¸±à¸
+                </button>
+            </div>
+            <div class="manual-container">
+        `;
+        
+        for (const [groupName, items] of Object.entries(groups)) {
+            html += `
+                <button class="manual-group-btn" onclick="window.showTroubleshootGroup('${groupName}')" style="width: 100%; padding: 20px; margin-bottom: 16px; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); border-left: 4px solid var(--brand-primary); text-align: left; font-size: 18px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: var(--text-primary); box-shadow: var(--shadow-sm); transition: var(--transition);">
+                    <span>${groupName}</span>
+                    <i data-lucide="chevron-right"></i>
+                </button>
+            `;
+        }
+
+        html += `</div>`;
+        document.getElementById('ts-container').innerHTML = html;
+        lucide.createIcons();
+    };
+
+    window.renderSymptomDetail = (indexStr, groupName) => {
+        if (!indexStr) {
+            document.getElementById('symptom-detail-container').innerHTML = '';
+            return;
+        }
+        
+        const items = fastData.filter(item => item.Group === groupName);
+        const item = items[parseInt(indexStr)];
+        if (!item) return;
+
+        let html = `
+            <div class="symptom-item" style="margin-top: 20px; background: var(--bg-surface); padding: 20px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); border: 1px solid var(--border-light);">
+                <h4 style="color: var(--brand-dark); font-size: 18px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--border-light); padding-bottom: 12px;">
+                    <i data-lucide="alert-circle" style="color: var(--danger); width: 24px; height: 24px;"></i>
+                    à¸­à¸²à¸à¸²à¸£: ${item.Symptom || '-'}
+                </h4>
+        `;
+
+        // Map generated images to relevant steps
+        let symptomImage = '';
+        const searchStr = (item.Steps || '') + ' ' + (item.CheckPoint || '') + ' ' + (item.Symptom || '');
+        if (searchStr.includes('Power Meter') || searchStr.includes('dBm')) {
+            symptomImage = 'assets/optical_power_check.jpg';
+        } else if (searchStr.toLowerCase().includes('wi-fi') || searchStr.toLowerCase().includes('channel')) {
+            symptomImage = 'assets/wifi_channel_check.jpg';
+        } else if (groupName.includes('à¸ªà¸à¸²à¸à¸°à¹à¸') || searchStr.includes('à¹à¸ PON') || searchStr.includes('à¹à¸ LOS')) {
+            symptomImage = 'assets/router_led_status.jpg';
+        }
+
+        if (symptomImage) {
+            html += `
+                <div style="margin-bottom: 20px; text-align: center;">
+                    <img src="${symptomImage}" alt="Illustration" style="max-width: 100%; height: auto; max-height: 280px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);">
+                </div>
+            `;
+        }
+        
+        html += `
+                <div class="grid" style="grid-template-columns: 1fr; gap: 16px;">
+        `;
+
+        if (item.CheckPoint) {
+            html += `
+                    <div>
+                        <strong style="color: var(--text-secondary); display: block; margin-bottom: 8px;">à¸à¸¸à¸à¸à¸µà¹à¸à¹à¸­à¸à¹à¸à¹à¸à¸à¸¸à¸à¹à¸£à¸:</strong>
+                        <p style="white-space: pre-line; line-height: 1.6; font-size: 15px; background: var(--bg-main); padding: 12px; border-radius: 8px;">${item.CheckPoint.replace(/"/g, '')}</p>
+                    </div>
+            `;
+        }
+
+        if (item.Steps) {
+            html += `
+                    <div>
+                        <strong style="color: var(--text-secondary); display: block; margin-bottom: 8px;">à¸à¸±à¹à¸à¸à¸­à¸à¸à¸²à¸£à¸à¸£à¸§à¸à¹à¸à¹:</strong>
+                        <div style="background: rgba(34, 139, 230, 0.08); padding: 16px; border-radius: 8px; border-left: 4px solid var(--info);">
+                            <p style="white-space: pre-line; line-height: 1.6; font-size: 15px;">${item.Steps.replace(/"/g, '')}</p>
+                        </div>
+                    </div>
+            `;
+        }
+        
+        if (item.NormalValue || item.Equipment) {
+            html += `<div style="display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap;">`;
+            if (item.NormalValue) {
+                html += `<span class="badge warning" style="font-size: 14px; padding: 8px 16px;"><i data-lucide="activity" style="width: 16px; height: 16px; margin-right: 6px; display: inline-block; vertical-align: text-bottom;"></i> à¸à¹à¸²à¸à¸à¸à¸´: ${item.NormalValue}</span>`;
+            }
+            if (item.Equipment) {
+                html += `<span class="badge" style="background: rgba(64, 192, 87, 0.15); color: var(--success); font-size: 14px; padding: 8px 16px;"><i data-lucide="tool" style="width: 16px; height: 16px; margin-right: 6px; display: inline-block; vertical-align: text-bottom;"></i> à¸­à¸¸à¸à¸à¸£à¸à¹: ${item.Equipment}</span>`;
+            }
+            html += `</div>`;
+        }
+
+        html += `
+                </div>
+            </div>
+        `;
+
+        document.getElementById('symptom-detail-container').innerHTML = html;
+        lucide.createIcons();
+    };
+
+    window.showTroubleshootGroup = (groupName) => {
+        if (typeof fastData === 'undefined') return;
+        
+        const items = fastData.filter(item => item.Group === groupName);
+        let html = `
+            <div class="mb-4">
+                <button onclick="window.initTroubleshootFlow()" style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-primary); cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; padding: 10px 20px; box-shadow: var(--shadow-sm); transition: var(--transition);">
+                    <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i> à¸à¸¥à¸±à¸à¸«à¸¡à¸§à¸à¸«à¸¡à¸¹à¹
+                </button>
+            </div>
+            <div class="card mb-4" style="border-left: 4px solid var(--brand-primary); padding: 20px;">
+                <h3 style="color: var(--text-primary); font-size: 20px; margin: 0; margin-bottom: 16px;">${groupName}</h3>
+                
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-primary);">à¹à¸¥à¸·à¸­à¸à¸­à¸²à¸à¸²à¸£à¹à¸ªà¸µà¸¢:</label>
+                <select id="symptom-select" onchange="window.renderSymptomDetail(this.value, '${groupName}')" style="width: 100%; padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-primary); font-size: 16px; appearance: auto;">
+                    <option value="" disabled selected>-- à¸à¸£à¸¸à¸à¸²à¹à¸¥à¸·à¸­à¸à¸­à¸²à¸à¸²à¸£à¹à¸ªà¸µà¸¢ --</option>
+        `;
+
+        items.forEach((item, index) => {
+            html += `<option value="${index}">${item.Symptom || 'à¹à¸¡à¹à¸£à¸°à¸à¸¸à¸­à¸²à¸à¸²à¸£'}</option>`;
+        });
+
+        html += `
+                </select>
+            </div>
+            <div id="symptom-detail-container"></div>
+        `;
+
+        document.getElementById('ts-container').innerHTML = html;
+        lucide.createIcons();
+    };
+        
+    // Expose global methods
+    window.app = {
+        navigate: (viewId) => {
+            // Update Active Nav
+            navItems.forEach(item => {
+                if(item.getAttribute('data-view') === viewId) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+
+            // Render View
+            const view = views[viewId];
+            pageTitle.textContent = view.title;
+            contentArea.innerHTML = view.render();
+            
+            if(view.afterRender) {
+                view.afterRender();
+            }
+
+            lucide.createIcons();
+        }
+    };
+
+    window.showOnuConfigDetails = (mode) => {
+        const detailsDiv = document.getElementById('config-details-view');
+        
+        let title = '';
+        let imageSrc = '';
+        let instructions = '';
+
+        if (mode === 'route') {
+            title = 'à¸à¸±à¸§à¸­à¸¢à¹à¸²à¸à¸à¸²à¸£à¸à¸±à¹à¸à¸à¹à¸² Route Mode';
+            imageSrc = 'assets/route_config.jpg';
+            instructions = '1. à¹à¸à¹à¸²à¸ªà¸¹à¹à¸«à¸à¹à¸²à¸à¸±à¹à¸à¸à¹à¸²à¸à¹à¸²à¸ 192.168.1.1<br>2. à¹à¸à¸à¸µà¹à¹à¸¡à¸à¸¹ WAN > Internet<br>3. à¸à¸£à¸­à¸ Username à¹à¸¥à¸° Password à¸à¸­à¸à¸¥à¸¹à¸à¸à¹à¸²<br>4. à¸£à¸°à¸à¸¸ VLAN ID à¸à¸²à¸¡à¹à¸à¸à¸²à¸';
+        } else {
+            // Fallback for others just to show the concept
+            title = `à¸à¸±à¸§à¸­à¸¢à¹à¸²à¸à¸à¸²à¸£à¸à¸±à¹à¸à¸à¹à¸² ${mode}`;
+            imageSrc = 'assets/route_config.jpg'; // Using the same image as a placeholder for others
+            instructions = `à¸à¸³à¸à¸²à¸¡à¸à¸¹à¹à¸¡à¸·à¸­ SCOMs à¸ªà¸³à¸«à¸£à¸±à¸à¸à¸²à¸£à¸à¸±à¹à¸à¸à¹à¸² ${mode}`;
+        }
+
+        detailsDiv.innerHTML = `
+            <div class="card" style="margin-top: 24px; animation: slideIn 0.3s ease; border-top: 4px solid var(--brand-primary);">
+                <h4 class="mb-4 flex-between">
+                    <span><i data-lucide="image" style="margin-right: 8px; vertical-align: middle;"></i> ${title}</span>
+                    <button class="icon-btn" onclick="document.getElementById('config-details-view').innerHTML=''"><i data-lucide="x"></i></button>
+                </h4>
+                <div style="background: var(--bg-main); padding: 16px; border-radius: var(--radius-md); margin-bottom: 16px;">
+                    <p style="color: var(--text-secondary); line-height: 1.6;">${instructions}</p>
+                </div>
+                <img src="${imageSrc}" alt="${title}" style="width: 100%; max-width: 800px; border-radius: var(--radius-md); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); display: block; margin: 0 auto;">
+            </div>
+        `;
+        lucide.createIcons();
+        detailsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    window.showOnuConfig = (brand) => {
+        const resultDiv = document.getElementById('onu-config-result');
+        resultDiv.innerHTML = `
+            <div class="card" style="animation: fadeIn 0.3s ease;">
+                <h3 class="mb-4 flex-between">
+                    <span>à¸à¸±à¹à¸à¸à¹à¸² ${brand} ONU</span>
+                    <span class="badge warning" style="font-size: 14px;">à¹à¸«à¸¡à¸à¸à¸²à¸£à¹à¸à¹à¸à¸²à¸</span>
+                </h3>
+                
+                <div class="grid mb-4">
+                    <div class="resolution-box" style="margin-top: 0; background: rgba(34, 139, 230, 0.1); border-color: var(--info);">
+                        <h4 style="color: var(--info);"><i data-lucide="globe"></i> Internet</h4>
+                        <p class="mb-4">à¹à¸¥à¸·à¸­à¸à¹à¸«à¸¡à¸à¸à¸µà¹à¸à¹à¸­à¸à¸à¸²à¸£à¸à¸´à¸à¸à¸±à¹à¸:</p>
+                        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                            <button class="btn-primary" style="background: var(--info); color: white;" onclick="showOnuConfigDetails('route')">Route Mode</button>
+                            <button class="btn-secondary" onclick="showOnuConfigDetails('Bridge Mode')">Bridge Mode</button>
+                        </div>
+                    </div>
+                    
+                    <div class="resolution-box" style="margin-top: 0; background: rgba(250, 82, 82, 0.1); border-color: var(--danger);">
+                        <h4 style="color: var(--danger);"><i data-lucide="phone"></i> IP-Phone</h4>
+                        <p class="mb-4">à¸£à¸²à¸¢à¸¥à¸°à¹à¸­à¸µà¸¢à¸à¸à¸²à¸£à¸à¸±à¹à¸à¸à¹à¸²:</p>
+                        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                            <button class="btn-secondary" style="border-color: var(--danger); color: var(--danger);" onclick="showOnuConfigDetails('ATA')">ATA</button>
+                            <button class="btn-secondary" style="border-color: var(--danger); color: var(--danger);" onclick="showOnuConfigDetails('Build-in')">Build-in</button>
+                        </div>
+                    </div>
+                </div>
+                <p style="color: var(--text-tertiary); font-size: 14px; text-align: center;">* à¸à¸¥à¸´à¸à¸à¸µà¹à¸à¸¸à¹à¸¡à¸à¹à¸²à¸à¸à¸à¹à¸à¸·à¹à¸­à¸à¸¹à¸à¸±à¸§à¸­à¸¢à¹à¸²à¸à¸£à¸¹à¸à¸ à¸²à¸à¸£à¸²à¸¢à¸¥à¸°à¹à¸­à¸µà¸¢à¸à¸à¸²à¸£à¸à¸±à¹à¸à¸à¹à¸²</p>
+            </div>
+            <div id="config-details-view"></div>
+        `;
+        lucide.createIcons();
+    };
+
+    // Event Listeners for Nav
+    navItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+            const viewId = e.currentTarget.getAttribute('data-view');
+            app.navigate(viewId);
+            
+            // Close sidebar on mobile after clicking
+            if (window.innerWidth <= 1024) {
+                sidebar.classList.remove('open');
+            }
+        });
+    });
+
+    // Initialize Default View
+    app.navigate('dashboard');
+});

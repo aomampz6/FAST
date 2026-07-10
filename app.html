@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAST - Field Assistant System for Technician</title>
+    <!-- Google Fonts: Inter & Noto Sans Thai -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="lucide.min.js"></script>
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css?v=19">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header" style="position: relative;">
+                <div class="logo">
+                    <i data-lucide="zap" class="logo-icon"></i>
+                    <h1 class="logo-text">FAST</h1>
+                </div>
+                <p class="subtitle">Field Assistant System</p>
+                <button id="sidebar-toggle" aria-label="Toggle Sidebar">
+                    <i data-lucide="chevron-left"></i>
+                </button>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-view="dashboard">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>หน้าหลัก</span>
+                </button>
+                <button class="nav-item" data-view="troubleshoot">
+                    <i data-lucide="wrench"></i>
+                    <span>ตรวจสอบงานเสีย</span>
+                </button>
+                <button class="nav-item" data-view="onu-setup">
+                    <i data-lucide="router"></i>
+                    <span>ตั้งค่าอุปกรณ์ ONU</span>
+                </button>
+                <button class="nav-item" data-view="phonebook">
+                    <i data-lucide="phone"></i>
+                    <span>สมุดโทรศัพท์</span>
+                </button>
+
+            </nav>
+
+            <div class="sidebar-logout" style="padding: 0 16px 16px;">
+                <button class="nav-item" onclick="localStorage.removeItem('fast_user_token'); window.location.href='/';" style="width: 100%; color: #ff5252; background: rgba(255, 82, 82, 0.1);">
+                    <i data-lucide="log-out"></i>
+                    <span style="color: #ff5252;">ออกจากระบบ</span>
+                </button>
+            </div>
+
+            <div class="sidebar-footer">
+                <p>NT Corporation</p>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left" style="display: flex; align-items: center; gap: 16px;">
+                    <button class="icon-btn mobile-menu-btn" id="mobile-menu-btn" aria-label="Toggle Menu">
+                        <i data-lucide="menu"></i>
+                    </button>
+                    <h2 id="page-title">หน้าหลัก</h2>
+                </div>
+                <div class="header-actions">
+                    <button class="icon-btn" id="theme-toggle" aria-label="Toggle Dark Mode">
+                        <i data-lucide="moon"></i>
+                    </button>
+                    <div class="user-profile" id="user-profile-btn" style="position: relative; cursor: pointer;" onclick="window.app.navigate('user-profile')">
+                        <i data-lucide="user"></i>
+                        <span>Technician</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-area" id="content-area">
+                <!-- Content will be dynamically loaded here by app.js -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="app.js?v=20"></script>
+</body>
+</html>
