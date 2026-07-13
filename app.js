@@ -578,24 +578,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     window.renderSymptomDetail = (indexStr, groupName) => {
-        if (!indexStr) {
-            document.getElementById('symptom-detail-container').innerHTML = '';
-            return;
-        }
+        if (!indexStr) return;
         
         const items = fastData.filter(item => item.Group === groupName);
         const item = items[parseInt(indexStr)];
         if (!item) return;
 
-        let html = `
-            <div class="symptom-item" style="margin-top: 20px; background: var(--bg-surface); padding: 20px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); border: 1px solid var(--border-light);">
-                <h4 style="color: var(--brand-dark); font-size: 18px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--border-light); padding-bottom: 12px;">
-                    <i data-lucide="alert-circle" style="color: var(--danger); width: 24px; height: 24px;"></i>
-                    อาการ: ${item.Symptom || '-'}
-                </h4>
-        `;
-
-        // Map generated images to relevant steps
         let symptomImage = '';
         const searchStr = (item.Steps || '') + ' ' + (item.CheckPoint || '') + ' ' + (item.Symptom || '');
         if (searchStr.includes('Power Meter') || searchStr.includes('dBm')) {
@@ -606,56 +594,92 @@ document.addEventListener('DOMContentLoaded', async () => {
             symptomImage = 'assets/router_led_status.jpg';
         }
 
+        let titleColor = '#1f2937';
+        if (searchStr.includes('LOS') || searchStr.includes('ไม่ติด')) titleColor = '#ef4444';
+        else if (searchStr.includes('กระพริบ')) titleColor = '#eab308';
+
+        let html = `
+            <div class="sheet-content active">
+                <h2 style="font-size: 20px; font-weight: 700; color: ${titleColor}; margin-bottom: 4px;">${item.Symptom || '-'}</h2>
+                <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 16px;">${item.Scoms || ''}</p>
+        `;
+
         if (symptomImage) {
             html += `
-                <div style="margin-bottom: 20px; text-align: center;">
-                    <img src="${symptomImage}" alt="Illustration" style="max-width: 100%; height: auto; max-height: 280px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);">
-                </div>
+                <img src="${symptomImage}" alt="Illustration" style="width: 100%; height: 160px; object-fit: cover; border-radius: 12px; margin-bottom: 20px; box-shadow: var(--shadow-sm);">
             `;
         }
         
         html += `
-                <div class="grid" style="grid-template-columns: 1fr; gap: 16px;">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <h4 style="font-weight: 700; color: var(--text-primary); font-size: 14px; margin-bottom: 12px;">ขั้นตอนตรวจสอบ (แตะเพื่อขีดฆ่า)</h4>
         `;
 
+        let stepNum = 1;
         if (item.CheckPoint) {
             html += `
-                    <div>
-                        <strong style="color: var(--text-secondary); display: block; margin-bottom: 8px;">จุดที่ต้องเช็คจุดแรก:</strong>
-                        <p style="white-space: pre-line; line-height: 1.6; font-size: 15px; background: var(--bg-main); padding: 12px; border-radius: 8px;">${item.CheckPoint.replace(/"/g, '')}</p>
+                <div class="step-item" onclick="window.toggleStep(this)" style="display: flex; align-items: flex-start; gap: 12px; padding: 12px; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: var(--shadow-sm);">
+                    <div class="step-number" style="width: 24px; height: 24px; border-radius: 50%; border: 2px solid #d1d5db; color: #6b7280; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px; font-weight: 700; position: relative;">
+                        <span class="number-text">${stepNum++}</span><i data-lucide="check" class="check-icon" style="position: absolute; width: 14px; height: 14px; color: white;"></i>
                     </div>
+                    <div class="step-text" style="font-size: 14px; color: var(--text-primary); padding-top: 2px;">
+                        <strong style="color: var(--text-secondary); display: block; margin-bottom: 4px;">จุดที่ต้องเช็คจุดแรก:</strong>
+                        ${item.CheckPoint.replace(/"/g, '')}
+                    </div>
+                </div>
             `;
         }
 
         if (item.Steps) {
-            html += `
-                    <div>
-                        <strong style="color: var(--text-secondary); display: block; margin-bottom: 8px;">ขั้นตอนการตรวจแก้:</strong>
-                        <div style="background: rgba(34, 139, 230, 0.08); padding: 16px; border-radius: 8px; border-left: 4px solid var(--info);">
-                            <p style="white-space: pre-line; line-height: 1.6; font-size: 15px;">${item.Steps.replace(/"/g, '')}</p>
+            const stepLines = item.Steps.replace(/"/g, '').split(/\n/).filter(line => line.trim().length > 0);
+            stepLines.forEach(line => {
+                html += `
+                    <div class="step-item" onclick="window.toggleStep(this)" style="display: flex; align-items: flex-start; gap: 12px; padding: 12px; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: var(--shadow-sm);">
+                        <div class="step-number" style="width: 24px; height: 24px; border-radius: 50%; border: 2px solid #d1d5db; color: #6b7280; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px; font-weight: 700; position: relative;">
+                            <span class="number-text">${stepNum++}</span><i data-lucide="check" class="check-icon" style="position: absolute; width: 14px; height: 14px; color: white;"></i>
+                        </div>
+                        <div class="step-text" style="font-size: 14px; color: var(--text-primary); padding-top: 2px;">
+                            ${line}
                         </div>
                     </div>
-            `;
+                `;
+            });
         }
         
-        if (item.NormalValue || item.Equipment) {
-            html += `<div style="display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap;">`;
-            if (item.NormalValue) {
-                html += `<span class="badge warning" style="font-size: 14px; padding: 8px 16px;"><i data-lucide="activity" style="width: 16px; height: 16px; margin-right: 6px; display: inline-block; vertical-align: text-bottom;"></i> ค่าปกติ: ${item.NormalValue}</span>`;
-            }
-            if (item.Equipment) {
-                html += `<span class="badge" style="background: rgba(64, 192, 87, 0.15); color: var(--success); font-size: 14px; padding: 8px 16px;"><i data-lucide="tool" style="width: 16px; height: 16px; margin-right: 6px; display: inline-block; vertical-align: text-bottom;"></i> อุปกรณ์: ${item.Equipment}</span>`;
-            }
-            html += `</div>`;
-        }
-
         html += `
-                </div>
             </div>
+        </div>
         `;
 
-        document.getElementById('symptom-detail-container').innerHTML = html;
+        document.getElementById('sheet-content-container').innerHTML = html;
         lucide.createIcons();
+        window.openSheet();
+    };
+
+    window.openSheet = () => {
+        const overlay = document.getElementById('sheetOverlay');
+        const sheet = document.getElementById('bottomSheet');
+        if (overlay && sheet) {
+            overlay.classList.add('active');
+            sheet.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            if (navigator.vibrate) navigator.vibrate(50);
+        }
+    };
+
+    window.closeSheet = () => {
+        const overlay = document.getElementById('sheetOverlay');
+        const sheet = document.getElementById('bottomSheet');
+        if (overlay && sheet) {
+            overlay.classList.remove('active');
+            sheet.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    };
+
+    window.toggleStep = (element) => {
+        element.classList.toggle('completed');
+        if (navigator.vibrate) navigator.vibrate(20);
     };
 
     window.showTroubleshootGroup = (groupName) => {
@@ -663,27 +687,107 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         const items = fastData.filter(item => item.Group === groupName);
         let html = `
-            <div class="mb-4">
-                <button onclick="window.initTroubleshootFlow()" style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-primary); cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; padding: 10px 20px; box-shadow: var(--shadow-sm); transition: var(--transition);">
-                    <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i> กลับหมวดหมู่
+            <div style="background: var(--brand-primary); color: white; padding: 24px; border-radius: 0 0 24px 24px; margin: -20px -20px 24px -20px; display: flex; align-items: center; gap: 16px;">
+                <button onclick="window.initTroubleshootFlow()" style="background: rgba(255,255,255,0.2); border: none; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; transition: 0.2s;">
+                    <i data-lucide="arrow-left"></i>
                 </button>
+                <div>
+                    <h2 style="margin: 0; font-size: 20px; font-weight: 700;">${groupName.replace(' / ไม่มีสัญญาณ', '')}</h2>
+                    <p style="margin: 4px 0 0 0; font-size: 14px; opacity: 0.9;">เลือกอาการที่พบหน้างาน</p>
+                </div>
             </div>
-            <div class="card mb-4" style="border-left: 4px solid var(--brand-primary); padding: 20px;">
-                <h3 style="color: var(--text-primary); font-size: 20px; margin: 0; margin-bottom: 16px;">${groupName}</h3>
-                
-                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-primary);">เลือกอาการเสีย:</label>
-                <select id="symptom-select" onchange="window.renderSymptomDetail(this.value, '${groupName}')" style="width: 100%; padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-primary); font-size: 16px; appearance: auto;">
-                    <option value="" disabled selected>-- กรุณาเลือกอาการเสีย --</option>
+            
+            <div id="symptom-list" style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;">
         `;
 
         items.forEach((item, index) => {
-            html += `<option value="${index}">${item.Symptom || 'ไม่ระบุอาการ'}</option>`;
+            const sym = item.Symptom || 'ไม่ระบุอาการ';
+            const lowerSym = sym.toLowerCase();
+            
+            // Default Card styling (Dark Theme)
+            let headerIcon = 'router';
+            let headerColor = '#94a3b8'; // gray
+            let ledsHtml = '';
+            let subtitle = item.Scoms || ''; // Use Scoms as subtitle if possible
+            
+            if (groupName.includes('ไฟ') || lowerSym.includes('ไฟ') || subtitle.includes('ไฟ')) {
+                // Determine LED states based on symptom text
+                let pwr = { class: 'led-green', text: 'PWR', textBg: 'transparent', textColor: '#94a3b8' };
+                let mid = { class: 'led-green', text: 'PON', textBg: 'transparent', textColor: '#94a3b8' };
+                let int = { class: 'led-off', text: 'INT', textBg: 'transparent', textColor: '#475569' };
+                
+                const searchText = (lowerSym + ' ' + groupName.toLowerCase() + ' ' + subtitle.toLowerCase());
+                
+                if (searchText.includes('adsl') || searchText.includes('dsl')) {
+                    mid.text = 'ADSL';
+                }
+
+                if (searchText.includes('los')) {
+                    headerIcon = 'alert-triangle';
+                    headerColor = '#ef4444'; // red
+                    mid = { class: 'led-red-blink', text: 'LOS', textBg: '#450a0a', textColor: '#fca5a5' };
+                    subtitle = subtitle || 'สายเคเบิลมีปัญหา / สัญญาณขาด';
+                } else if (searchText.includes('pon กระพริบ') || searchText.includes('pon ติดกระพริบ') || searchText.includes('adsl กระพริบ') || searchText.includes('dsl กระพริบ')) {
+                    headerIcon = 'satellite-dish';
+                    headerColor = '#eab308'; // yellow
+                    mid.class = 'led-yellow-blink';
+                    mid.textBg = '#422006'; // dark yellow bg
+                    mid.textColor = '#fde047'; // light yellow text
+                    subtitle = subtitle || 'กำลังตรวจสอบสัญญาณ';
+                } else if (searchText.includes('pon ไม่ติด') || searchText.includes('dsl ไม่ติด') || searchText.includes('adsl ไม่ติด') || searchText.includes('ไม่มีสัญญาณ')) {
+                    headerIcon = 'alert-circle';
+                    headerColor = '#ef4444';
+                    mid.class = 'led-off';
+                    mid.textBg = '#450a0a';
+                    mid.textColor = '#fca5a5';
+                    subtitle = subtitle || 'ไม่มีสัญญาณ / สายขาด';
+                } else if (searchText.includes('internet ไม่ติด') || searchText.includes('เข้าใช้งาน internet ไม่ได้') || searchText.includes('เข้าเว็บไม่ได้')) {
+                    headerIcon = 'wifi';
+                    headerColor = '#94a3b8';
+                    int.class = 'led-off';
+                    int.textBg = '#450a0a'; // dark red bg
+                    int.textColor = '#fca5a5'; // light red text
+                    subtitle = subtitle || 'แต่ไฟ PON ติดค้างสีเขียว';
+                }
+                
+                ledsHtml = `
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 16px; margin-bottom: 16px; display: flex; justify-content: space-around; align-items: center;">
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                            <div class="led ${pwr.class}"></div>
+                            <span style="font-size: 11px; font-weight: 700; color: ${pwr.textColor}; background: ${pwr.textBg}; padding: 2px 6px; border-radius: 4px;">${pwr.text}</span>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                            <div class="led ${mid.class}"></div>
+                            <span style="font-size: 11px; font-weight: 700; color: ${mid.textColor}; background: ${mid.textBg}; padding: 2px 6px; border-radius: 4px;">${mid.text}</span>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                            <div class="led ${int.class}"></div>
+                            <span style="font-size: 11px; font-weight: 700; color: ${int.textColor}; background: ${int.textBg}; padding: 2px 6px; border-radius: 4px;">${int.text}</span>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            html += `
+                <div class="symptom-card" onclick="window.renderSymptomDetail('${index}', '${groupName}');" style="background: #1a1f36; border-radius: 16px; padding: 20px; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative; overflow: hidden; transition: transform 0.2s;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <div style="display: flex; align-items: center; gap: 8px; color: ${headerColor}; font-size: 12px; font-weight: 700; letter-spacing: 1px;">
+                            <i data-lucide="${headerIcon}" style="width: 16px; height: 16px;"></i> ROUTER STATUS
+                        </div>
+                        <i data-lucide="chevron-right" style="color: #475569; width: 20px; height: 20px;"></i>
+                    </div>
+                    
+                    ${ledsHtml}
+                    
+                    <h3 style="color: #ffffff; font-size: 18px; margin: 0 0 4px 0; font-weight: 700; ${lowerSym.includes('los') ? 'color: #fca5a5;' : (lowerSym.includes('pon กระพริบ') ? 'color: #fde047;' : '')}">${sym}</h3>
+                    <p style="color: #94a3b8; margin: 0; font-size: 13px;">${subtitle}</p>
+                </div>
+            `;
         });
 
         html += `
-                </select>
             </div>
-            <div id="symptom-detail-container"></div>
+            <div id="symptom-detail-container" style="display: none;"></div>
         `;
 
         document.getElementById('ts-container').innerHTML = html;

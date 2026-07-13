@@ -11,7 +11,7 @@
     <!-- Lucide Icons -->
     <script src="lucide.min.js"></script>
     <!-- Styles -->
-    <link rel="stylesheet" href="style.css?v=19">
+    <link rel="stylesheet" href="style.css?v=24">
 </head>
 <body>
     <div class="app-container">
@@ -85,8 +85,21 @@
             </div>
         </main>
     </div>
+    <!-- Bottom Sheet UI -->
+    <div class="sheet-overlay" id="sheetOverlay" onclick="window.closeSheet()"></div>
+    <div class="bottom-sheet flex flex-col" id="bottomSheet">
+        <div class="w-full flex justify-center pt-2 pb-1 bg-white rounded-t-[24px]" id="sheetDragArea" style="cursor: grab;">
+            <div class="sheet-handle"></div>
+        </div>
+        <button onclick="window.closeSheet()" style="position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; background: var(--bg-main); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; color: var(--text-secondary);">
+            <i data-lucide="x"></i>
+        </button>
+        <div class="flex-1 overflow-y-auto" id="sheet-content-container">
+            <!-- Content will be injected here -->
+        </div>
+    </div>
 
     <!-- Scripts -->
-    <script src="app.js?v=20"></script>
+    <script src="app.js?v=24"></script>
 </body>
 </html>
