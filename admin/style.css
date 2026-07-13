@@ -61,6 +61,30 @@ button[type="submit"] { width: 100%; }
 .error { color: var(--danger); font-size: 14px; text-align: center; }
 
 /* Admin Dashboard */
+.admin-tabs {
+    display: flex;
+    background: var(--surface);
+    border-bottom: 1px solid #E5E7EB;
+    padding: 0 32px;
+}
+.admin-tabs .tab-btn {
+    padding: 16px 24px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 16px;
+    color: #6B7280;
+    border-bottom: 2px solid transparent;
+    transition: 0.2s;
+}
+.admin-tabs .tab-btn:hover {
+    color: var(--text);
+}
+.admin-tabs .tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}
 .admin-header {
     background: var(--dark);
     color: white;

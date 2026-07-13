@@ -1,0 +1,122 @@
+รายละเอียดการตั้งค่าแยกตามยี่ห้อ
+1. Huawei
+1. เสียบสาย LAN จากช่อง LAN1 ของ ONU เข้ากับคอมพิวเตอร์
+2. เปิด Browser พิมพ์ IP Address ลงในช่อง URL (ปกติจะเป็น 192.168.1.1 หรือ 192.168.100.1)
+3. กรอก Username / Password
+Username : admin / root / telecomadmin
+Password : admin / admintelecom (หากเข้าไม่ได้ ให้ดูที่สติกเกอร์ใต้เครื่อง หรือสอบถามผู้ให้บริการ เพราะบาง Firmware อาจถูกเปลี่ยนรหัส)
+4. หลังจากล็อกอินด้วยสิทธิ์ Admin แล้ว ไปที่เมนู WAN > WAN Configuration
+5. คลิก New เพื่อสร้างโปรไฟล์ใหม่ ตั้งค่าตามโหมดที่ต้องการ
+Router Mode (PPPoE)
+- Encapsulation Mode: PPPoE
+- Protocol Type: IPv4 (หรือ IPv4/IPv6)
+- WAN Mode: Route WAN
+- Service Type: INTERNET
+- VLAN ID: ใส่เลข VLAN ของ NT (เลข 10 = internet / เลข 20 = Ipphone)
+- ใส่ Account Internet User Name / Password เช่น  
+        Username xxxxjxxxx@fttxhome
+         Password  xxxxxxx
+- กด Apply
+Bridge Mode
+- WAN Mode: Bridge WAN
+- Service Type: INTERNET
+- VLAN ID: ใส่เลข VLAN ของ NT (เลข 10 = internet / เลข 20 = Ipphone)
+- Binding Options: ติ๊กเลือกพอร์ต LAN ที่ต้องการให้ปล่อยสัญญาณ Bridge (เช่น LAN1)
+- กด Apply
+การตั้งค่า Wi-Fi (WLAN Configuration)
+1. ไปที่เมนู WLAN > WLAN Basic Configuration
+2. SSID Name: ตั้งชื่อ Wi-Fi ที่ต้องการ
+3. Authentication Mode: เลือก WPA/WPA2 PreSharedKey (ปลอดภัยที่สุด)
+4. WPA PreSharedKey: ตั้งรหัสผ่าน Wi-Fi (อย่างน้อย 8 ตัวอักษร)
+5. กด Apply (ทำซ้ำในเมนู 5G Basic Configuration หากต้องการตั้งค่าคลื่น 5GHz แยก)
+การตรวจสอบสถานะ
+ไปที่เมนู Status > WAN Information
+ดูที่สถานะ Status: ถ้าขึ้นว่า Connected แสดงว่าตั้งค่าสำเร็จและออกเน็ตได้แล้ว
+
+2. ZTE
+1. เชื่อมต่อ: เสียบสาย LAN เข้ากับคอมพิวเตอร์ หรือเกาะ Wi-Fi เดิมของเครื่อง
+2. เปิด Browser: พิมพ์ IP Address (ค่ามาตรฐานคือ 192.168.1.1)
+3. กรอก Username / Password:
+        Username : admin
+"        Password : admin, superadmin, หรือ password"
+4. เมื่อล็อกอินแล้ว ให้ไปที่ Network > WAN > WAN Connection
+Router Mode (PPPoE)
+"- Connection Name : เลือก ""Create New Connection"""
+- Type : เลือก Route
+- Service List : เลือก Internet
+- Link Mode (หรือ IP Protocol) : IPv4
+- VLAN : ติ๊กถูกที่ VLAN On (หรือ Enable VLAN)
+- VLAN ID: ใส่เลข VLAN ของ node นั้นๆ ซึ่งแต่ละ node จะเลขไม่เหมือนกัน ตรวจสอบได้จากหน้า NTSP
+- PPP ให้ใส่ username / password 
+        Username xxxxjxxxx@fttxhome
+         Password  xxxxxxx
+- กด Create หรือ Modify
+Bridge Mode
+"- Connection Name : เลือก ""Create New Connection"""
+- Type : เลือก Bridge Connection
+- Service List : เลือก Internet
+- VLAN : ติ๊กถูกที่ VLAN On
+- กด Create หรือ Modify
+สำหรับ Bridge Mode อย่าลืมไปที่เมนู Port Binding (ในหน้า WAN) เพื่อติ๊กเลือกช่อง LAN (เช่น LAN1) ให้สัญญาณวิ่งออกไปด้วย
+การตั้งค่า Wi-Fi (WLAN Setup)
+ไปที่เมนู Network > WLAN (หรือ Wi-Fi)
+- ตั้งชื่อ Wi-Fi: ไปที่ SSID Settings > เลือก SSID1
+- SSID Name: ตั้งชื่อที่ต้องการ > กด Submit
+- ตั้งรหัสผ่าน:ไปที่ Security Settings > เลือก SSID เดียวกับข้อ 1
+- Authentication Type: เลือก WPA/WPA2-PSK
+- WPA Passphrase: ตั้งรหัสผ่าน 8 ตัวขึ้นไป > กด Submit
+การตรวจสอบสถานะ
+ไปที่เมนู Status > Network Interface > WAN Connection
+ดูที่สถานะ IPv4 Status: หากขึ้น Connected และได้รับเลข IP Address มาแล้ว แสดงว่าใช้งานได้ครับ
+"ข้อสังเกต: หน้าตาเมนู (Interface) ของ ZTE จะมี 2 แบบหลักๆ คือ สีเขียว (รุ่นเก่า/Classic) และ สีขาว-ฟ้า (รุ่นใหม่) แต่หัวข้อเมนูหลักอย่าง Network, WAN, WLAN จะใช้ชื่อเหมือนกัน"
+
+3. FORTH
+1. เชื่อมต่อ: เสียบสาย LAN เข้าคอมพิวเตอร์ หรือเกาะ Wi-Fi
+2. เปิด Browser: พิมพ์ IP Address 192.168.1.1
+3. กรอก Username / Password:
+        Username : admin / admin / admin
+        Password : tot / 1234 / admin
+(หากไม่ได้ ให้ดูสติกเกอร์ใต้เครื่อง)
+การตั้งค่าอินเทอร์เน็ต (WAN Setup)
+ไปที่เมนูแท็บด้านบน Interface Setup > เลือกเมนูย่อย Internet
+Router Mode (PPPoE)
+- ISP: เลือก PPPoE/PPPoA
+- IP Version: เลือก IPv4 (หรือ IPv4/IPv6)
+- VLAN ID: เลือก Activated (เปิดใช้งาน VLAN)
+ใส่เลข VLAN ID ให้ถูกต้อง (ขึ้นอยู่กับพื้นที่ชุมสาย ต้องตรวจสอบกับเจ้าหน้าที่)
+- Username: ใส่ User PPPoE (เช่น xxxxjxxxx@tothome)
+- Password: ใส่รหัสผ่าน PPPoE
+- Bridge Interface: ติ๊กเลือก Deactivated (ปิด Bridge)
+- Default Route: เลือก Yes
+- กดปุ่ม SAVE ด้านล่างสุด
+Bridge Mode
+- ISP: เลือก Bridge Mode
+- VLAN ID: เลือก Activated
+ใส่เลข VLAN ID ของพื้นที่นั้นๆ
+- Bridge Interface: ติ๊กเลือก Activated
+- กดปุ่ม SAVE ด้านล่างสุด
+การตั้งค่า Wi-Fi (Wireless Setup)
+- ไปที่เมนูแท็บด้านบน Interface Setup > เลือกเมนูย่อย Wireless
+- Access Point: เลือก Activated
+- SSID: ตั้งชื่อ Wi-Fi ที่ต้องการ (ภาษาอังกฤษ)
+- Authentication Type: เลือก WPA2-PSK (หรือ WPA-PSK/WPA2-PSK)
+- Encryption: เลือก AES
+- Pre-Shared Key: ตั้งรหัสผ่าน Wi-Fi (8 ตัวอักษรขึ้นไป)
+- กดปุ่ม SAVE ด้านล่างสุด
+การตรวจสอบสถานะ
+- ไปที่เมนูแท็บ Stat
+- ดูในส่วนของ WAN หรือ System Info
+- หากช่อง IP Address ขึ้นเป็นตัวเลข (ที่ไม่ใช่ 0.0.0.0) แสดงว่าเชื่อมต่อสำเร็จ
+เพิ่มเติมสำหรับ FORTH:
+VLAN ของ NT (TOT): เนื่องจาก FORTH มักใช้ในงานของ NT เป็นหลัก ค่า VLAN ที่พบบ่อยคือ 33 (สำหรับเน็ตบ้านทั่วไปในระบบเดิม) แต่ระบบใหม่ ๆ อาจเปลี่ยนไป ดังนั้นหากตั้งค่าแล้วไฟ Internet ไม่ติด ให้เช็กเรื่อง VLAN ID เป็นจุดแรก
+เมนู Advance: หากหาเมนูตั้งค่า VLAN ไม่เจอ ให้ลองมองหาปุ่มหรือเมนูที่ชื่อ Advanced Setup หรือ VLAN Tag แยกต่างหากในบาง Firmware รุ่นเก่า
+
+4. Fiberhome
+การเข้าสู่ระบบ: พิมพ์ IP Address > ล็อกอินด้วยบัญชี Admin
+ตั้งค่าโหมด Router (PPPoE):
+ไปที่เมนู Network > Broadband Settings
+เลือก Connection Mode เป็น Route > เลือก PPPoE
+"ใส่ VLAN ID, Username และ Password > กด Save"
+ตั้งค่าโหมด Bridge:
+ไปที่เมนู Network > Broadband Settings
+เลือก Connection Mode เป็น Bridge > ใส่ VLAN ID > ทำการผูกพอร์ตที่ Port Binding

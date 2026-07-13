@@ -15,7 +15,11 @@
             <h2>FAST Admin Dashboard</h2>
             <button id="logout-btn" class="btn btn-danger">Logout</button>
         </header>
-        <main class="admin-content">
+        <div class="admin-tabs">
+            <button class="tab-btn active" onclick="switchAdminTab('troubleshoot')">ข้อมูลการแก้ไขปัญหา</button>
+            <button class="tab-btn" onclick="switchAdminTab('onu-setup')">ข้อมูลการตั้งค่า onu</button>
+        </div>
+        <main id="tab-troubleshoot" class="admin-content">
             <div class="actions-bar">
                 <button id="add-new-btn" class="btn btn-primary"><i data-lucide="plus"></i> Add New Scom</button>
             </div>
@@ -32,6 +36,27 @@
                         </tr>
                     </thead>
                     <tbody id="scom-tbody">
+                        <!-- Data loaded via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+        
+        <main id="tab-onu-setup" class="admin-content hidden">
+            <div class="actions-bar">
+                <button id="add-new-onu-btn" class="btn btn-primary"><i data-lucide="plus"></i> Add New ONU Config</button>
+            </div>
+            <div class="table-container">
+                <table id="onu-table">
+                    <thead>
+                        <tr>
+                            <th>Brand</th>
+                            <th>Mode</th>
+                            <th>Details</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="onu-tbody">
                         <!-- Data loaded via JS -->
                     </tbody>
                 </table>
@@ -79,6 +104,31 @@
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn" id="modal-cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Modal for Add/Edit ONU Config -->
+    <div id="onu-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3 id="onu-modal-title">Add/Edit ONU Config</h3>
+            <form id="onu-form">
+                <input type="hidden" id="onu-id">
+                <div class="form-group">
+                    <label>Brand (ยี่ห้อ)</label>
+                    <input type="text" id="o-brand" required>
+                </div>
+                <div class="form-group">
+                    <label>Mode (โหมด)</label>
+                    <input type="text" id="o-mode" required>
+                </div>
+                <div class="form-group">
+                    <label>Details (รายละเอียดขั้นตอน)</label>
+                    <textarea id="o-details" rows="8" required></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn" id="onu-modal-cancel">Cancel</button>
                     <button type="submit" class="btn btn-primary">Save</button>
                 </div>
             </form>

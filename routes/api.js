@@ -22,8 +22,11 @@ const verifyToken = (req, res, next) => {
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
     
+    const adminUser = process.env.ADMIN_USER || 'admin';
+    const adminPass = process.env.ADMIN_PASS || 'admin1234';
+    
     // Check fallback hardcoded admin
-    if (username === process.env.ADMIN_USER && password === process.env.ADMIN_PASS) {
+    if (username === adminUser && password === adminPass) {
         const token = jwt.sign({ id: username, role: 'admin' }, JWT_SECRET, { expiresIn: '8h' });
         return res.json({ token, role: 'admin', message: 'Admin login successful' });
     }
@@ -124,6 +127,46 @@ router.put('/scoms/:id', verifyToken, async (req, res) => {
 router.delete('/scoms/:id', verifyToken, async (req, res) => {
     try {
         await Scom.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Deleted successfully' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// ONU Configs Routes
+const OnuConfig = require('../models/OnuConfig');
+
+router.get('/onu-configs', verifyToken, async (req, res) => {
+    try {
+        const configs = await OnuConfig.find().sort({ Brand: 1, Mode: 1 });
+        res.json(configs);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+router.post('/onu-configs', verifyToken, async (req, res) => {
+    try {
+        const config = new OnuConfig(req.body);
+        const newConfig = await config.save();
+        res.status(201).json(newConfig);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
+
+router.put('/onu-configs/:id', verifyToken, async (req, res) => {
+    try {
+        const updatedConfig = await OnuConfig.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        res.json(updatedConfig);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
+
+router.delete('/onu-configs/:id', verifyToken, async (req, res) => {
+    try {
+        await OnuConfig.findByIdAndDelete(req.params.id);
         res.json({ message: 'Deleted successfully' });
     } catch (err) {
         res.status(500).json({ message: err.message });

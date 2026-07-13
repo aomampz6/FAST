@@ -6,19 +6,38 @@ if (!token) {
     window.location.href = '/';
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
+const API_URL = 'http://localhost:3000/api';
+
+// Fetch data from API
+async function loadDataFromAPI() {
     try {
-        const res = await fetch('/api/scoms', {
-            headers: { 'Authorization': `Bearer ${token}` }
+        const token = localStorage.getItem('fast_user_token') || localStorage.getItem('fast_admin_token');
+        const res = await fetch(`${API_URL}/scoms`, {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         });
         if (res.ok) {
             fastData = await res.json();
         } else {
-            console.error('Failed to fetch data from API');
+            console.warn('API returned non-ok status, falling back to data.js if available');
+            if (typeof window.fastDataFallback !== 'undefined') fastData = window.fastDataFallback;
         }
-    } catch (err) {
-        console.error('API connection error', err);
+    } catch (e) {
+        console.warn('Failed to fetch from API, falling back to data.js if available', e);
+        if (typeof window.fastDataFallback !== 'undefined') fastData = window.fastDataFallback;
     }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    // Basic auth check
+    const token = localStorage.getItem('fast_user_token');
+    const adminToken = localStorage.getItem('fast_admin_token');
+    
+    if (!token && !adminToken) {
+        window.location.href = '/';
+        return;
+    }
+    
+    await loadDataFromAPI();
 
     // Initialize Lucide icons
     lucide.createIcons();
@@ -205,12 +224,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                     @media (max-width: 600px) {
                         .phone-contact-row {
                             flex-direction: column;
-                            align-items: stretch;
-                            text-align: center;
+                            align-items: flex-start;
+                            text-align: left;
+                            padding: 16px 12px;
                         }
                         .phone-btn {
+                            width: 100%;
+                            box-sizing: border-box;
                             justify-content: center;
-                            margin-top: 8px;
+                            margin-top: 12px;
+                            padding: 12px;
                         }
                     }
                 </style>
@@ -226,13 +249,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(255, 200, 0, 0.1); display: flex; align-items: center; justify-content: center; color: var(--nt-yellow);">
                             <i data-lucide="building-2" style="width: 24px; height: 24px;"></i>
                         </div>
-                        <h3 style="font-size: 20px; margin: 0; color: var(--text-primary);">ส่วนงานที่เกี่ยวข้อง บลนน.</h3>
+                        <h3 style="font-size: 20px; margin: 0; color: var(--text-primary); line-height: 1.4;">ส่วนงานที่เกี่ยวข้อง<br>บลนน.</h3>
                     </div>
                     
                     <div style="display: grid; gap: 16px;">
                         <div class="phone-contact-row">
                             <div>
-                                <h4 style="font-size: 16px; margin: 0 0 4px 0; color: var(--text-primary);">งานติดตั้ง/แจ้งเสีย ONU, OLT, FTTx, IP-Phone</h4>
+                                <h4 style="font-size: 16px; margin: 0 0 4px 0; color: var(--text-primary);">รับงานติดตั้ง / ตรวจแก้ Broadband (FTTx , IP-Phone)</h4>
                                 <span style="font-size: 14px; color: var(--text-secondary);">ขบลนน.</span>
                             </div>
                             <div class="phone-btn">
@@ -243,7 +266,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         
                         <div class="phone-contact-row">
                             <div>
-                                <h4 style="font-size: 16px; margin: 0 0 4px 0; color: var(--text-primary);">งานชุมสาย</h4>
+                                <h4 style="font-size: 16px; margin: 0 0 4px 0; color: var(--text-primary);">รับงานชุมสาย / Sip Trunk / PRI</h4>
                                 <span style="font-size: 14px; color: var(--text-secondary);">ชบลนน.</span>
                             </div>
                             <div class="phone-btn">
@@ -254,7 +277,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         
                         <div class="phone-contact-row">
                             <div>
-                                <h4 style="font-size: 16px; margin: 0 0 4px 0; color: var(--text-primary);">งานติดตั้ง/แจ้งเสีย ลูกค้าวงจรเช่า</h4>
+                                <h4 style="font-size: 16px; margin: 0 0 4px 0; color: var(--text-primary);">รับงานติดตั้ง / ตรวจแก้ลูกค้า LLI</h4>
                                 <span style="font-size: 14px; color: var(--text-secondary);">ญบลนน.</span>
                             </div>
                             <div class="phone-btn">
@@ -511,14 +534,40 @@ document.addEventListener('DOMContentLoaded', async () => {
                     ">
                 </div>
             </div>
-            <div class="manual-container">
+            </div>
+            <h3 style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px; margin-top: 8px; color: var(--text-primary); font-size: 16px;">
+                <i data-lucide="layout-grid" style="color: #3b82f6; width: 20px; height: 20px;"></i> หมวดหมู่อาการเสีย
+            </h3>
+            <div class="manual-container" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
         `;
         
         for (const [groupName, items] of Object.entries(groups)) {
+            let iconName = 'alert-circle';
+            let iconColor = '#94a3b8';
+            let bgColor = 'rgba(148, 163, 184, 0.1)';
+            
+            const nameLower = groupName.toLowerCase();
+            if (nameLower.includes('disconnect')) { iconName = 'network'; iconColor = '#ef4444'; bgColor = 'rgba(239, 68, 68, 0.1)'; }
+            else if (nameLower.includes('connect')) { iconName = 'wifi-off'; iconColor = '#f97316'; bgColor = 'rgba(249, 115, 22, 0.1)'; }
+            else if (nameLower.includes('speed')) { iconName = 'gauge'; iconColor = '#8b5cf6'; bgColor = 'rgba(139, 92, 246, 0.1)'; }
+            else if (nameLower.includes('กระพริบ')) { iconName = 'lightbulb'; iconColor = '#eab308'; bgColor = 'rgba(234, 179, 8, 0.1)'; }
+            else if (nameLower.includes('web')) { iconName = 'globe'; iconColor = '#3b82f6'; bgColor = 'rgba(59, 130, 246, 0.1)'; }
+            else if (nameLower.includes('mail')) { iconName = 'mail'; iconColor = '#0ea5e9'; bgColor = 'rgba(14, 165, 233, 0.1)'; }
+            else if (nameLower.includes('ip-phone') || nameLower.includes('โทร')) { iconName = 'phone-call'; iconColor = '#22c55e'; bgColor = 'rgba(34, 197, 94, 0.1)'; }
+            else if (nameLower.includes('ไม่ติด')) { iconName = 'power'; iconColor = '#475569'; bgColor = 'rgba(71, 85, 105, 0.1)'; }
+            else { iconName = 'wrench'; iconColor = '#14b8a6'; bgColor = 'rgba(20, 184, 166, 0.1)'; }
+
+            let displayName = groupName;
+            if (displayName.includes('ไฟ PON ไม่ติด')) {
+                displayName = 'ไฟ PON ไม่ติด'; 
+            }
+
             html += `
-                <button class="manual-group-btn" onclick="window.showTroubleshootGroup('${groupName}')" style="width: 100%; padding: 20px; margin-bottom: 16px; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); border-left: 4px solid var(--brand-primary); text-align: left; font-size: 18px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: var(--text-primary); box-shadow: var(--shadow-sm); transition: var(--transition);">
-                    <span>${groupName}</span>
-                    <i data-lucide="chevron-right"></i>
+                <button class="manual-group-btn" onclick="window.showTroubleshootGroup('${groupName}')" style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 16px; padding: 24px 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: 0.2s;">
+                    <div style="width: 56px; height: 56px; border-radius: 50%; background: ${bgColor}; display: flex; align-items: center; justify-content: center; color: ${iconColor};">
+                        <i data-lucide="${iconName}" style="width: 28px; height: 28px;"></i>
+                    </div>
+                    <span style="font-size: 14px; font-weight: 500; color: var(--text-primary); text-align: center;">${displayName}</span>
                 </button>
             `;
         }
