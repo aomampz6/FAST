@@ -19,7 +19,9 @@
         <aside class="sidebar">
             <div class="sidebar-header" style="position: relative;">
                 <div class="logo">
-                    <i data-lucide="zap" class="logo-icon"></i>
+                    <div class="logo-box">
+                        <i data-lucide="zap" class="logo-icon"></i>
+                    </div>
                     <h1 class="logo-text">FAST</h1>
                 </div>
                 <p class="subtitle">Field Assistant System</p>
@@ -49,19 +51,23 @@
             </nav>
 
             <div class="sidebar-logout" style="padding: 0 16px 16px;">
-                <button class="nav-item" onclick="localStorage.removeItem('fast_user_token'); window.location.href='/';" style="width: 100%; color: #ff5252; background: rgba(255, 82, 82, 0.1);">
+                <button class="nav-item logout-btn" onclick="localStorage.removeItem('fast_user_token'); window.location.href='/';">
                     <i data-lucide="log-out"></i>
-                    <span style="color: #ff5252;">ออกจากระบบ</span>
+                    <span>ออกจากระบบ</span>
                 </button>
             </div>
 
             <div class="sidebar-footer">
-                <p>NT Corporation</p>
+                <p>National Telecom Public Company Limited</p>
             </div>
         </aside>
 
         <!-- Main Content -->
         <main class="main-content">
+            <!-- Ambient Yellow Glow -->
+            <div class="ambient-glow-1"></div>
+            <div class="ambient-glow-2"></div>
+            
             <header class="top-header">
                 <div class="header-left" style="display: flex; align-items: center; gap: 16px;">
                     <button class="icon-btn mobile-menu-btn" id="mobile-menu-btn" aria-label="Toggle Menu">

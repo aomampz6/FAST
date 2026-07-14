@@ -141,7 +141,13 @@ router.get('/onu-configs', verifyToken, async (req, res) => {
         const configs = await OnuConfig.find().sort({ Brand: 1, Mode: 1 });
         res.json(configs);
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        console.warn('Database query failed for onu-configs, falling back to onu_data.js:', err.message);
+        try {
+            const fallbackData = require('../onu_data.js');
+            res.json(fallbackData);
+        } catch (fallbackErr) {
+            res.status(500).json({ message: err.message });
+        }
     }
 });
 

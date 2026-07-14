@@ -123,6 +123,132 @@ document.addEventListener('DOMContentLoaded', async () => {
     themeToggleBtn.addEventListener('click', toggleTheme);
     initTheme();
 
+    // Phonebook Data Management
+    const defaultPhonebookData = [
+        {
+            id: 'pb_g1',
+            title: 'ส่วนงาน บลนน.',
+            icon: 'building-2',
+            color: 'var(--nt-yellow)',
+            bgColor: 'rgba(255, 209, 0, 0.1)',
+            contacts: [
+                { id: 'c1', title: 'รับงานติดตั้ง / ตรวจแก้ Broadband', subtitle: 'FTTx, IP-Phone • ขบลนน.', phone: '023720811', extension: '' },
+                { id: 'c2', title: 'รับงานชุมสาย / Sip Trunk / PRI', subtitle: 'ชบลนน.', phone: '023720812', extension: '' },
+                { id: 'c3', title: 'รับงานติดตั้ง / ตรวจแก้ลูกค้า LLI', subtitle: 'ญบลนน.', phone: '023720813', extension: '' }
+            ]
+        },
+        {
+            id: 'pb_g2',
+            title: 'ส่วนงาน บทค.2',
+            icon: 'server',
+            color: '#4CAF50',
+            bgColor: 'rgba(76, 175, 80, 0.1)',
+            contacts: [
+                { id: 'c4', title: 'งาน switch game mail และ user ออเทน', subtitle: 'Bras, Radius', phone: '025755190', extension: 'กด 2' }
+            ]
+        }
+    ];
+
+    window.getPhonebookData = () => {
+        let data = localStorage.getItem('fast_phonebook_data');
+        if (!data) {
+            data = JSON.stringify(defaultPhonebookData);
+            localStorage.setItem('fast_phonebook_data', data);
+        }
+        return JSON.parse(data);
+    };
+
+    window.savePhonebookData = (data) => {
+        localStorage.setItem('fast_phonebook_data', JSON.stringify(data));
+        window.app.navigate('phonebook');
+    };
+
+    window.pbAddGroup = () => {
+        const title = prompt('ชื่อกลุ่มส่วนงานใหม่:');
+        if (!title) return;
+        const data = window.getPhonebookData();
+        data.push({
+            id: 'pb_g_' + Date.now(),
+            title: title,
+            icon: 'building-2',
+            color: 'var(--text-primary)',
+            bgColor: 'var(--border-color)',
+            contacts: []
+        });
+        window.savePhonebookData(data);
+    };
+
+    window.pbEditGroup = (groupId) => {
+        const data = window.getPhonebookData();
+        const group = data.find(g => g.id === groupId);
+        if (!group) return;
+        const title = prompt('แก้ไขชื่อกลุ่มส่วนงาน:', group.title);
+        if (title !== null && title.trim() !== '') {
+            group.title = title;
+            window.savePhonebookData(data);
+        }
+    };
+
+    window.pbDeleteGroup = (groupId) => {
+        if (!confirm('คุณต้องการลบกลุ่มนี้พร้อมเบอร์โทรทั้งหมดในกลุ่มใช่หรือไม่?')) return;
+        let data = window.getPhonebookData();
+        data = data.filter(g => g.id !== groupId);
+        window.savePhonebookData(data);
+    };
+
+    window.pbAddContact = (groupId) => {
+        const title = prompt('ชื่องาน/รายละเอียด:');
+        if (!title) return;
+        const subtitle = prompt('รายละเอียดรอง (เว้นว่างได้):');
+        const phone = prompt('เบอร์โทรศัพท์:');
+        if (!phone) return;
+        const extension = prompt('เบอร์ต่อ (เว้นว่างได้):');
+
+        const data = window.getPhonebookData();
+        const group = data.find(g => g.id === groupId);
+        if (group) {
+            group.contacts.push({
+                id: 'c_' + Date.now(),
+                title: title,
+                subtitle: subtitle || '',
+                phone: phone,
+                extension: extension || ''
+            });
+            window.savePhonebookData(data);
+        }
+    };
+
+    window.pbEditContact = (groupId, contactId) => {
+        const data = window.getPhonebookData();
+        const group = data.find(g => g.id === groupId);
+        if (!group) return;
+        const contact = group.contacts.find(c => c.id === contactId);
+        if (!contact) return;
+
+        const title = prompt('ชื่องาน/รายละเอียด:', contact.title);
+        if (title === null) return;
+        const subtitle = prompt('รายละเอียดรอง:', contact.subtitle);
+        const phone = prompt('เบอร์โทรศัพท์:', contact.phone);
+        if (phone === null) return;
+        const extension = prompt('เบอร์ต่อ:', contact.extension);
+
+        contact.title = title;
+        contact.subtitle = subtitle || '';
+        contact.phone = phone;
+        contact.extension = extension || '';
+        window.savePhonebookData(data);
+    };
+
+    window.pbDeleteContact = (groupId, contactId) => {
+        if (!confirm('คุณต้องการลบเบอร์โทรนี้ใช่หรือไม่?')) return;
+        const data = window.getPhonebookData();
+        const group = data.find(g => g.id === groupId);
+        if (group) {
+            group.contacts = group.contacts.filter(c => c.id !== contactId);
+            window.savePhonebookData(data);
+        }
+    };
+
     // View Data
     const views = {
         'user-profile': {
@@ -159,7 +285,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 return `
                     <div class="mb-4">
-                        <button onclick="window.app.navigate('dashboard')" style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-primary); cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; padding: 10px 20px; box-shadow: var(--shadow-sm); transition: var(--transition);">
+                        <button class="back-btn" onclick="window.app.navigate('dashboard')">
                             <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i> กลับหน้าหลัก
                         </button>
                     </div>
@@ -200,113 +326,145 @@ document.addEventListener('DOMContentLoaded', async () => {
         },
         'phonebook': {
             title: 'ข้อมูล สมุดโทรศัพท์',
-            render: () => `
+            render: () => {
+                const isAdmin = !!localStorage.getItem('fast_admin_token');
+                const data = window.getPhonebookData();
+
+                let html = `
                 <style>
-                    .phone-contact-row {
-                        background: var(--bg-main); 
+                    .pb-section-title {
+                        text-align: center; 
                         padding: 16px; 
-                        border-radius: var(--radius-md); 
-                        border: 1px solid var(--border-light); 
-                        display: flex; 
-                        justify-content: space-between; 
-                        align-items: center; 
-                        gap: 12px;
+                        background: var(--bg-surface); 
+                        border: 1px solid var(--border-color); 
+                        border-radius: 16px; 
+                        box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+                        margin-bottom: 24px;
                     }
-                    .phone-btn {
+                    .pb-group-header {
                         display: flex; 
                         align-items: center; 
                         gap: 8px; 
-                        background: rgba(255,255,255,0.05); 
-                        padding: 8px 16px; 
-                        border-radius: 20px; 
-                        border: 1px solid var(--border-color);
+                        margin-bottom: 12px;
+                        flex-wrap: wrap;
+                    }
+                    .pb-group-icon {
+                        padding: 8px; 
+                        border-radius: 8px; 
+                    }
+                    .pb-group-title {
+                        font-size: 20px; 
+                        font-weight: bold; 
+                        margin: 0;
+                        flex-grow: 1;
+                    }
+                    .pb-list-container {
+                        background: var(--bg-surface); 
+                        border: 1px solid var(--border-color); 
+                        border-radius: 16px; 
+                        overflow: hidden; 
+                        box-shadow: var(--shadow-sm);
+                        margin-bottom: 32px;
+                    }
+                    .pb-list-item {
+                        padding: 16px; 
+                        display: flex; 
+                        align-items: center; 
+                        justify-content: space-between;
+                        gap: 16px;
+                    }
+                    .pb-list-item:not(:last-child) {
+                        border-bottom: 1px solid var(--border-color);
+                    }
+                    .pb-item-title {
+                        font-weight: 500; 
+                        color: var(--text-primary); 
+                        margin: 0;
+                    }
+                    .pb-item-subtitle {
+                        font-size: 12px; 
+                        color: var(--text-secondary); 
+                        margin: 4px 0 0 0;
+                    }
+                    .pb-phone-btn {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        padding: 8px 16px;
+                        border-radius: 12px;
+                        font-weight: bold;
+                        transition: var(--transition);
+                        text-decoration: none;
+                        flex-shrink: 0;
+                        cursor: pointer;
+                    }
+                    .pb-phone-btn:hover {
+                        opacity: 0.8;
                     }
                     @media (max-width: 600px) {
-                        .phone-contact-row {
+                        .pb-list-item {
                             flex-direction: column;
                             align-items: flex-start;
-                            text-align: left;
-                            padding: 16px 12px;
                         }
-                        .phone-btn {
+                        .pb-phone-btn {
                             width: 100%;
-                            box-sizing: border-box;
                             justify-content: center;
-                            margin-top: 12px;
-                            padding: 12px;
                         }
                     }
                 </style>
 
-                <div style="text-align: left; margin-bottom: 24px;">
-                    <button onclick="window.app.navigate('dashboard')" style="background: rgba(255,255,255,0.05); color: var(--text-primary); border: 1px solid var(--border-color); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 15px; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px;">
+                <div style="text-align: left; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                    <button class="back-btn" onclick="window.app.navigate('dashboard')">
                         <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i> กลับหน้าหลัก
                     </button>
                 </div>
 
-                <div class="card" style="margin-bottom: 24px;">
-                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px;">
-                        <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(255, 200, 0, 0.1); display: flex; align-items: center; justify-content: center; color: var(--nt-yellow);">
-                            <i data-lucide="building-2" style="width: 24px; height: 24px;"></i>
-                        </div>
-                        <h3 style="font-size: 20px; margin: 0; color: var(--text-primary); line-height: 1.4;">ส่วนงานที่เกี่ยวข้อง<br>บลนน.</h3>
-                    </div>
-                    
-                    <div style="display: grid; gap: 16px;">
-                        <div class="phone-contact-row">
-                            <div>
-                                <h4 style="font-size: 16px; margin: 0 0 4px 0; color: var(--text-primary);">รับงานติดตั้ง / ตรวจแก้ Broadband (FTTx , IP-Phone)</h4>
-                                <span style="font-size: 14px; color: var(--text-secondary);">ขบลนน.</span>
-                            </div>
-                            <div class="phone-btn">
-                                <i data-lucide="phone" style="width: 16px; height: 16px; color: var(--nt-yellow);"></i>
-                                <span style="font-size: 16px; font-weight: 600; color: var(--nt-yellow); letter-spacing: 0.5px;">023720811</span>
-                            </div>
-                        </div>
-                        
-                        <div class="phone-contact-row">
-                            <div>
-                                <h4 style="font-size: 16px; margin: 0 0 4px 0; color: var(--text-primary);">รับงานชุมสาย / Sip Trunk / PRI</h4>
-                                <span style="font-size: 14px; color: var(--text-secondary);">ชบลนน.</span>
-                            </div>
-                            <div class="phone-btn">
-                                <i data-lucide="phone" style="width: 16px; height: 16px; color: var(--nt-yellow);"></i>
-                                <span style="font-size: 16px; font-weight: 600; color: var(--nt-yellow); letter-spacing: 0.5px;">023720812</span>
-                            </div>
-                        </div>
-                        
-                        <div class="phone-contact-row">
-                            <div>
-                                <h4 style="font-size: 16px; margin: 0 0 4px 0; color: var(--text-primary);">รับงานติดตั้ง / ตรวจแก้ลูกค้า LLI</h4>
-                                <span style="font-size: 14px; color: var(--text-secondary);">ญบลนน.</span>
-                            </div>
-                            <div class="phone-btn">
-                                <i data-lucide="phone" style="width: 16px; height: 16px; color: var(--nt-yellow);"></i>
-                                <span style="font-size: 16px; font-weight: 600; color: var(--nt-yellow); letter-spacing: 0.5px;">023720813</span>
-                            </div>
-                        </div>
-                    </div>
+                <div class="pb-section-title">
+                    <h2 style="font-size: 20px; font-weight: bold; color: var(--text-primary); margin: 0;">ส่วนงานที่เกี่ยวข้อง</h2>
                 </div>
+                `;
 
-                <div class="card">
-                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px;">
-                        <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(76, 175, 80, 0.1); display: flex; align-items: center; justify-content: center; color: #4CAF50;">
-                            <i data-lucide="server" style="width: 24px; height: 24px;"></i>
+                data.forEach(group => {
+                    html += `
+                    <div>
+                        <div class="pb-group-header">
+                            <div class="pb-group-icon" style="background: ${group.bgColor}; color: ${group.color};">
+                                <i data-lucide="${group.icon}" style="width: 20px; height: 20px;"></i>
+                            </div>
+                            <h2 class="pb-group-title" style="color: ${group.color};">${group.title}</h2>
                         </div>
-                        <h3 style="font-size: 20px; margin: 0; color: var(--text-primary);">ส่วนงาน Bras, Radius</h3>
+
+                        <div class="pb-list-container">
+                    `;
+
+                    if (group.contacts.length === 0) {
+                        html += `<div class="pb-list-item"><p class="pb-item-title" style="color: var(--text-secondary);">ไม่มีข้อมูลเบอร์โทรศัพท์</p></div>`;
+                    }
+
+                    group.contacts.forEach(contact => {
+                        html += `
+                            <div class="pb-list-item">
+                                <div>
+                                    <p class="pb-item-title">${contact.title}</p>
+                                    ${contact.subtitle ? `<p class="pb-item-subtitle">${contact.subtitle}</p>` : ''}
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                    <a href="tel:${contact.phone}" class="pb-phone-btn" style="background: ${group.bgColor}; color: ${group.color};">
+                                        <i data-lucide="phone" style="width: 16px; height: 16px;"></i> ${contact.phone} ${contact.extension ? `<span style="font-size: 13px; font-weight: normal; margin-left: 4px; opacity: 0.8;">${contact.extension}</span>` : ''}
+                                    </a>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    html += `
+                        </div>
                     </div>
-                    
-                    <div class="phone-contact-row">
-                        <div>
-                            <h4 style="font-size: 16px; margin: 0 0 4px 0; color: var(--text-primary);">งาน switch game mail และ user ออเทน</h4>
-                        </div>
-                        <div class="phone-btn">
-                            <i data-lucide="phone" style="width: 16px; height: 16px; color: #4CAF50;"></i>
-                            <span style="font-size: 16px; font-weight: 600; color: #4CAF50; letter-spacing: 0.5px;">025755190 <span style="font-size: 13px; font-weight: normal; margin-left: 4px; opacity: 0.8;">กด 2</span></span>
-                        </div>
-                    </div>
-                </div>
-            `
+                    `;
+                });
+
+                return html;
+            }
         },
         'dashboard': {
             title: 'หน้าหลัก',
@@ -463,27 +621,54 @@ document.addEventListener('DOMContentLoaded', async () => {
             title: 'การตั้งค่าอุปกรณ์ FTTx (ONU)',
             render: () => `
                 <div class="mb-4">
-                    <button onclick="window.app.navigate('dashboard')" style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-primary); cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; padding: 10px 20px; box-shadow: var(--shadow-sm); transition: var(--transition);">
+                    <button class="back-btn" onclick="window.app.navigate('dashboard')">
                         <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i> กลับหน้าหลัก
                     </button>
                 </div>
-                <div class="card mb-6">
+                <div class="card mb-6" id="brand-selection-container">
                     <h3 class="mb-4">เลือกยี่ห้ออุปกรณ์ (Brand)</h3>
                     <div class="options-grid" id="brand-select">
                         <button class="option-btn brand-card" onclick="showOnuConfig('Huawei')">
-                            <div class="brand-icon-wrapper"><i data-lucide="monitor"></i></div>
+                            <div class="brand-icon-wrapper">
+                                <div style="color: #E61D2B; display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;">
+                                    <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
+                                        <path d="M12 2C10.5 7 10 13 12 22C14 13 13.5 7 12 2Z"/>
+                                        <path d="M8.5 5C6.5 9 6.5 14 8.5 20C10.5 14 10.5 9 8.5 5Z"/>
+                                        <path d="M15.5 5C17.5 9 17.5 14 15.5 20C13.5 14 13.5 9 15.5 5Z"/>
+                                        <path d="M5.5 9.5C4 12 4 16 5.5 18.5C7 16 7 12 5.5 9.5Z"/>
+                                        <path d="M18.5 9.5C20 12 20 16 18.5 18.5C17 16 17 12 18.5 9.5Z"/>
+                                        <path d="M3 13.5C2 15 2 17 3 18C4 17 4 15 3 13.5Z"/>
+                                        <path d="M21 13.5C22 15 22 17 21 18C20 17 20 15 21 13.5Z"/>
+                                    </svg>
+                                </div>
+                            </div>
                             <span>Huawei</span>
                         </button>
                         <button class="option-btn brand-card" onclick="showOnuConfig('ZTE')">
-                            <div class="brand-icon-wrapper"><i data-lucide="monitor"></i></div>
+                            <div class="brand-icon-wrapper">
+                                <div style="color: #0082CC; font-weight: 900; font-size: 18px; font-family: 'Arial Black', sans-serif; letter-spacing: 1px;">ZTE</div>
+                            </div>
                             <span>ZTE</span>
                         </button>
                         <button class="option-btn brand-card" onclick="showOnuConfig('Forth')">
-                            <div class="brand-icon-wrapper"><i data-lucide="monitor"></i></div>
+                            <div class="brand-icon-wrapper">
+                                <div style="display: flex; flex-direction: column; align-items: center; color: #ED1C24;">
+                                   <span style="font-weight: 900; font-style: italic; font-size: 13px; font-family: 'Arial Black', sans-serif; letter-spacing: -0.5px;">FORTH</span>
+                                   <div style="width: 100%; height: 2px; background: #ED1C24; margin-top: -2px;"></div>
+                                </div>
+                            </div>
                             <span>Forth</span>
                         </button>
                         <button class="option-btn brand-card" onclick="showOnuConfig('Fiberhome')">
-                            <div class="brand-icon-wrapper"><i data-lucide="monitor"></i></div>
+                            <div class="brand-icon-wrapper">
+                                <div style="display: flex; flex-direction: column; align-items: center; margin-top: 4px;">
+                                   <svg viewBox="0 0 40 12" width="28" height="10">
+                                       <path d="M 2 10 Q 20 -2 38 10" fill="none" stroke="#0082CC" stroke-width="2.5"/>
+                                       <path d="M 12 10 Q 20 3 28 10" fill="none" stroke="#ED1C24" stroke-width="2.5"/>
+                                   </svg>
+                                   <span style="color: #0082CC; font-size: 8px; font-weight: bold; font-family: Arial, sans-serif; margin-top: 2px;">FiberHome</span>
+                                </div>
+                            </div>
                             <span>Fiberhome</span>
                         </button>
                     </div>
@@ -514,7 +699,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         let html = `
             <div class="mb-4" style="display: flex; gap: 12px; align-items: center;">
-                <button onclick="window.app.navigate('dashboard')" style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-primary); cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; padding: 10px 20px; box-shadow: var(--shadow-sm); transition: var(--transition); white-space: nowrap;">
+                <button class="back-btn" onclick="window.app.navigate('dashboard')" style="white-space: nowrap;">
                     <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i> กลับหน้าหลัก
                 </button>
                 <div style="position: relative; flex-grow: 1;">
@@ -563,7 +748,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             html += `
-                <button class="manual-group-btn" onclick="window.showTroubleshootGroup('${groupName}')" style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 16px; padding: 24px 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: 0.2s;">
+                <button class="manual-group-btn" onclick="window.showTroubleshootGroup('${groupName}')">
                     <div style="width: 56px; height: 56px; border-radius: 50%; background: ${bgColor}; display: flex; align-items: center; justify-content: center; color: ${iconColor};">
                         <i data-lucide="${iconName}" style="width: 28px; height: 28px;"></i>
                     </div>
@@ -864,8 +1049,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     window.showOnuConfig = (brand) => {
+        document.getElementById('brand-selection-container').style.display = 'none';
         const resultDiv = document.getElementById('onu-config-result');
         resultDiv.innerHTML = `
+            <div class="mb-4">
+                <button class="back-btn" onclick="window.backToBrandSelection()">
+                    <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i> กลับหน้าเลือกยี่ห้ออุปกรณ์
+                </button>
+            </div>
             <div class="card" style="animation: fadeIn 0.3s ease;">
                 <h3 class="mb-4 flex-between">
                     <span>ตั้งค่า ${brand} ONU</span>
@@ -896,6 +1087,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div id="config-details-view"></div>
         `;
         lucide.createIcons();
+    };
+
+    window.backToBrandSelection = () => {
+        document.getElementById('brand-selection-container').style.display = 'block';
+        document.getElementById('onu-config-result').innerHTML = '';
     };
 
     // Event Listeners for Nav

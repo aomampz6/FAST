@@ -18,6 +18,7 @@
         <div class="admin-tabs">
             <button class="tab-btn active" onclick="switchAdminTab('troubleshoot')">ข้อมูลการแก้ไขปัญหา</button>
             <button class="tab-btn" onclick="switchAdminTab('onu-setup')">ข้อมูลการตั้งค่า onu</button>
+            <button class="tab-btn" onclick="switchAdminTab('phonebook')">ข้อมูลสมุดโทรศัพท์</button>
         </div>
         <main id="tab-troubleshoot" class="admin-content">
             <div class="actions-bar">
@@ -57,6 +58,29 @@
                         </tr>
                     </thead>
                     <tbody id="onu-tbody">
+                        <!-- Data loaded via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+
+        <main id="tab-phonebook" class="admin-content hidden">
+            <div class="actions-bar">
+                <button onclick="pbAddGroup()" class="btn btn-primary"><i data-lucide="plus"></i> Add New Group (เพิ่มกลุ่มส่วนงาน)</button>
+            </div>
+            
+            <div class="table-container">
+                <table id="phonebook-table">
+                    <thead>
+                        <tr>
+                            <th>Group</th>
+                            <th>Title (ชื่องาน)</th>
+                            <th>Phone</th>
+                            <th>Extension</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="phonebook-tbody">
                         <!-- Data loaded via JS -->
                     </tbody>
                 </table>
@@ -124,7 +148,18 @@
                     <input type="text" id="o-mode" required>
                 </div>
                 <div class="form-group">
-                    <label>Details (รายละเอียดขั้นตอน)</label>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px;">
+                        <label style="margin: 0;">Details (รายละเอียดขั้นตอน)</label>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" class="btn btn-sm" onclick="promptInsertImageUrl()" style="font-size: 12px; padding: 4px 8px; border: 1px solid var(--border-color); background: #f8f9fa; cursor: pointer;">
+                                <i data-lucide="link" style="width: 14px; height: 14px; margin-right: 4px; vertical-align: text-bottom;"></i>แนบลิงก์รูป
+                            </button>
+                            <label class="btn btn-sm" style="font-size: 12px; padding: 4px 8px; border: 1px solid var(--border-color); background: #f8f9fa; cursor: pointer; margin: 0; display: inline-block;">
+                                <i data-lucide="upload" style="width: 14px; height: 14px; margin-right: 4px; vertical-align: text-bottom;"></i>อัปโหลดรูปภาพ
+                                <input type="file" id="image-upload-input" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
+                            </label>
+                        </div>
+                    </div>
                     <textarea id="o-details" rows="8" required></textarea>
                 </div>
                 <div class="form-actions">
