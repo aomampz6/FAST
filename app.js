@@ -6,7 +6,7 @@ if (!token) {
     window.location.href = '/';
 }
 
-const API_URL = 'http://localhost:3000/api';
+const API_URL = '/api';
 
 // Fetch data from API
 async function loadDataFromAPI() {

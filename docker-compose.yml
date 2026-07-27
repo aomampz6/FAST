@@ -1,0 +1,59 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+      PORT: ${PORT:-10300}
+      MONGODB_URI: mongodb://${SERVICE_USER_MONGO:?MongoDB username is required}:${SERVICE_PASSWORD_MONGO:?MongoDB password is required}@mongodb:27017/${MONGO_DATABASE:-fast_db}?authSource=admin
+      JWT_SECRET: ${SERVICE_HEX_64_JWT:?JWT secret is required}
+      ADMIN_USER: ${ADMIN_USER:-admin}
+      ADMIN_PASS: ${SERVICE_PASSWORD_ADMIN:?Admin password is required}
+      SERVICE_FQDN_FAST_10300: ${SERVICE_FQDN_FAST_10300:-}
+    expose:
+      - "${PORT:-10300}"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://127.0.0.1:${PORT:-10300}/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:8.0
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${SERVICE_USER_MONGO:?MongoDB username is required}
+      MONGO_INITDB_ROOT_PASSWORD: ${SERVICE_PASSWORD_MONGO:?MongoDB password is required}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE:-fast_db}
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test:
+        - CMD
+        - mongosh
+        - --quiet
+        - --username
+        - ${SERVICE_USER_MONGO:?MongoDB username is required}
+        - --password
+        - ${SERVICE_PASSWORD_MONGO:?MongoDB password is required}
+        - --authenticationDatabase
+        - admin
+        - --eval
+        - db.adminCommand('ping').ok
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  mongodb_data:
