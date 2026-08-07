@@ -11,8 +11,8 @@ services:
       ADMIN_USER: ${ADMIN_USER:-admin}
       ADMIN_PASS: ${SERVICE_PASSWORD_ADMIN:?Admin password is required}
       SERVICE_FQDN_FAST_10300: ${SERVICE_FQDN_FAST_10300:-}
-    expose:
-      - "${PORT:-10300}"
+    ports:
+      - "${PORT:-10300}:${PORT:-10300}"
     healthcheck:
       test:
         - CMD

@@ -53,5 +53,4 @@ database user มีสิทธิ์อ่าน/เขียน `fast_db` แ
 docker compose up --build
 ```
 
-Compose สำหรับ Coolify ไม่ publish host port หากต้องการเปิดในเครื่องให้เพิ่ม
-`ports: ["10300:10300"]` ให้ service `app` แล้วเปิด `http://localhost:10300`
+Compose publish host port `10300` ไว้แล้ว เปิด `http://localhost:10300` ได้ทันที
