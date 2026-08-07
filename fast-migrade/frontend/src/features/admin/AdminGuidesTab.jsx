@@ -31,7 +31,7 @@ export default function AdminGuidesTab() {
     if (error) return <div className="error-banner">{error}</div>;
 
     return (
-        <div>
+        <div className="admin-section">
             <p className="hint">
                 Guides are plain HTML files that already exist on disk; this editor can update their contents but
                 cannot create or delete files.

@@ -57,7 +57,7 @@ export default function AdminScomsTab() {
     if (error) return <div className="error-banner">{error}</div>;
 
     return (
-        <div>
+        <div className="admin-section">
             <form className="admin-form" onSubmit={handleSubmit}>
                 <h3>{editingId ? 'Edit Scom' : 'New Scom'}</h3>
                 {formError && <div className="error-banner">{formError}</div>}

@@ -46,7 +46,7 @@ export default function AdminParametersTab() {
     if (error) return <div className="error-banner">{error}</div>;
 
     return (
-        <div>
+        <div className="admin-section">
             <form className="admin-form" onSubmit={handleSubmit}>
                 <h3>{editingId ? 'Edit Parameter' : 'New Parameter'}</h3>
                 {formError && <div className="error-banner">{formError}</div>}
@@ -115,7 +115,9 @@ export default function AdminParametersTab() {
                             <td>{item.Type}</td>
                             <td>{item.Parameter}</td>
                             <td>{item.Standard}</td>
-                            <td>{item.Level}</td>
+                            <td>
+                                <span className={`level-badge level-${item.Level || 'none'}`}>{item.Level || 'none'}</span>
+                            </td>
                             <td>
                                 <button onClick={() => startEdit(item)}>Edit</button>
                                 <button className="danger" onClick={() => deleteParameter(item._id)}>

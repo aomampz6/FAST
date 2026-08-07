@@ -14,7 +14,13 @@ export default function DashboardPage() {
         <div className="page">
             <h2>Dashboard</h2>
             <p>Reference parameters and standards.</p>
-            {loading && <p>Loading...</p>}
+            {loading && (
+                <div className="page-loading">
+                    <div className="skeleton-line w-40" />
+                    <div className="skeleton-line w-80" />
+                    <div className="skeleton-line w-60" />
+                </div>
+            )}
             {error && <div className="error-banner">{error}</div>}
             {!loading && !error && (
                 <table className="data-table">

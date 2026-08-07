@@ -79,7 +79,18 @@ export default function OnuSetupPage() {
         }
     }
 
-    if (loading) return <div className="page">Loading...</div>;
+    if (loading) {
+        return (
+            <div className="page">
+                <h2>ONU Setup</h2>
+                <div className="page-loading">
+                    <div className="skeleton-line w-40" />
+                    <div className="skeleton-line w-80" />
+                    <div className="skeleton-line w-60" />
+                </div>
+            </div>
+        );
+    }
     if (error) return <div className="page error-banner">{error}</div>;
 
     return (

@@ -57,7 +57,7 @@ export default function AdminOnuConfigsTab() {
     if (error) return <div className="error-banner">{error}</div>;
 
     return (
-        <div>
+        <div className="admin-section">
             <form className="admin-form" onSubmit={handleSubmit}>
                 <h3>{editingId ? 'Edit ONU Config' : 'New ONU Config'}</h3>
                 {formError && <div className="error-banner">{formError}</div>}
@@ -105,10 +105,13 @@ export default function AdminOnuConfigsTab() {
                 </thead>
                 <tbody>
                     {configs.map((item) => (
-                        <tr key={item._id}>
+                        <tr key={item._id} className={item.Hidden ? 'admin-row-hidden' : undefined}>
                             <td>{item.Brand}</td>
                             <td>{item.Mode}</td>
-                            <td>{item.Hidden ? 'Yes' : 'No'}</td>
+                            <td>
+                                {item.Hidden ? 'Yes' : 'No'}
+                                {item.Hidden && <span className="hidden-badge">Hidden</span>}
+                            </td>
                             <td>
                                 <div className="image-gallery small">
                                     {item.Images?.map((img) => (
