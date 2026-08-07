@@ -4,7 +4,10 @@ const jwt = require('jsonwebtoken');
 const Scom = require('../models/Scom');
 const User = require('../models/User');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fast-super-secret-key-2026';
+if (!process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET environment variable is required');
+}
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // Middleware to verify JWT token
 const verifyToken = (req, res, next) => {
@@ -18,31 +21,16 @@ const verifyToken = (req, res, next) => {
     });
 };
 
-// Login Route (Supports both Admin and User)
+// Middleware to restrict a route to specific roles. Must run after verifyToken.
+const requireRole = (...roles) => (req, res, next) => {
+    if (!roles.includes(req.user.role)) return res.status(403).json({ message: 'Forbidden' });
+    next();
+};
+
+// Login Route (Supports both Admin and User) — credentials are looked up in the
+// database only; there is no hardcoded or mock fallback path.
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
-    
-    const adminUser = process.env.ADMIN_USER || 'admin';
-    const adminPass = process.env.ADMIN_PASS || 'admin1234';
-    
-    // Check fallback hardcoded admin
-    if (username === adminUser && password === adminPass) {
-        const token = jwt.sign({ id: username, role: 'admin' }, JWT_SECRET, { expiresIn: '8h' });
-        return res.json({ token, role: 'admin', message: 'Admin login successful' });
-    }
-
-    // Mock User Login for testing (since DB is down)
-    // Allows any 6-8 digit employee ID (e.g., 26002294) to login
-    if (/^\d{6,8}$/.test(username)) {
-        const token = jwt.sign({ 
-            id: username, 
-            role: 'user', 
-            fullName: 'NT Employee ' + username,
-            empId: username,
-            email: username + '@nt.com'
-        }, JWT_SECRET, { expiresIn: '8h' });
-        return res.json({ token, role: 'user', message: 'Mock user login successful' });
-    }
 
     try {
         const user = await User.findOne({ username });
@@ -58,11 +46,11 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// Register Route (Open for now, or could be restricted to Admin)
-router.post('/register', async (req, res) => {
+// Register Route (Admin only — creates accounts for other users)
+router.post('/register', verifyToken, requireRole('admin'), async (req, res) => {
     try {
         const { username, password, role, fullName } = req.body;
-        
+
         // Check if user exists
         const existingUser = await User.findOne({ username });
         if (existingUser) {
@@ -71,7 +59,7 @@ router.post('/register', async (req, res) => {
 
         const newUser = new User({ username, password, role: role || 'user', fullName });
         await newUser.save();
-        
+
         res.status(201).json({ message: 'User registered successfully' });
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -103,7 +91,7 @@ router.get('/scoms', verifyToken, async (req, res) => {
 });
 
 // POST a new scom (Admin only)
-router.post('/scoms', verifyToken, async (req, res) => {
+router.post('/scoms', verifyToken, requireRole('admin'), async (req, res) => {
     const scom = new Scom(req.body);
     try {
         const newScom = await scom.save();
@@ -114,7 +102,7 @@ router.post('/scoms', verifyToken, async (req, res) => {
 });
 
 // PUT update a scom (Admin only)
-router.put('/scoms/:id', verifyToken, async (req, res) => {
+router.put('/scoms/:id', verifyToken, requireRole('admin'), async (req, res) => {
     try {
         const updatedScom = await Scom.findByIdAndUpdate(req.params.id, req.body, { new: true });
         res.json(updatedScom);
@@ -124,7 +112,7 @@ router.put('/scoms/:id', verifyToken, async (req, res) => {
 });
 
 // DELETE a scom (Admin only)
-router.delete('/scoms/:id', verifyToken, async (req, res) => {
+router.delete('/scoms/:id', verifyToken, requireRole('admin'), async (req, res) => {
     try {
         await Scom.findByIdAndDelete(req.params.id);
         res.json({ message: 'Deleted successfully' });
@@ -158,7 +146,7 @@ router.get('/onu-configs', verifyToken, async (req, res) => {
     }
 });
 
-router.post('/onu-configs', verifyToken, async (req, res) => {
+router.post('/onu-configs', verifyToken, requireRole('admin'), async (req, res) => {
     try {
         const config = new OnuConfig(req.body);
         const newConfig = await config.save();
@@ -168,7 +156,7 @@ router.post('/onu-configs', verifyToken, async (req, res) => {
     }
 });
 
-router.put('/onu-configs/:id', verifyToken, async (req, res) => {
+router.put('/onu-configs/:id', verifyToken, requireRole('admin'), async (req, res) => {
     try {
         const updatedConfig = await OnuConfig.findByIdAndUpdate(req.params.id, req.body, { new: true });
         res.json(updatedConfig);
@@ -177,7 +165,7 @@ router.put('/onu-configs/:id', verifyToken, async (req, res) => {
     }
 });
 
-router.delete('/onu-configs/:id', verifyToken, async (req, res) => {
+router.delete('/onu-configs/:id', verifyToken, requireRole('admin'), async (req, res) => {
     try {
         const config = await OnuConfig.findById(req.params.id);
         if (config) {
@@ -191,7 +179,7 @@ router.delete('/onu-configs/:id', verifyToken, async (req, res) => {
 });
 
 // ONU Config Images — unlimited images per Brand/Mode record, stored in S3.
-router.post('/onu-configs/:id/images', verifyToken, upload.array('images', 50), async (req, res) => {
+router.post('/onu-configs/:id/images', verifyToken, requireRole('admin'), upload.array('images', 50), async (req, res) => {
     try {
         const config = await OnuConfig.findById(req.params.id);
         if (!config) return res.status(404).json({ message: 'Config not found' });
@@ -209,7 +197,7 @@ router.post('/onu-configs/:id/images', verifyToken, upload.array('images', 50), 
     }
 });
 
-router.delete('/onu-configs/:id/images/:imageId', verifyToken, async (req, res) => {
+router.delete('/onu-configs/:id/images/:imageId', verifyToken, requireRole('admin'), async (req, res) => {
     try {
         const config = await OnuConfig.findById(req.params.id);
         if (!config) return res.status(404).json({ message: 'Config not found' });
@@ -283,7 +271,7 @@ router.get('/guides/:filename', verifyToken, async (req, res) => {
     }
 });
 
-router.put('/guides/:filename', verifyToken, express.text({ type: '*/*', limit: '10mb' }), async (req, res) => {
+router.put('/guides/:filename', verifyToken, requireRole('admin'), express.text({ type: '*/*', limit: '10mb' }), async (req, res) => {
     const fullPath = resolveGuidePath(req.params.filename);
     if (!fullPath || !fs.existsSync(fullPath)) return res.status(404).json({ message: 'Guide not found' });
 
@@ -311,7 +299,7 @@ router.get('/parameters', verifyToken, async (req, res) => {
     }
 });
 
-router.post('/parameters', verifyToken, async (req, res) => {
+router.post('/parameters', verifyToken, requireRole('admin'), async (req, res) => {
     try {
         const parameter = new Parameter(req.body);
         const newParameter = await parameter.save();
@@ -321,7 +309,7 @@ router.post('/parameters', verifyToken, async (req, res) => {
     }
 });
 
-router.put('/parameters/:id', verifyToken, async (req, res) => {
+router.put('/parameters/:id', verifyToken, requireRole('admin'), async (req, res) => {
     try {
         const updatedParameter = await Parameter.findByIdAndUpdate(req.params.id, req.body, { new: true });
         res.json(updatedParameter);
@@ -330,7 +318,7 @@ router.put('/parameters/:id', verifyToken, async (req, res) => {
     }
 });
 
-router.delete('/parameters/:id', verifyToken, async (req, res) => {
+router.delete('/parameters/:id', verifyToken, requireRole('admin'), async (req, res) => {
     try {
         await Parameter.findByIdAndDelete(req.params.id);
         res.json({ message: 'Deleted successfully' });

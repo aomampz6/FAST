@@ -7,9 +7,9 @@ services:
       NODE_ENV: production
       PORT: ${PORT:-10300}
       MONGODB_URI: ${MONGODB_URI:?MongoDB SRV connection string is required}
-      JWT_SECRET: ${SERVICE_HEX_64_JWT:?JWT secret is required}
-      ADMIN_USER: ${ADMIN_USER:-admin}
-      ADMIN_PASS: ${SERVICE_PASSWORD_ADMIN:?Admin password is required}
+      JWT_SECRET: ${JWT_SECRET:?JWT secret is required}
+      ADMIN_USER: ${ADMIN_USER:?Admin username is required}
+      ADMIN_PASS: ${ADMIN_PASS:?Admin password is required}
       SERVICE_FQDN_FAST_10300: ${SERVICE_FQDN_FAST_10300:-}
     ports:
       - "${PORT:-10300}:${PORT:-10300}"

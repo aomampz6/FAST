@@ -126,21 +126,16 @@
         <h1>FAST System</h1>
         <p class="subtitle">Field Assistant System For Technician</p>
         
-        <div class="tabs">
-            <button class="tab-btn active" id="tab-user" onclick="switchTab('user')">User Login</button>
-            <button class="tab-btn" id="tab-admin" onclick="switchTab('admin')">Admin Login</button>
-        </div>
-        
         <form id="login-form">
             <div class="form-group">
-                <label id="username-label">รหัสพนักงาน (Employee ID)</label>
-                <input type="text" id="username" required placeholder="กรอกรหัสพนักงาน">
+                <label>ชื่อผู้ใช้งาน (Username)</label>
+                <input type="text" id="username" required placeholder="กรอกชื่อผู้ใช้งาน">
             </div>
-            <div class="form-group" id="password-group" style="display: none;">
+            <div class="form-group">
                 <label>รหัสผ่าน (Password)</label>
-                <input type="password" id="password" placeholder="กรอกรหัสผ่าน">
+                <input type="password" id="password" required placeholder="กรอกรหัสผ่าน">
             </div>
-            <button type="submit" class="btn-submit" id="submit-btn">Login as User</button>
+            <button type="submit" class="btn-submit" id="submit-btn">Login</button>
         </form>
         
         <div id="error-msg" class="error-msg"></div>

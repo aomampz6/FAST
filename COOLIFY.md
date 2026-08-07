@@ -25,12 +25,17 @@ mongodb+srv://<username>:<url-encoded-password>@<cluster-host>/fast_db?retryWrit
 4. เลือก build pack เป็น **Docker Compose**
 5. ระบุไฟล์ Compose เป็น `/docker-compose.yml`
 6. ที่ service `app` กำหนด Domain ให้ชี้ไป container port `10300`
-7. กำหนด Environment Variables:
+7. กำหนด Environment Variables (ชื่อเดียวกับที่ใช้ใน `.env` ตอนรัน local — ไม่มีการ map ชื่อใหม่):
    - `MONGODB_URI`: SRV connection string แบบเต็ม เป็น secret และ runtime variable
-   - `SERVICE_HEX_64_JWT`: ให้ Coolify สร้าง secret
-   - `SERVICE_PASSWORD_ADMIN`: ให้ Coolify สร้างรหัสผ่าน
-   - `ADMIN_USER`: ค่าเริ่มต้นคือ `admin`
+   - `JWT_SECRET`: สุ่มค่า secret เอง เช่น hex 64 ตัวอักษร (`openssl rand -hex 32`)
+   - `ADMIN_USER`: username admin ที่ต้องการ
+   - `ADMIN_PASS`: password admin ที่ต้องการ
 8. กด Deploy และรอให้ `app` มีสถานะ healthy
+
+`ADMIN_USER`/`ADMIN_PASS` ใช้สร้าง admin คนแรกใน MongoDB ครั้งเดียวตอน deploy
+ครั้งแรกเท่านั้น (ดู [scripts/seed-initial.js](scripts/seed-initial.js)) — ถ้ามี admin
+อยู่ใน DB แล้ว การแก้ค่านี้ใน Coolify ภายหลังจะไม่มีผล ต้องเปลี่ยนรหัสผ่านผ่านหน้า
+admin panel แทน
 
 ข้อมูล SCOM และ ONU เริ่มต้นจะถูกเพิ่มเฉพาะเมื่อ collection นั้นว่างเท่านั้น
 การ restart หรือ redeploy จะไม่ลบข้อมูลที่มีอยู่
@@ -40,7 +45,7 @@ mongodb+srv://<username>:<url-encoded-password>@<cluster-host>/fast_db?retryWrit
 - เปิด `https://<your-domain>/api/health` ต้องได้ HTTP 200 และ
   `{"status":"ok","database":"connected"}`
 - เปิดหน้าเว็บและ login Admin ด้วย `ADMIN_USER` และ
-  `SERVICE_PASSWORD_ADMIN` จาก Environment Variables ของ Coolify
+  `ADMIN_PASS` จาก Environment Variables ของ Coolify
 
 ถ้า health check ไม่ผ่าน ให้ตรวจว่า MongoDB อนุญาต IP ของ Coolify server,
 database user มีสิทธิ์อ่าน/เขียน `fast_db` และ SRV DNS resolve ได้จาก server
