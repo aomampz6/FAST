@@ -8,7 +8,7 @@ Backend rewrite ของ FAST เดิม (ดูโค้ดเก่าใ�
 - ทุก feature ใหม่สร้างเป็นโฟลเดอร์ `src/features/<name>/` ตามโครง `auth/` ที่ทำไว้แล้ว (`*.model.js`, `*.validation.js`, `*.service.js`, `*.controller.js`, `*.hooks.js`, `*.router.js`) — ไม่โยนรวมไฟล์เดียวแบบ `routes/api.js` เดิม
 - ทุก endpoint ที่เขียน/แก้/ลบข้อมูลต้องผ่าน `requireRole('admin')`, GET เปิดให้ทุก role ที่ login แล้ว
 
-## ✅ เสร็จแล้ว (scaffold รอบแรก)
+## ✅ เสร็จแล้ว
 
 - [x] Project structure: `src/config`, `src/middleware`, `src/shared`, `src/features/`
 - [x] `config/env.js` — fail-fast ถ้าไม่มี `MONGODB_URI`/`JWT_SECRET`
@@ -17,38 +17,37 @@ Backend rewrite ของ FAST เดิม (ดูโค้ดเก่าใ�
 - [x] `features/auth/` ครบ (model/validation/service/controller/hooks/router)
 - [x] `scripts/seed-admin.js` — bootstrap admin จาก env ครั้งเดียว
 - [x] `helmet`, input validation ด้วย `zod`
+- [x] `features/scoms/` — CRUD ครบ, ทดสอบ RBAC แล้ว (admin เขียนได้, user โดน 403)
+- [x] `features/parameters/` — CRUD ครบ
+- [x] `features/onu-configs/` — CRUD + image upload/delete ผ่าน S3 เท่านั้น (ตัดกลไก base64-inline ของเดิมทิ้ง), `shared/s3.js` ย้ายจาก archive แล้ว, `GET /image` ยังคง public ตามของเดิม (เหตุผลเดิม: เป็นแค่ screenshot คู่มือ)
+- [x] `features/guides/` — CRUD ไฟล์ HTML ใน `fast-migrade/guides/`, เพิ่ม backup-before-overwrite ไป `guides/.history/` ที่ของเดิมไม่มี, เปลี่ยน PUT ให้รับ JSON `{content}` แทน raw text/plain ของเดิม
+- [x] `features/phonebook/` — API ใหม่ทั้งหมด (ของเดิมไม่มี) — ออกแบบเป็น 1 document ต่อ 1 group (ไม่ใช่ document เดียวเก็บทุกกลุ่ม) เพื่อลด write contention, contacts เป็น subdocument ในกลุ่ม
+- [x] `features/feedback/` — API ใหม่ทั้งหมด (ของเดิมไม่มี) — `userId` ดึงจาก JWT เท่านั้น ไม่เชื่อค่าที่ client ส่งมา, `GET` (ดูทั้งหมด) จำกัด admin เท่านั้น
+- [x] ทุก router mount ใน `src/app.js` แล้ว, ทดสอบ end-to-end ผ่าน curl ครบทุก feature (RBAC ถูกต้อง, rate limiter บน login ทำงานจริง)
 
 ## 🔜 ต้องทำต่อ
 
-### 1. Design ก่อนเขียน (ใช้ skill "System Architecture and Failure Design")
+### 1. Cross-cutting
 
-ตัดสินใจก่อนเริ่ม endpoint พวกนี้ เพราะของเดิมมีปัญหาสถาปัตยกรรมชัดเจน:
+- [ ] Structured logging ให้ครบทุก feature (ต่อยอดจาก `shared/logger.js` — ตอนนี้มีแค่ `auth.hooks.js` ที่ log)
+- [ ] Audit log สำหรับ action เขียน/แก้/ลบของ admin ทุก feature (ต่อยอดจาก `auth.hooks.js` pattern, ตอนนี้ `onuConfigs.hooks.js` มีแค่ S3 cleanup ยังไม่มี audit log)
 
-- [ ] **ONU image storage** — ของเดิมมี 2 กลไกปนกัน (S3 จริง vs base64 inline ใน HTML) เลือกทางเดียว
-- [ ] **Guide content storage** — ของเดิมเขียนทับไฟล์ filesystem ตรงๆ ไม่มี versioning/backup ตัดสินใจว่าย้ายเข้า DB หรือคง filesystem + เพิ่ม backup-before-write
-- [ ] **Phonebook** — ของเดิมไม่มี backend เลย (localStorage per-browser, ข้อมูลไม่ sync) ตัดสินใจว่าต้องมี API จริงไหม
-- [ ] **Feedback (troubleshoot)** — ของเดิมไม่มี backend เลย (localStorage) เหมือนกัน
+### 2. Frontend (React + Vite) — `fast-migrade/frontend/`
 
-### 2. Backend endpoints (เรียงตามลำดับ)
+แบ่งเป็น `page`/`hook`/`service` ต่อ feature ให้ map กับ backend 1:1 (ดูรายละเอียดโครงสร้างที่ตกลงไว้ในแชท):
+- [ ] Scaffold Vite + React, `shared/api/httpClient.js` (axios + auth header + 401 interceptor), `shared/auth/AuthContext.jsx`
+- [ ] `features/auth` — LoginPage (ฟอร์มเดียว ไม่มี tab, backend ตัดสิน role)
+- [ ] `features/scoms` — TroubleshootPage (เลือกกลุ่ม → อาการ → ขั้นตอนแก้ไข)
+- [ ] `features/onu-configs` + `features/guides` — OnuSetupPage (เลือก Brand → Mode → รายละเอียด + guide iframe ถ้ามี)
+- [ ] `features/parameters` — ใช้ร่วมใน DashboardPage
+- [ ] `features/phonebook` — PhonebookPage (CRUD จริงผ่าน API แทน localStorage)
+- [ ] `features/feedback` — ส่ง feedback จริงไป backend แทน localStorage
+- [ ] `features/admin` — AdminPage รวม CRUD ทุก feature ด้านบนสำหรับ role admin
+- [ ] `App.jsx` — React Router + ProtectedRoute ตาม role
 
-- [ ] `features/scoms/` — CRUD ฐานความรู้แก้ปัญหา (`Group/Symptom/CheckPoint/Steps/NormalValue/Equipment`)
-- [ ] `features/parameters/` — CRUD ค่ามาตรฐานอ้างอิง
-- [ ] `features/onu-configs/` — CRUD + image upload (ตามผลตัดสินใจข้อ 1)
-- [ ] `features/guides/` — CRUD คู่มือ interactive (ตามผลตัดสินใจข้อ 1)
-- [ ] `features/phonebook/` — API ใหม่ทั้งหมด (ของเดิมไม่มี)
-- [ ] `features/feedback/` — API ใหม่ทั้งหมด (ของเดิมไม่มี)
+### 3. Deployment — Container เดียว
 
-### 3. Cross-cutting
-
-- [ ] Structured logging ให้ครบทุก feature (ต่อยอดจาก `shared/logger.js`)
-- [ ] Audit log สำหรับ action เขียน/แก้/ลบของ admin ทุก feature (ต่อยอดจาก `auth.hooks.js` pattern)
-- [ ] Centralized fetch wrapper ฝั่ง frontend (แก้ปัญหา auth guard ไม่สอดคล้องกันของเดิม — ของเก่าไม่มีการจัดการ 401 แบบรวมศูนย์เลย)
-
-### 4. Frontend
-
-ยังไม่เริ่ม รอ backend เสร็จเป็นสัดส่วนก่อน — เมื่อเริ่มให้แบ่งเป็น `page`/`hook`/`service` ต่อ feature เดียวกับฝั่ง backend (map 1:1)
-
-### 5. Deployment
-
+- [ ] `fast-migrade/Dockerfile` multi-stage: build frontend (`frontend/dist`) → copy เป็น `public/` ใน image runtime
+- [ ] `src/app.js` เพิ่ม `express.static('public')` + SPA fallback route
+- [ ] `fast-migrade/docker-compose.yml` (คัด pattern security จาก `archive/docker-compose.yml` — required env ทุกตัว ไม่มี default เดาได้)
 - [ ] ย้าย Coolify build context จาก root เดิมเป็น `fast-migrade/`
-- [ ] เขียน `Dockerfile`, `docker-compose.yml` ใหม่สำหรับ `fast-migrade/` (อ้างอิง pattern security จาก `archive/docker-compose.yml` ที่แก้ไปแล้วรอบก่อน — required env ทุกตัว ไม่มี default ที่เดาได้)
