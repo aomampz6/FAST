@@ -32,22 +32,23 @@ Backend rewrite ของ FAST เดิม (ดูโค้ดเก่าใ�
 - [ ] Structured logging ให้ครบทุก feature (ต่อยอดจาก `shared/logger.js` — ตอนนี้มีแค่ `auth.hooks.js` ที่ log)
 - [ ] Audit log สำหรับ action เขียน/แก้/ลบของ admin ทุก feature (ต่อยอดจาก `auth.hooks.js` pattern, ตอนนี้ `onuConfigs.hooks.js` มีแค่ S3 cleanup ยังไม่มี audit log)
 
-### 2. Frontend (React + Vite) — `fast-migrade/frontend/`
+### 2. Frontend (React + Vite) — `fast-migrade/frontend/` ✅ เสร็จแล้ว
 
-แบ่งเป็น `page`/`hook`/`service` ต่อ feature ให้ map กับ backend 1:1 (ดูรายละเอียดโครงสร้างที่ตกลงไว้ในแชท):
-- [ ] Scaffold Vite + React, `shared/api/httpClient.js` (axios + auth header + 401 interceptor), `shared/auth/AuthContext.jsx`
-- [ ] `features/auth` — LoginPage (ฟอร์มเดียว ไม่มี tab, backend ตัดสิน role)
-- [ ] `features/scoms` — TroubleshootPage (เลือกกลุ่ม → อาการ → ขั้นตอนแก้ไข)
-- [ ] `features/onu-configs` + `features/guides` — OnuSetupPage (เลือก Brand → Mode → รายละเอียด + guide iframe ถ้ามี)
-- [ ] `features/parameters` — ใช้ร่วมใน DashboardPage
-- [ ] `features/phonebook` — PhonebookPage (CRUD จริงผ่าน API แทน localStorage)
-- [ ] `features/feedback` — ส่ง feedback จริงไป backend แทน localStorage
-- [ ] `features/admin` — AdminPage รวม CRUD ทุก feature ด้านบนสำหรับ role admin
-- [ ] `App.jsx` — React Router + ProtectedRoute ตาม role
+- [x] Scaffold Vite + React, `shared/api/httpClient.js` (axios + auth header + 401 interceptor), `shared/auth/AuthContext.jsx`
+- [x] `features/auth` — LoginPage (ฟอร์มเดียว ไม่มี tab, backend ตัดสิน role)
+- [x] `features/scoms` — TroubleshootPage (เลือกกลุ่ม → อาการ → ขั้นตอนแก้ไข → ส่ง feedback)
+- [x] `features/onu-configs` + `features/guides` — OnuSetupPage (เลือก Brand → Mode → รายละเอียด + guide iframe ถ้ามี)
+- [x] `features/parameters` — ใช้ร่วมใน DashboardPage
+- [x] `features/phonebook` — PhonebookPage (CRUD จริงผ่าน API แทน localStorage)
+- [x] `features/feedback` — ส่ง feedback จริงไป backend แทน localStorage
+- [x] `features/admin` — AdminPage รวม CRUD ทุก feature ด้านบนสำหรับ role admin (Guides tab เป็น list+edit เท่านั้น ไม่มี create/delete เพราะ backend ไม่รองรับสร้างไฟล์ guide ใหม่)
+- [x] `App.jsx` — React Router + ProtectedRoute ตาม role
+
+ทดสอบ end-to-end จริงผ่าน browser แล้ว: login (admin + user), RBAC บน `/admin` (user โดน redirect), dashboard/troubleshoot/onu-setup/phonebook flow ครบ, feedback บันทึกจริงถึง DB, logout เคลียร์ token ถูกต้อง แก้บั๊กเดียวที่เจอ: `main.jsx` ไม่ได้ห่อ `<App />` ด้วย `<BrowserRouter>` (แก้แล้ว)
 
 ### 3. Deployment — Container เดียว
 
-- [ ] `fast-migrade/Dockerfile` multi-stage: build frontend (`frontend/dist`) → copy เป็น `public/` ใน image runtime
-- [ ] `src/app.js` เพิ่ม `express.static('public')` + SPA fallback route
-- [ ] `fast-migrade/docker-compose.yml` (คัด pattern security จาก `archive/docker-compose.yml` — required env ทุกตัว ไม่มี default เดาได้)
-- [ ] ย้าย Coolify build context จาก root เดิมเป็น `fast-migrade/`
+- [x] `fast-migrade/Dockerfile` multi-stage: build frontend (`frontend/dist`) → copy เป็น `public/` ใน image runtime
+- [x] `src/app.js` เพิ่ม `express.static('public')` + SPA fallback route (skip อัตโนมัติถ้า `public/` ไม่มี เช่นตอน dev backend อย่างเดียว)
+- [x] `fast-migrade/docker-compose.yml` (required env ทุกตัวไม่มี default เดาได้ + S3 vars สำหรับ onu-configs)
+- [ ] ย้าย Coolify build context จาก root เดิมเป็น `fast-migrade/` (ทำใน Coolify UI ตอน deploy จริง)

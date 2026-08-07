@@ -1,0 +1,385 @@
+:root {
+    --bg: #f5f6fa;
+    --surface: #ffffff;
+    --border: #e0e2e8;
+    --text: #1f2330;
+    --text-muted: #6b7280;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --danger: #dc2626;
+    --danger-hover: #b91c1c;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #14161c;
+        --surface: #1d2029;
+        --border: #2e323d;
+        --text: #e5e7eb;
+        --text-muted: #9ca3af;
+        --accent: #3b82f6;
+        --accent-hover: #60a5fa;
+        --danger: #ef4444;
+        --danger-hover: #f87171;
+    }
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+}
+
+button {
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 14px;
+}
+
+button:hover {
+    border-color: var(--accent);
+}
+
+button.active,
+.pick-list button.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+}
+
+button.danger {
+    color: var(--danger);
+    border-color: var(--danger);
+}
+
+button.danger:hover {
+    background: var(--danger);
+    color: #fff;
+}
+
+input,
+textarea,
+select {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 14px;
+    background: var(--surface);
+    color: var(--text);
+}
+
+.app-shell {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+}
+
+.sidebar-title {
+    font-size: 20px;
+    margin: 0 0 24px;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.sidebar-nav a {
+    padding: 8px 12px;
+    border-radius: 6px;
+    color: var(--text);
+    text-decoration: none;
+}
+
+.sidebar-nav a.active {
+    background: var(--accent);
+    color: #fff;
+}
+
+.logout-btn {
+    margin-top: 16px;
+}
+
+.content {
+    flex: 1;
+    padding: 24px 32px;
+    overflow-x: auto;
+}
+
+.page h2 {
+    margin-top: 0;
+}
+
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-form {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 320px;
+}
+
+.login-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 14px;
+}
+
+.error-banner {
+    background: rgba(220, 38, 38, 0.1);
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+}
+
+.feedback-status {
+    font-size: 14px;
+    color: var(--accent);
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    background: var(--surface);
+}
+
+.data-table th,
+.data-table td {
+    border: 1px solid var(--border);
+    padding: 8px 10px;
+    text-align: left;
+    font-size: 14px;
+}
+
+.data-table th {
+    background: rgba(37, 99, 235, 0.08);
+}
+
+.data-table tr.level-danger td {
+    background: rgba(220, 38, 38, 0.08);
+}
+
+.data-table tr.level-warning td {
+    background: rgba(234, 179, 8, 0.1);
+}
+
+.data-table tr.level-info td {
+    background: rgba(37, 99, 235, 0.08);
+}
+
+.two-column {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.column {
+    min-width: 200px;
+}
+
+.detail-column {
+    flex: 1;
+    min-width: 320px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.pick-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.pick-list button {
+    width: 100%;
+    text-align: left;
+}
+
+.steps-block {
+    white-space: pre-wrap;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    font-family: inherit;
+}
+
+.image-gallery {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 12px 0;
+}
+
+.image-gallery img {
+    max-width: 220px;
+    max-height: 220px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+}
+
+.image-gallery.small img {
+    max-width: 80px;
+    max-height: 80px;
+}
+
+.image-thumb {
+    position: relative;
+    display: inline-block;
+    margin: 4px;
+}
+
+.guide-frame-wrap {
+    margin-top: 16px;
+}
+
+.guide-frame {
+    width: 100%;
+    height: 480px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+}
+
+.feedback-form {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 360px;
+}
+
+.feedback-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 14px;
+}
+
+.admin-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.admin-tabs a {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    color: var(--text);
+    text-decoration: none;
+    background: var(--surface);
+}
+
+.admin-tabs a.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+}
+
+.admin-form {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin: 12px 0;
+}
+
+.form-grid label,
+.admin-form > label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 14px;
+}
+
+.checkbox-label {
+    flex-direction: row !important;
+    align-items: center;
+    gap: 8px !important;
+}
+
+.form-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.inline-form {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 12px 0;
+    align-items: center;
+}
+
+.phonebook-group {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.profile-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    max-width: 400px;
+}
+
+.guide-editor {
+    width: 100%;
+    font-family: ui-monospace, monospace;
+    font-size: 13px;
+}
+
+.hint {
+    color: var(--text-muted);
+    font-size: 14px;
+}

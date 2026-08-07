@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const mongoose = require('mongoose');
+const fs = require('fs');
+const path = require('path');
 const authRouter = require('./features/auth/auth.router');
 const scomsRouter = require('./features/scoms/scoms.router');
 const parametersRouter = require('./features/parameters/parameters.router');
@@ -33,6 +35,18 @@ app.use('/api/onu-configs', onuConfigsRouter);
 app.use('/api/guides', guidesRouter);
 app.use('/api/phonebook', phonebookRouter);
 app.use('/api/feedback', feedbackRouter);
+
+// The Docker build copies the built React app into ./public (see Dockerfile).
+// In local backend-only dev this directory doesn't exist — the frontend runs
+// via its own Vite dev server instead, so skip static serving in that case.
+const PUBLIC_DIR = path.join(__dirname, '../public');
+if (fs.existsSync(PUBLIC_DIR)) {
+    app.use(express.static(PUBLIC_DIR));
+    app.get('*', (req, res, next) => {
+        if (req.path.startsWith('/api/')) return next();
+        res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
+    });
+}
 
 app.use(errorHandler);
 
