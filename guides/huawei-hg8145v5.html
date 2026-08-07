@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบคู่มือการตั้งค่า Huawei HG8145V5</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: #f3f4f6;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Prevent full body scroll, handle inside containers */
+        }
+
+        /* Custom Huawei Blue */
+        .huawei-bg { background-color: #38bdf8; }
+        .huawei-text { color: #38bdf8; }
+
+        /* Highlight Animation for Manual Instructions */
+        .highlight-item {
+            position: relative;
+            z-index: 10;
+            border-radius: 4px;
+            outline: 3px solid #ef4444; /* Red outline */
+            outline-offset: 2px;
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        .highlight-text {
+            color: #ef4444;
+            font-weight: bold;
+        }
+
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); outline-color: #ef4444; }
+            50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); outline-color: #fca5a5; }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); outline-color: #ef4444; }
+        }
+
+        /* Scrollbar styling for a cleaner look */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Mock UI Specific Styles */
+        .mock-sidebar-active {
+            background-color: #e0f2fe;
+            border-left: 4px solid #38bdf8;
+            font-weight: bold;
+            color: #0369a1;
+        }
+
+        .mock-breadcrumb { display: none; }
+
+        /* Mock UI: on narrow screens the desktop-style label + fixed-width field rows
+           (e.g. "WAN Mode:" beside a 256px <select>) don't fit and get clipped. Stack
+           them vertically instead so every field is fully readable on first load. */
+        @media (max-width: 640px) {
+            #mock-ui-root .flex.items-center:has(> label[class*="w-1/3"]),
+            #mock-ui-root .flex.items-center:has(> label[class*="w-2/5"]) {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            #mock-ui-root .flex.items-center:has(> label[class*="w-1/3"]) > label[class*="w-1/3"],
+            #mock-ui-root .flex.items-center:has(> label[class*="w-2/5"]) > label[class*="w-2/5"] {
+                width: 100%;
+                text-align: left;
+                padding-right: 0;
+                margin-bottom: 4px;
+            }
+            #mock-ui-root .flex.items-center:has(> label[class*="w-1/3"]) > select,
+            #mock-ui-root .flex.items-center:has(> label[class*="w-1/3"]) > input,
+            #mock-ui-root .flex.items-center:has(> label[class*="w-1/3"]) > div,
+            #mock-ui-root .flex.items-center:has(> label[class*="w-2/5"]) > select,
+            #mock-ui-root .flex.items-center:has(> label[class*="w-2/5"]) > input,
+            #mock-ui-root .flex.items-center:has(> label[class*="w-2/5"]) > div {
+                width: 100%;
+            }
+            #mock-ui-root .grid.grid-cols-2 {
+                grid-template-columns: 1fr;
+            }
+            /* The left icon-bar + text menu together eat ~280px, leaving almost nothing
+               for the actual form content. Hide them on mobile; the step instruction
+               above the mock UI already tells the user which menu to go to. */
+            .mock-icon-bar, .mock-text-menu {
+                display: none !important;
+            }
+            .mock-breadcrumb {
+                display: flex;
+            }
+        }
+
+        /* Mobile sidebar drawer */
+        @media (max-width: 767px) {
+            #sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100%;
+                width: 85vw;
+                max-width: 320px;
+                transform: translateX(-100%);
+                transition: transform 0.25s ease;
+            }
+            #sidebar.open { transform: translateX(0); }
+            #sidebar-backdrop.open { display: block; }
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen">
+
+    <header class="bg-blue-800 text-white shadow-md z-20 flex-shrink-0">
+        <div class="px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-2 sm:space-x-3 min-w-0">
+                <button id="btn-sidebar-toggle" class="md:hidden text-blue-200 hover:text-white p-1 -ml-1 flex-shrink-0" aria-label="เปิดสารบัญ">
+                    <i class="fas fa-bars text-lg"></i>
+                </button>
+                <i class="fas fa-book-open text-xl sm:text-2xl text-blue-300 flex-shrink-0"></i>
+                <h1 class="text-sm sm:text-xl font-bold tracking-wide truncate">ระบบคู่มือการตั้งค่า Huawei HG8145V5</h1>
+            </div>
+            <div class="text-blue-200 text-xs sm:text-sm hidden sm:block flex-shrink-0">
+                Interactive Configuration Guide
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden relative">
+
+        <!-- Backdrop for mobile sidebar drawer -->
+        <div id="sidebar-backdrop" class="hidden fixed inset-0 bg-black/40 z-20 md:!hidden" onclick="closeSidebar()"></div>
+
+        <!-- Sidebar: Table of Contents -->
+        <aside id="sidebar" class="w-80 bg-white border-r shadow-lg flex flex-col z-30 flex-shrink-0">
+            <div class="p-4 bg-gray-50 border-b flex items-center justify-between">
+                <h2 class="font-semibold text-gray-700"><i class="fas fa-list-ul mr-2"></i> สารบัญขั้นตอน</h2>
+                <button onclick="closeSidebar()" class="md:hidden text-gray-400 hover:text-gray-600 p-1"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="flex-1 overflow-y-auto" id="sidebar-menu">
+                <!-- Menu items injected via JS -->
+            </div>
+        </aside>
+
+        <!-- Main Content Area: Instructions & Mock UI -->
+        <main class="flex-1 flex flex-col min-w-0 bg-gray-100 relative">
+
+            <!-- Instruction Panel -->
+            <div class="bg-white shadow-sm border-b border-gray-200 z-10 flex-shrink-0">
+                <div class="max-w-5xl mx-auto px-4 sm:px-8 py-3 sm:py-6">
+                    <div class="flex justify-between items-start mb-2 sm:mb-4 gap-2">
+                        <h2 id="step-title" class="text-base sm:text-2xl font-bold text-blue-700">ชื่อขั้นตอน</h2>
+                        <span id="step-counter" class="bg-blue-100 text-blue-800 text-[10px] sm:text-xs font-semibold px-2 sm:px-3 py-1 rounded-full whitespace-nowrap">Step 1 of 12</span>
+                    </div>
+                    <div id="step-instruction" class="text-gray-700 text-sm sm:text-lg leading-relaxed mb-3 sm:mb-6 min-h-0 sm:min-h-[4rem] max-h-24 sm:max-h-none overflow-y-auto sm:overflow-visible">
+                        <!-- Instruction text injected here -->
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <div class="flex justify-between items-center pt-3 sm:pt-4 border-t border-gray-100">
+                        <button id="btn-prev" onclick="prevStep()" class="px-3 sm:px-5 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-sm sm:text-base">
+                            <i class="fas fa-chevron-left mr-1 sm:mr-2"></i> ก่อนหน้า
+                        </button>
+                        <button id="btn-next" onclick="nextStep()" class="px-3 sm:px-5 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 font-medium transition-colors shadow-sm flex items-center text-sm sm:text-base">
+                            ถัดไป <i class="fas fa-chevron-right ml-1 sm:ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mock UI Container -->
+            <div class="flex-1 overflow-y-auto p-2 sm:p-8 flex justify-center bg-[#e5e7eb]">
+                <div class="w-full max-w-5xl">
+                    <!-- Browser-like window wrapper -->
+                    <div class="bg-white rounded-lg shadow-xl overflow-hidden border border-gray-300 flex flex-col h-full min-h-[420px] sm:min-h-[600px]">
+                        <!-- Browser Header -->
+                        <div class="bg-gray-200 px-2 sm:px-4 py-2 border-b border-gray-300 flex items-center space-x-2">
+                            <div class="flex space-x-1.5 flex-shrink-0">
+                                <div class="w-3 h-3 rounded-full bg-red-400"></div>
+                                <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+                                <div class="w-3 h-3 rounded-full bg-green-400"></div>
+                            </div>
+                            <div class="ml-2 sm:ml-4 bg-white px-2 sm:px-3 py-0.5 rounded text-[10px] sm:text-xs text-gray-500 flex-1 font-mono text-center border border-gray-300 shadow-inner truncate">
+                                <i class="fas fa-lock text-green-600 mr-1"></i> http://192.168.1.1
+                            </div>
+                            <div class="text-[10px] sm:text-xs text-gray-400 font-semibold px-1 sm:px-2 hidden sm:block">หน้าจอจำลอง (Mock UI)</div>
+                        </div>
+
+                        <!-- Actual Mock UI Content -->
+                        <div id="mock-ui-root" class="flex-1 relative overflow-auto bg-white text-[13px] sm:text-base">
+                            <!-- UI injected here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // --- Data Definitions ---
+        const manualSteps = [
+            {
+                id: 'login',
+                title: '1. การเข้าสู่ระบบ (Login)',
+                instruction: 'เปิดเว็บเบราว์เซอร์ พิมพ์ที่อยู่ IP ของเร้าเตอร์ (ค่าเริ่มต้นคือ <b>192.168.1.1</b>)<br>จากนั้นกรอกข้อมูลเพื่อเข้าสู่ระบบ:<br><ul class="list-disc pl-6 mt-2 text-base"><li><b>User Name:</b> <code class="bg-gray-100 px-1 rounded text-red-600">telecomadmin</code></li><li><b>Password:</b> <code class="bg-gray-100 px-1 rounded text-red-600">admintelecom</code></li></ul><p class="mt-2 text-sm text-gray-500"><i class="fas fa-info-circle"></i> บัญชี telecomadmin เป็นบัญชีสิทธิ์ระดับสูงสำหรับการตั้งค่าเชิงลึก</p>',
+                renderUI: renderLoginMock
+            },
+            {
+                id: 'provisioning',
+                title: '2. เลือกวิธี Service Provisioning',
+                instruction: 'เมื่อเข้าสู่ระบบครั้งแรก หรือหลังจากรีเซ็ตค่า อาจพบหน้าต่างนี้<br>ให้ติ๊กเลือก <b class="text-blue-700">On the ONT web page</b> เพื่อระบุว่าเราจะตั้งค่าเร้าเตอร์ด้วยตัวเองผ่านหน้าเว็บนี้ จากนั้นคลิก <b>Next</b>',
+                renderUI: renderProvisioningMock
+            },
+            {
+                id: 'lan',
+                title: '3. การตั้งค่าเปิดพอร์ต LAN',
+                instruction: 'ไปที่เมนู <b>LAN > Layer 2/3 Port</b><br>ทำการ <b class="highlight-text">ติ๊กถูกที่ช่อง LAN1, LAN2, LAN3 และ LAN4</b> เพื่อเปิดให้สามารถใช้งานพอร์ต LAN ด้านหลังเร้าเตอร์ได้ครบทุกช่อง จากนั้นคลิกปุ่ม <b>Apply</b>',
+                renderUI: () => renderDashboardShell('LAN', 'Layer 2/3 Port', renderStep3Content())
+            },
+            {
+                id: 'wan',
+                title: '4. การตั้งค่าการเชื่อมต่ออินเทอร์เน็ต (WAN)',
+                instruction: 'ไปที่เมนู <b>WAN</b> เพื่อตั้งค่าโปรไฟล์อินเทอร์เน็ต<br><ul class="list-disc pl-6 mt-2 text-base"><li>เลือกโปรไฟล์ที่มีชื่อ <b>TR069_INTERNET</b></li><li>ตรวจสอบ <b>VLAN ID</b> (มักจะได้จากผู้ให้บริการ)</li><li>ที่หัวข้อ <b>Binding Options</b> ให้ติ๊กเลือกพอร์ต LAN และ SSID (Wi-Fi) ที่ต้องการให้สามารถเล่นอินเทอร์เน็ตได้</li></ul>คลิก <b>Apply</b> เมื่อเสร็จสิ้น',
+                renderUI: () => renderDashboardShell('WAN', '', renderStep4Content())
+            },
+            {
+                 id: 'security_fw',
+                 title: '5. การตั้งค่าความปลอดภัย (Firewall)',
+                 instruction: 'ไปที่เมนู <b>Security > IPv4 Firewall Level</b><br>แนะนำให้เลือกระดับ <b class="highlight-text">Standard</b> ซึ่งเป็นการป้องกันพื้นฐานที่เพียงพอและไม่รบกวนการใช้งานทั่วไป เช่น การเล่นเกม หรือการ Forward Port',
+                 renderUI: () => renderDashboardShell('Security', 'Firewall Level', renderStep6Content())
+            },
+            {
+                 id: 'security_dos',
+                 title: '6. การป้องกันการโจมตี (DoS Configuration)',
+                 instruction: 'ไปที่เมนู <b>Security > DoS Configuration</b><br>ติ๊กเลือกหัวข้อต่างๆ เพื่อให้เร้าเตอร์ช่วยกรองการโจมตีทางเครือข่ายเบื้องต้น เช่น <b class="highlight-text">Prevent SYN Flood</b> หรือ <b class="highlight-text">Prevent LAND Attack</b>',
+                 renderUI: () => renderDashboardShell('Security', 'DoS Configuration', renderStep7Content())
+            },
+            {
+                 id: 'security_access',
+                 title: '7. การควบคุมการเข้าถึงอุปกรณ์',
+                 instruction: 'ไปที่เมนู <b>Security > Precise Device Access Control</b><br>หากต้องการเปิด/ปิดการเข้าถึงเซอร์วิสบางอย่างจากภายนอก (WAN) เช่น อนุญาตให้ปิงมาเจอ (ICMP) ให้สร้างกฏ (Rule) ใหม่ เลือก Application เป็น <b class="highlight-text">ICMP</b> และเลือก Mode เป็น <b class="highlight-text">Permit</b>',
+                 renderUI: () => renderDashboardShell('Security', 'Precise Device Access Control', renderStep8Content())
+            },
+            {
+                 id: 'app_time',
+                 title: '8. การตั้งเวลาเร้าเตอร์ (Time Setting)',
+                 instruction: 'ไปที่เมนู <b>Application > Time Setting</b><br>ระบบเวลาที่ถูกต้องจำเป็นต่อการบันทึก Log และการเชื่อมต่อบางประเภท<br>ให้ตั้งค่า <b>Time Zone</b> เป็น <b class="highlight-text">GMT+07:00 (Bangkok...)</b> และเลือก WAN Name เป็นโปรไฟล์อินเทอร์เน็ต',
+                 renderUI: () => renderDashboardShell('Application', 'Time Setting', renderStep9Content())
+            },
+            {
+                 id: 'app_upnp',
+                 title: '9. การเปิดใช้งานฟังก์ชัน UPnP',
+                 instruction: 'ไปที่เมนู <b>Application > UPnP</b><br>ติ๊กเลือก <b class="highlight-text">Enable UPnP</b> ฟังก์ชันนี้จะช่วยให้อุปกรณ์ในบ้าน (เช่น เครื่องเกมคอนโซล, กล้องวงจรปิด) สามารถเปิดพอร์ต (Forward Port) ชั่วคราวได้อัตโนมัติ ช่วยลดปัญหา NAT Type Strict',
+                 renderUI: () => renderDashboardShell('Application', 'UPnP', renderStep10Content())
+            },
+            {
+                 id: 'wlan',
+                 title: '10. การตั้งค่าชื่อและรหัสผ่าน Wi-Fi',
+                 instruction: 'ไปที่เมนู <b>WLAN > 2.4G Basic Network Settings</b> (หรือ 5G)<br><ul class="list-disc pl-6 mt-2 text-base"><li><b>SSID Name:</b> พิมพ์ชื่อ Wi-Fi ที่ต้องการให้แสดง</li><li><b>Authentication Mode:</b> เลือก <b class="highlight-text">WPA2 PreSharedKey</b></li><li><b>WPA PreSharedKey:</b> พิมพ์รหัสผ่าน Wi-Fi (อย่างน้อย 8 ตัวอักษร)</li></ul>คลิก Apply',
+                 renderUI: () => renderDashboardShell('WLAN', '2.4G Basic Network Settings', renderStep11Content())
+            },
+            {
+                 id: 'voice',
+                 title: '11. การตั้งค่าโทรศัพท์บ้าน (VoIP)',
+                 instruction: 'ไปที่เมนู <b>Voice > VoIP Basic</b><br>กรอกข้อมูล <b>Primary Proxy Server</b> ตามที่ผู้ให้บริการกำหนด (เช่น sipn20.totbb.net)<br>สำคัญ: ต้องเลือก <b>Signaling Port</b> และ <b>Media Port</b> ให้ชี้ไปยัง <b class="highlight-text">โปรไฟล์ WAN สำหรับ VoIP</b> ที่สร้างไว้',
+                 renderUI: () => renderDashboardShell('Voice', 'VoIP Basic', renderStep12Content())
+            },
+            {
+                 id: 'maintenance',
+                 title: '12. การบันทึกการตั้งค่า (Save)',
+                 instruction: 'ขั้นตอนสุดท้ายที่สำคัญมาก! ไปที่เมนู <b>Maintenance Diagnosis > Configuration File Management</b><br>คลิกปุ่ม <b class="highlight-text px-2 py-1 bg-gray-100 rounded">Save</b> เพื่อทำการบันทึกการตั้งค่าทั้งหมดลงในหน่วยความจำถาวร หากไม่กดปุ่มนี้ เมื่อเร้าเตอร์รีบูตหรือไฟดับ การตั้งค่าทั้งหมดจะหายไป',
+                 renderUI: () => renderDashboardShell('Maintenance Diagnosis', 'Configuration File Management', renderStep13Content())
+            }
+        ];
+
+        let currentStepIndex = 0;
+
+        // --- Core Functions ---
+
+        function initApp() {
+            renderSidebarMenu();
+            updateView();
+
+            const toggleBtn = document.getElementById('btn-sidebar-toggle');
+            if (toggleBtn) toggleBtn.addEventListener('click', openSidebar);
+        }
+
+        function openSidebar() {
+            document.getElementById('sidebar').classList.add('open');
+            document.getElementById('sidebar-backdrop').classList.remove('hidden');
+            document.getElementById('sidebar-backdrop').classList.add('open');
+        }
+
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebar-backdrop').classList.add('hidden');
+            document.getElementById('sidebar-backdrop').classList.remove('open');
+        }
+
+        function renderSidebarMenu() {
+            const menuContainer = document.getElementById('sidebar-menu');
+            let html = '<ul class="py-2">';
+
+            manualSteps.forEach((step, index) => {
+                html += `
+                    <li>
+                        <button onclick="goToStep(${index})" id="nav-item-${index}" class="w-full text-left px-6 py-3 border-l-4 border-transparent hover:bg-gray-50 transition-colors flex items-center text-sm">
+                            <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs mr-3 ${index === 0 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'} btn-step-badge">${index + 1}</span>
+                            <span class="text-gray-700 btn-step-text font-medium truncate">${step.title.split('. ')[1]}</span>
+                        </button>
+                    </li>
+                `;
+            });
+
+            html += '</ul>';
+            menuContainer.innerHTML = html;
+        }
+
+        function updateView() {
+            const step = manualSteps[currentStepIndex];
+
+            // Update Text content
+            document.getElementById('step-title').innerText = step.title;
+            document.getElementById('step-instruction').innerHTML = step.instruction;
+            document.getElementById('step-counter').innerText = `Step ${currentStepIndex + 1} of ${manualSteps.length}`;
+
+            // Update Mock UI
+            document.getElementById('mock-ui-root').innerHTML = step.renderUI();
+
+            // Update Buttons State
+            document.getElementById('btn-prev').disabled = currentStepIndex === 0;
+            document.getElementById('btn-next').disabled = currentStepIndex === manualSteps.length - 1;
+
+            // Change Next button text on last step
+            if (currentStepIndex === manualSteps.length - 1) {
+                document.getElementById('btn-next').innerHTML = 'สิ้นสุด <i class="fas fa-check ml-2"></i>';
+                document.getElementById('btn-next').classList.replace('bg-blue-600', 'bg-green-600');
+                document.getElementById('btn-next').classList.replace('hover:bg-blue-700', 'hover:bg-green-700');
+            } else {
+                document.getElementById('btn-next').innerHTML = 'ถัดไป <i class="fas fa-chevron-right ml-2"></i>';
+                document.getElementById('btn-next').classList.replace('bg-green-600', 'bg-blue-600');
+                document.getElementById('btn-next').classList.replace('hover:bg-green-700', 'hover:bg-blue-700');
+            }
+
+            // Update Sidebar Highlighting
+            manualSteps.forEach((_, idx) => {
+                const navItem = document.getElementById(`nav-item-${idx}`);
+                const badge = navItem.querySelector('.btn-step-badge');
+                const text = navItem.querySelector('.btn-step-text');
+
+                if (idx === currentStepIndex) {
+                    navItem.classList.add('bg-blue-50', 'border-blue-600');
+                    navItem.classList.remove('border-transparent', 'hover:bg-gray-50');
+                    badge.classList.add('bg-blue-600', 'text-white');
+                    badge.classList.remove('bg-gray-200', 'text-gray-600', 'bg-green-500');
+                    text.classList.add('text-blue-700', 'font-bold');
+                    text.classList.remove('text-gray-700', 'font-medium');
+                } else if (idx < currentStepIndex) {
+                     // Completed steps
+                    navItem.classList.remove('bg-blue-50', 'border-blue-600');
+                    navItem.classList.add('border-transparent', 'hover:bg-gray-50');
+                    badge.classList.remove('bg-blue-600', 'bg-gray-200', 'text-gray-600');
+                    badge.classList.add('bg-green-500', 'text-white');
+                    badge.innerHTML = '<i class="fas fa-check"></i>'; // Change number to checkmark
+                    text.classList.remove('text-blue-700', 'font-bold');
+                    text.classList.add('text-gray-700', 'font-medium');
+                } else {
+                    // Future steps
+                    navItem.classList.remove('bg-blue-50', 'border-blue-600');
+                    navItem.classList.add('border-transparent', 'hover:bg-gray-50');
+                    badge.classList.remove('bg-blue-600', 'text-white', 'bg-green-500');
+                    badge.classList.add('bg-gray-200', 'text-gray-600');
+                    badge.innerText = idx + 1; // Restore number
+                    text.classList.remove('text-blue-700', 'font-bold');
+                    text.classList.add('text-gray-700', 'font-medium');
+                }
+            });
+
+            // Scroll sidebar if needed
+            const activeNav = document.getElementById(`nav-item-${currentStepIndex}`);
+            if (activeNav) {
+                activeNav.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        function nextStep() {
+            if (currentStepIndex < manualSteps.length - 1) {
+                currentStepIndex++;
+                updateView();
+            }
+        }
+
+        function prevStep() {
+            if (currentStepIndex > 0) {
+                currentStepIndex--;
+                updateView();
+            }
+        }
+
+        function goToStep(index) {
+            currentStepIndex = index;
+            updateView();
+            if (window.innerWidth < 768) closeSidebar();
+        }
+
+        function renderLoginMock() {
+            return `
+                <div class="h-full flex items-center justify-center bg-[#38bdf8] font-sans relative">
+                    <div class="bg-white/10 backdrop-blur-md p-8 rounded-lg shadow-2xl text-white w-full max-w-md relative z-10 border border-white/20">
+                        <div class="flex items-center justify-center mb-8">
+                             <i class="fas fa-globe-asia text-4xl mr-3"></i>
+                            <span class="text-3xl font-semibold tracking-wider">HG8145V5</span>
+                        </div>
+                        <h2 class="text-lg mb-6 text-center text-blue-50 font-light">Welcome to Huawei web page for network configuration.</h2>
+
+                        <div class="space-y-5">
+                            <div class="flex items-center">
+                                <label class="w-1/3 text-right pr-4 font-medium text-sm">User Name:</label>
+                                <input type="text" class="w-2/3 text-gray-800 p-2 rounded border-none focus:ring-2 focus:ring-blue-300 highlight-item bg-yellow-50 font-bold" value="telecomadmin" readonly>
+                            </div>
+                            <div class="flex items-center">
+                                <label class="w-1/3 text-right pr-4 font-medium text-sm">Password:</label>
+                                <input type="password" class="w-2/3 text-gray-800 p-2 rounded border-none focus:ring-2 focus:ring-blue-300 highlight-item bg-yellow-50 font-bold" value="admintelecom" readonly>
+                            </div>
+                            <div class="pt-4 flex justify-center">
+                                <button class="bg-blue-600 text-white font-bold py-2.5 px-10 rounded shadow-lg highlight-item hover:bg-blue-700 transition-colors uppercase tracking-wide text-sm">Log In</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Decorative background elements -->
+                    <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+                        <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-white opacity-5 rounded-full blur-3xl"></div>
+                        <div class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-900 opacity-10 rounded-full blur-3xl"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderProvisioningMock() {
+            return `
+                <div class="h-full flex flex-col bg-[#38bdf8] text-white font-sans">
+                    <div class="p-6 flex items-center border-b border-white/10">
+                         <i class="fas fa-globe-asia text-2xl mr-3"></i>
+                        <span class="text-xl font-semibold tracking-wider">HG8145V5</span>
+                    </div>
+                    <div class="flex-grow flex flex-col items-center justify-center p-8">
+                        <h1 class="text-3xl mb-12 font-light">Service Provisioning Method</h1>
+
+                        <div class="max-w-2xl w-full space-y-6 text-base bg-white/5 p-8 rounded-xl border border-white/10">
+                            <div class="flex items-start opacity-50">
+                                <input type="radio" class="mt-1 w-5 h-5 cursor-not-allowed" disabled>
+                                <div class="ml-4">
+                                    <label class="block font-medium">On the OLT</label>
+                                    <span class="text-sm text-blue-100">Services for the ONT are configured on the OLT.</span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start opacity-50">
+                                <input type="radio" class="mt-1 w-5 h-5 cursor-not-allowed" disabled>
+                                <div class="ml-4">
+                                    <label class="block font-medium">On the EMS</label>
+                                    <span class="text-sm text-blue-100">Services for the ONT are configured on the EMS.</span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start opacity-50">
+                                <input type="radio" class="mt-1 w-5 h-5 cursor-not-allowed" disabled>
+                                <div class="ml-4">
+                                    <label class="block font-medium">On the ACS</label>
+                                    <span class="text-sm text-blue-100">Services for the ONT are configured on the ACS.</span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start p-3 bg-white/10 rounded-lg highlight-item">
+                                <input type="radio" class="mt-1 w-5 h-5 accent-blue-600" checked readonly>
+                                <div class="ml-4">
+                                    <label class="block font-bold text-white text-lg">On the ONT web page</label>
+                                    <span class="text-sm text-blue-50">Services for the ONT are configured on the ONT web page.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-12 flex space-x-6">
+                            <button class="bg-transparent border border-white text-white px-8 py-2.5 rounded hover:bg-white/10 font-medium w-32">Exit</button>
+                            <button class="bg-white text-blue-800 px-8 py-2.5 rounded shadow-lg hover:bg-gray-100 font-bold w-32 highlight-item">Next</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderDashboardShell(activeMenu, activeSubmenu, contentHtml) {
+            // Reconstruct the menu array for the mock shell
+            const menuData = [
+                { name: 'WAN', subs: [] },
+                { name: 'LAN', subs: ['Layer 2/3 Port', 'LAN Host', 'DHCP Server'] },
+                { name: 'Security', subs: ['Firewall Level', 'IPv4 Filtering', 'DoS Configuration', 'Precise Device Access Control'] },
+                { name: 'Route', subs: [] },
+                { name: 'Application', subs: ['Time Setting', 'Media Sharing', 'UPnP'] },
+                { name: 'WLAN', subs: ['2.4G Basic Network Settings', '5G Basic Network Settings'] },
+                { name: 'Voice', subs: ['VoIP Basic'] },
+                { name: 'System Management', subs: [] },
+                { name: 'Maintenance Diagnosis', subs: ['Configuration File Management'] }
+            ];
+
+            let sidebarHtml = '<ul class="space-y-0.5 text-[13px]">';
+            menuData.forEach(item => {
+                const isActive = item.name === activeMenu;
+                const hasSubs = item.subs && item.subs.length > 0;
+
+                sidebarHtml += `
+                    <li>
+                        <div class="px-4 py-2 flex justify-between items-center ${isActive && !hasSubs ? 'bg-gray-100 font-bold text-[#38bdf8]' : 'text-gray-700'}">
+                            <span>${item.name}</span>
+                            ${hasSubs ? `<i class="fas fa-chevron-${isActive ? 'down' : 'right'} text-[10px] text-gray-400"></i>` : ''}
+                        </div>
+                `;
+
+                if (isActive && hasSubs) {
+                    sidebarHtml += '<ul class="pb-2 bg-gray-50/50">';
+                    item.subs.forEach(sub => {
+                        const isSubActive = sub === activeSubmenu;
+                        sidebarHtml += `
+                            <li class="px-5 py-1.5 text-gray-600 ${isSubActive ? 'mock-sidebar-active' : ''}">
+                                ${sub}
+                            </li>
+                        `;
+                    });
+                    sidebarHtml += '</ul>';
+                }
+                sidebarHtml += '</li>';
+            });
+            sidebarHtml += '</ul>';
+
+            return `
+                <div class="flex flex-col h-full bg-white text-sm font-sans">
+                    <!-- Topbar -->
+                    <div class="bg-[#38bdf8] flex justify-between items-center px-4 py-2 text-white shadow-sm z-10">
+                        <div class="flex items-center">
+                            <i class="fas fa-globe-asia mr-2 text-lg"></i>
+                            <span class="font-semibold text-base tracking-wide">HG8145V5</span>
+                        </div>
+                        <div class="space-x-4 text-xs font-medium hidden sm:block">
+                            <span>Fast Setting</span>
+                            <span>telecomadmin</span>
+                            <span>Logout</span>
+                        </div>
+                        <div class="text-xs font-medium sm:hidden"><span>Logout</span></div>
+                    </div>
+
+                    <!-- Main Area -->
+                    <div class="flex flex-1 overflow-hidden">
+                        <!-- Icon Bar (hidden on mobile — see .mock-icon-bar in <style>) -->
+                        <div class="mock-icon-bar w-14 bg-gray-50 border-r border-gray-200 flex flex-col items-center py-4 space-y-6 shrink-0 shadow-sm z-10">
+                            <div class="p-2 text-gray-400"><i class="fas fa-home text-lg"></i></div>
+                            <div class="p-2 text-gray-400"><i class="fas fa-network-wired text-lg"></i></div>
+                            <div class="p-2 bg-[#38bdf8] text-white rounded shadow-sm"><i class="fas fa-cog text-lg"></i></div>
+                        </div>
+
+                        <!-- Text Menu (hidden on mobile — see .mock-text-menu in <style>) -->
+                        <div class="mock-text-menu w-56 bg-white border-r border-gray-200 py-2 overflow-y-auto shrink-0 shadow-sm z-0">
+                            ${sidebarHtml}
+                        </div>
+
+                        <!-- Content Area -->
+                        <div class="flex-1 p-3 sm:p-8 overflow-y-auto bg-white min-w-0">
+                            <div class="mock-breadcrumb items-center gap-2 mb-4 px-2 py-1.5 bg-gray-100 rounded text-[12px] font-semibold text-gray-600">
+                                <i class="fas fa-cog text-[#38bdf8]"></i>
+                                <span>${activeMenu}${activeSubmenu ? ' &raquo; ' + activeSubmenu : ''}</span>
+                            </div>
+                            ${contentHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderStep3Content() {
+            return `
+                <div class="max-w-4xl">
+                    <h2 class="text-xl font-bold mb-2 text-gray-800 border-b pb-2">Layer 2/3 Port Configuration</h2>
+                    <p class="text-gray-500 text-[13px] mb-8 mt-2">
+                        Different ports indicate varying VLAN implementations when forwarding packets. Check the boxes to enable LAN ports.
+                    </p>
+
+                    <div class="bg-gray-50 p-6 border rounded border-gray-200 inline-block max-w-full">
+                        <div class="flex flex-wrap items-center gap-4 sm:gap-10">
+                            <label class="flex items-center space-x-2 cursor-pointer bg-white p-2 rounded shadow-sm border border-gray-100 highlight-item">
+                                <input type="checkbox" checked class="w-4 h-4 text-blue-600 accent-blue-600 cursor-pointer" readonly>
+                                <span class="font-medium text-gray-700">LAN1</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer bg-white p-2 rounded shadow-sm border border-gray-100 highlight-item">
+                                <input type="checkbox" checked class="w-4 h-4 text-blue-600 accent-blue-600 cursor-pointer" readonly>
+                                <span class="font-medium text-gray-700">LAN2</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer bg-white p-2 rounded shadow-sm border border-gray-100 highlight-item">
+                                <input type="checkbox" checked class="w-4 h-4 text-blue-600 accent-blue-600 cursor-pointer" readonly>
+                                <span class="font-medium text-gray-700">LAN3</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer bg-white p-2 rounded shadow-sm border border-gray-100 highlight-item">
+                                <input type="checkbox" checked class="w-4 h-4 text-blue-600 accent-blue-600 cursor-pointer" readonly>
+                                <span class="font-medium text-gray-700">LAN4</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 pt-4 border-t border-gray-200 flex space-x-4">
+                        <button class="bg-[#38bdf8] text-white px-8 py-2 rounded shadow highlight-item font-medium">Apply</button>
+                        <button class="bg-white border border-gray-300 text-gray-600 px-8 py-2 rounded">Cancel</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderStep4Content() {
+            return `
+                <div class="max-w-5xl">
+                    <h2 class="text-xl font-bold mb-2 text-gray-800 border-b pb-2">WAN Configuration</h2>
+
+                    <div class="mb-4 space-x-4 text-[13px]">
+                        <button class="text-blue-600 hover:underline"><i class="fas fa-plus mr-1"></i>New</button>
+                        <button class="text-red-600 hover:underline"><i class="fas fa-trash mr-1"></i>Delete</button>
+                    </div>
+
+                    <!-- Table Highlighted -->
+                    <div class="highlight-item p-1 bg-white mb-6">
+                        <table class="w-full text-left border-collapse border border-gray-200 text-[13px]">
+                            <thead>
+                                <tr class="bg-gray-100 text-gray-700 border-b border-gray-300">
+                                    <th class="p-2 w-8 text-center"><input type="checkbox"></th>
+                                    <th class="p-2 font-semibold">Connection Name</th>
+                                    <th class="p-2 font-semibold">VLAN/Priority</th>
+                                    <th class="p-2 font-semibold">Protocol Type</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="bg-blue-50 border-b border-gray-200">
+                                    <td class="p-2 text-center"><input type="radio" checked></td>
+                                    <td class="p-2 text-blue-800 font-bold">1_TR069_INTERNET_R_VID_10</td>
+                                    <td class="p-2 text-gray-700">10/0</td>
+                                    <td class="p-2 text-gray-700">IPv4</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="p-2 text-center"><input type="radio"></td>
+                                    <td class="p-2 text-gray-700">2_VOIP_R_VID_20</td>
+                                    <td class="p-2 text-gray-700">20/0</td>
+                                    <td class="p-2 text-gray-700">IPv4</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="bg-gray-100 px-3 py-1.5 font-bold text-gray-700 text-[13px] border border-b-0 border-gray-200 rounded-t">Basic Information</div>
+                    <div class="border border-gray-200 p-4 space-y-3 text-[13px] bg-white rounded-b relative">
+
+                        <div class="flex items-center"><label class="w-1/3 text-right pr-4">Enable WAN:</label><input type="checkbox" checked class="accent-blue-600"></div>
+                        <div class="flex items-center"><label class="w-1/3 text-right pr-4">Encapsulation Mode:</label>
+                            <select class="w-64 p-1 border border-gray-300 rounded"><option>PPPoE</option></select>
+                        </div>
+                        <div class="flex items-center"><label class="w-1/3 text-right pr-4">WAN Mode:</label>
+                            <select class="w-64 p-1 border border-gray-300 rounded"><option>Route WAN</option></select>
+                        </div>
+                        <div class="flex items-center"><label class="w-1/3 text-right pr-4">Service Type:</label>
+                            <select class="w-64 p-1 border border-gray-300 rounded bg-gray-50"><option>TR069_INTERNET</option></select>
+                        </div>
+
+                        <!-- VLAN Highlight -->
+                        <div class="flex items-center my-2 p-2 bg-yellow-50 rounded highlight-item">
+                            <label class="w-1/3 text-right pr-4 font-bold text-red-600">VLAN ID:</label>
+                            <input type="text" value="10" class="w-24 p-1 border border-gray-300 rounded font-bold" readonly>
+                            <span class="text-gray-500 ml-2">(1~4094)</span>
+                        </div>
+
+                        <!-- Binding Options Highlight -->
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <label class="font-bold mb-2 block text-red-600">Binding Options:</label>
+                            <div class="p-3 bg-gray-50 border border-gray-200 rounded highlight-item">
+                                <div class="flex flex-wrap gap-x-8 gap-y-2 mb-3">
+                                    <label class="flex items-center"><input type="checkbox" checked class="mr-1 accent-blue-600"> LAN1</label>
+                                    <label class="flex items-center"><input type="checkbox" checked class="mr-1 accent-blue-600"> LAN2</label>
+                                    <label class="flex items-center"><input type="checkbox" checked class="mr-1 accent-blue-600"> LAN3</label>
+                                    <label class="flex items-center"><input type="checkbox" checked class="mr-1 accent-blue-600"> LAN4</label>
+                                </div>
+                                <div class="flex flex-wrap gap-x-8 gap-y-2">
+                                    <label class="flex items-center"><input type="checkbox" checked class="mr-1 accent-blue-600"> SSID1</label>
+                                    <label class="flex items-center text-gray-400"><input type="checkbox" class="mr-1"> SSID2</label>
+                                    <label class="flex items-center text-gray-400"><input type="checkbox" class="mr-1"> SSID5</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 flex space-x-4">
+                        <button class="bg-[#38bdf8] text-white px-8 py-2 rounded shadow font-medium highlight-item">Apply</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderStep6Content() {
+            return `
+                <div>
+                    <h2 class="text-xl font-bold mb-2 text-gray-800 border-b pb-2">IPv4 Firewall Level Configuration</h2>
+
+                    <div class="mt-8 p-6 bg-gray-50 border border-gray-200 rounded max-w-lg">
+                        <div class="flex items-center mb-6">
+                            <label class="w-2/5 font-medium text-gray-700">Current Level:</label>
+                            <span class="text-gray-600 font-mono bg-gray-200 px-2 py-1 rounded text-xs">Standard</span>
+                        </div>
+
+                        <div class="flex items-center">
+                            <label class="w-2/5 font-bold text-red-600">Firewall Level:</label>
+                            <div class="w-3/5 highlight-item rounded">
+                                <select class="w-full p-2 border border-gray-300 rounded font-bold text-blue-700 bg-white">
+                                    <option>Standard</option>
+                                    <option>High</option>
+                                    <option>Custom</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 flex space-x-4">
+                        <button class="bg-[#38bdf8] text-white px-8 py-2 rounded shadow font-medium highlight-item">Apply</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderStep7Content() {
+            return `
+                <div>
+                    <h2 class="text-xl font-bold mb-2 text-gray-800 border-b pb-2">DoS Configuration</h2>
+
+                    <div class="mt-6 border border-gray-200 rounded overflow-hidden max-w-xl">
+                        <div class="bg-gray-100 px-4 py-2 font-semibold text-gray-700 border-b border-gray-200">Attack Prevention Setup</div>
+                        <div class="p-6 bg-white space-y-4 text-[13px] highlight-item rounded-b">
+                            <label class="flex items-center p-2 hover:bg-gray-50 rounded"><input type="checkbox" checked class="mr-3 accent-blue-600 w-4 h-4"> <span class="font-medium">Prevent SYN Flood Attack</span></label>
+                            <label class="flex items-center p-2 hover:bg-gray-50 rounded text-gray-500"><input type="checkbox" class="mr-3 w-4 h-4"> <span>Prevent ICMP Echo Attack</span></label>
+                            <label class="flex items-center p-2 hover:bg-gray-50 rounded"><input type="checkbox" checked class="mr-3 accent-blue-600 w-4 h-4"> <span class="font-medium">Prevent ICMP Redirection Attack</span></label>
+                            <label class="flex items-center p-2 hover:bg-gray-50 rounded"><input type="checkbox" checked class="mr-3 accent-blue-600 w-4 h-4"> <span class="font-medium">Prevent LAND Attack</span></label>
+                            <label class="flex items-center p-2 hover:bg-gray-50 rounded"><input type="checkbox" checked class="mr-3 accent-blue-600 w-4 h-4"> <span class="font-medium">Prevent Smurf Attack</span></label>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 flex space-x-4">
+                        <button class="bg-[#38bdf8] text-white px-8 py-2 rounded shadow font-medium highlight-item">Apply</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderStep8Content() {
+             return `
+                <div class="max-w-4xl">
+                    <h2 class="text-xl font-bold mb-2 text-gray-800 border-b pb-2">Precise Device Access Control</h2>
+
+                    <div class="my-4 flex items-center p-3 bg-gray-50 border rounded inline-block highlight-item">
+                        <label class="font-bold mr-4 text-red-600">Enable precise device access control:</label>
+                        <input type="checkbox" checked class="accent-blue-600 w-4 h-4">
+                    </div>
+
+                    <div class="mb-2 mt-4"><button class="text-blue-600 hover:underline text-[13px] font-bold"><i class="fas fa-plus mr-1"></i>New Rule</button></div>
+
+                    <div class="border border-gray-300 p-5 bg-white rounded shadow-sm text-[13px] relative">
+                        <div class="absolute top-0 right-0 bg-blue-100 text-blue-800 px-3 py-1 rounded-bl text-xs font-bold">New Rule Editor</div>
+
+                        <div class="grid grid-cols-2 gap-x-8 gap-y-4 mt-2">
+                            <div class="flex items-center"><label class="w-2/5 text-right pr-4 font-medium">Type:</label>
+                                <select class="w-3/5 p-1 border border-gray-300 rounded"><option>Application</option></select>
+                            </div>
+                             <div class="flex items-center"><label class="w-2/5 text-right pr-4 font-medium">Priority:</label>
+                                <input type="text" value="1" class="w-16 p-1 border border-gray-300 rounded text-center">
+                            </div>
+                            <div class="flex items-center"><label class="w-2/5 text-right pr-4 font-medium">Port type:</label>
+                                <select class="w-3/5 p-1 border border-gray-300 rounded"><option>WAN</option></select>
+                            </div>
+                            <div class="flex items-center"><label class="w-2/5 text-right pr-4 font-medium">WAN Name:</label>
+                                <select class="w-3/5 p-1 border border-gray-300 rounded"><option>ALL</option></select>
+                            </div>
+
+                            <div class="col-span-2 mt-2 pt-4 border-t border-gray-100">
+                                <label class="block font-bold mb-2 text-red-600">Application (Service):</label>
+                                <div class="p-3 bg-yellow-50 border border-yellow-200 rounded highlight-item">
+                                    <div class="flex flex-wrap gap-6">
+                                        <label class="flex items-center text-gray-500"><input type="checkbox" class="mr-1"> TELNET</label>
+                                        <label class="flex items-center text-gray-500"><input type="checkbox" class="mr-1"> HTTP</label>
+                                        <label class="flex items-center font-bold text-red-600 bg-white px-2 py-1 border border-red-300 rounded"><input type="checkbox" checked class="mr-1 accent-red-600"> ICMP (Ping)</label>
+                                        <label class="flex items-center text-gray-500"><input type="checkbox" class="mr-1"> SAMBA</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-span-2 mt-2">
+                                 <div class="flex items-center p-2 bg-gray-50 rounded highlight-item w-fit">
+                                    <label class="font-bold text-red-600 mr-4">Mode:</label>
+                                    <div class="space-x-4">
+                                        <label class="font-bold text-green-700"><input type="radio" name="mode" checked class="mr-1 accent-green-600"> Permit (อนุญาต)</label>
+                                        <label class="text-gray-500"><input type="radio" name="mode" class="mr-1"> Forbid (บล็อก)</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 flex space-x-4">
+                        <button class="bg-[#38bdf8] text-white px-8 py-2 rounded shadow font-medium highlight-item">Apply</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderStep9Content() {
+            return `
+                <div class="max-w-3xl">
+                    <h2 class="text-xl font-bold mb-2 text-gray-800 border-b pb-2">Time Setting</h2>
+
+                    <div class="mt-6 p-6 border border-gray-200 bg-white rounded shadow-sm text-[13px] space-y-5">
+
+                        <div class="flex items-center">
+                            <label class="w-2/5 font-medium">Sync with Network Time Server:</label>
+                            <input type="checkbox" checked class="accent-blue-600 w-4 h-4">
+                        </div>
+
+                        <div class="flex items-center">
+                            <label class="w-2/5 font-medium text-gray-500">Primary SNTP Server:</label>
+                            <input type="text" value="clock.fmt.he.net" class="w-3/5 p-1.5 border border-gray-300 rounded bg-gray-50" readonly>
+                        </div>
+
+                        <div class="flex items-center highlight-item p-2 bg-yellow-50 rounded -mx-2">
+                            <label class="w-2/5 font-bold text-red-600 pl-2">Time Zone:</label>
+                            <select class="w-3/5 p-1.5 border border-red-300 rounded bg-white font-medium text-blue-800">
+                                <option>(GMT-08:00) Pacific Time</option>
+                                <option selected>(GMT+07:00) Bangkok, Hanoi, Jakarta</option>
+                                <option>(GMT+08:00) Beijing, Singapore</option>
+                            </select>
+                        </div>
+
+                        <div class="flex items-center highlight-item p-2 bg-yellow-50 rounded -mx-2">
+                            <label class="w-2/5 font-bold text-red-600 pl-2">WAN Name (สำหรับออกเน็ต):</label>
+                            <select class="w-3/5 p-1.5 border border-red-300 rounded bg-white">
+                                <option selected>1_TR069_INTERNET_R_VID_10</option>
+                                <option>2_VOIP_R_VID_20</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 flex space-x-4">
+                        <button class="bg-[#38bdf8] text-white px-8 py-2 rounded shadow font-medium highlight-item">Apply</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderStep10Content() {
+             return `
+                <div>
+                    <h2 class="text-xl font-bold mb-2 text-gray-800 border-b pb-2">UPnP Function</h2>
+                    <p class="text-gray-500 text-[13px] mb-6 mt-2">
+                        Universal Plug and Play (UPnP) allows automatic port forwarding.
+                    </p>
+
+                    <div class="mb-8 flex items-center p-4 bg-yellow-50 border border-yellow-200 rounded inline-block highlight-item">
+                        <label class="mr-6 font-bold text-red-600 text-base">Enable UPnP:</label>
+                        <input type="checkbox" checked class="w-5 h-5 accent-blue-600">
+                    </div>
+
+                    <div class="mt-4 flex space-x-4">
+                        <button class="bg-[#38bdf8] text-white px-8 py-2 rounded shadow font-medium highlight-item">Apply</button>
+                    </div>
+
+                    <div class="mt-8 text-gray-400 text-xs italic border-t pt-4">
+                        * After applying, UPnP port mapping entries will appear in the table below when devices request them.
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderStep11Content() {
+            return `
+                <div class="max-w-4xl">
+                    <h2 class="text-xl font-bold mb-2 text-gray-800 border-b pb-2">2.4G Basic Network Settings</h2>
+
+                    <div class="mt-4 mb-6 flex items-center font-bold text-blue-800">
+                        <input type="checkbox" checked class="mr-2 accent-blue-600"> Enable WLAN
+                    </div>
+
+                    <div class="bg-gray-100 px-3 py-2 font-bold text-gray-700 text-[13px] border border-b-0 border-gray-300 rounded-t mt-6">SSID Configuration Detail</div>
+                    <div class="border border-gray-300 p-6 space-y-5 text-[13px] bg-white rounded-b">
+
+                        <div class="flex items-center highlight-item p-2 bg-yellow-50 rounded -mx-2">
+                            <label class="w-1/3 text-right pr-4 font-bold text-red-600">SSID Name (ชื่อ Wi-Fi):</label>
+                            <input type="text" value="MyHome_Network" class="w-1/2 p-2 border border-red-300 rounded font-bold text-lg text-blue-800 bg-white">
+                        </div>
+
+                        <div class="flex items-center">
+                            <label class="w-1/3 text-right pr-4">Enable SSID:</label>
+                            <input type="checkbox" checked class="accent-blue-600">
+                        </div>
+
+                        <div class="flex items-center">
+                            <label class="w-1/3 text-right pr-4">Broadcast SSID:</label>
+                            <input type="checkbox" checked class="accent-blue-600">
+                        </div>
+
+                        <div class="border-t border-gray-200 pt-5 mt-5"></div>
+
+                        <div class="flex items-center highlight-item p-2 bg-yellow-50 rounded -mx-2">
+                            <label class="w-1/3 text-right pr-4 font-bold text-red-600">Authentication Mode:</label>
+                            <select class="w-1/2 p-2 border border-red-300 rounded bg-white font-bold">
+                                <option>Open</option>
+                                <option selected>WPA2 PreSharedKey</option>
+                                <option>WPA/WPA2 PreSharedKey</option>
+                            </select>
+                        </div>
+
+                        <div class="flex items-center highlight-item p-2 bg-yellow-50 rounded -mx-2">
+                            <label class="w-1/3 text-right pr-4 font-bold text-red-600">WPA PreSharedKey (รหัสผ่าน):</label>
+                            <div class="w-1/2 relative">
+                                <input type="text" value="P@ssw0rd123" class="w-full p-2 border border-red-300 rounded font-mono font-bold bg-white">
+                                <i class="fas fa-eye absolute right-3 top-3 text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 flex space-x-4 pb-8">
+                        <button class="bg-[#38bdf8] text-white px-8 py-2 rounded shadow font-medium highlight-item">Apply</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderStep12Content() {
+             return `
+                <div class="max-w-4xl">
+                    <h2 class="text-xl font-bold mb-2 text-gray-800 border-b pb-2">VoIP Basic Configuration</h2>
+
+                    <h3 class="font-bold text-gray-700 bg-gray-100 px-3 py-1.5 border border-gray-300 rounded-t mt-4 text-[13px]">Basic Profile Parameters (SIP)</h3>
+                    <div class="border border-t-0 border-gray-300 p-5 space-y-4 text-[13px] bg-white rounded-b">
+
+                        <div class="flex items-center highlight-item p-2 bg-yellow-50 rounded -mx-2">
+                            <label class="w-2/5 text-right pr-4 font-bold text-red-600">Address of the Primary Proxy Server:</label>
+                            <input type="text" value="sipn20.totbb.net" class="w-2/5 p-1.5 border border-red-300 rounded bg-white font-mono">
+                            <span class="text-[11px] text-gray-500 ml-2">(เช่น sipn2, sipn20)</span>
+                        </div>
+
+                        <div class="flex items-center"><label class="w-2/5 text-right pr-4 text-gray-500">Port of the Primary Proxy Server:</label><input type="text" value="5060" class="w-16 p-1 border border-gray-200 rounded bg-gray-50" readonly></div>
+                        <div class="flex items-center"><label class="w-2/5 text-right pr-4 text-gray-500">Local Port:</label><input type="text" value="5060" class="w-16 p-1 border border-gray-200 rounded bg-gray-50" readonly></div>
+
+                        <div class="border-t border-dashed border-gray-300 pt-4 mt-4"></div>
+
+                        <div class="flex items-center highlight-item p-2 bg-yellow-50 rounded -mx-2">
+                            <label class="w-2/5 text-right pr-4 font-bold text-red-600">Signaling Port (ผูกกับ WAN):</label>
+                            <select class="w-2/5 p-1.5 border border-red-300 rounded bg-white font-medium text-blue-800">
+                                <option>1_TR069_INTERNET_R_VID_10</option>
+                                <option selected>2_VOIP_R_VID_20</option>
+                            </select>
+                        </div>
+
+                        <div class="flex items-center highlight-item p-2 bg-yellow-50 rounded -mx-2">
+                            <label class="w-2/5 text-right pr-4 font-bold text-red-600">Media Port (ผูกกับ WAN):</label>
+                            <select class="w-2/5 p-1.5 border border-red-300 rounded bg-white font-medium text-blue-800">
+                                <option>1_TR069_INTERNET_R_VID_10</option>
+                                <option selected>2_VOIP_R_VID_20</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 flex space-x-4">
+                        <button class="bg-[#38bdf8] text-white px-8 py-2 rounded shadow font-medium highlight-item">Apply</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderStep13Content() {
+             return `
+                <div class="max-w-3xl">
+                    <h2 class="text-xl font-bold mb-2 text-gray-800 border-b pb-2">Configuration File Management</h2>
+                    <p class="text-gray-500 text-[13px] mb-8 mt-2">
+                        On this page, you can save current configuration to the flash memory so that data is not lost after a power failure.
+                    </p>
+
+                    <div class="space-y-10 pl-4">
+
+                        <!-- Save Section -->
+                        <div class="bg-blue-50 p-6 border border-blue-200 rounded-lg relative overflow-hidden">
+                            <div class="absolute right-[-20px] top-[-20px] opacity-10">
+                                <i class="fas fa-save text-9xl text-blue-500"></i>
+                            </div>
+                            <h3 class="text-blue-800 font-bold mb-4 text-lg relative z-10"><i class="fas fa-hdd mr-2"></i> Save Configurations</h3>
+                            <p class="text-sm text-gray-600 mb-6 relative z-10">Click the button below to save the modified configuration to the router's memory permanently.</p>
+
+                            <div class="flex space-x-6 relative z-10">
+                                <button class="bg-blue-600 text-white py-3 px-12 rounded shadow-lg font-bold text-lg highlight-item hover:bg-blue-700 transition-all transform hover:scale-105">
+                                    SAVE
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Other Maintenance Sections (Dimmed to focus on Save) -->
+                        <div class="opacity-50 pointer-events-none">
+                            <h3 class="text-gray-700 font-medium mb-3 border-b pb-1 inline-block">Download Configuration File</h3>
+                            <div><button class="bg-gray-200 text-gray-600 py-1.5 px-4 rounded border text-sm">Download</button></div>
+                        </div>
+
+                        <div class="opacity-50 pointer-events-none">
+                            <h3 class="text-gray-700 font-medium mb-3 border-b pb-1 inline-block">Update Configuration File</h3>
+                            <div class="flex items-center space-x-2 w-96">
+                                <input type="text" class="flex-grow p-1.5 border rounded bg-gray-50 text-sm" placeholder="No file chosen">
+                                <button class="bg-gray-200 text-gray-600 py-1.5 px-4 rounded border text-sm">Browse...</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            `;
+        }
+
+        window.onload = initApp;
+
+    </script>
+</body>
+</html>

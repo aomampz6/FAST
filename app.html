@@ -11,7 +11,7 @@
     <!-- Lucide Icons -->
     <script src="lucide.min.js"></script>
     <!-- Styles -->
-    <link rel="stylesheet" href="style.css?v=24">
+    <link rel="stylesheet" href="style.css?v=28">
 </head>
 <body>
     <div class="app-container">
@@ -87,19 +87,19 @@
     </div>
     <!-- Bottom Sheet UI -->
     <div class="sheet-overlay" id="sheetOverlay" onclick="window.closeSheet()"></div>
-    <div class="bottom-sheet flex flex-col" id="bottomSheet">
-        <div class="w-full flex justify-center pt-2 pb-1 bg-white rounded-t-[24px]" id="sheetDragArea" style="cursor: grab;">
+    <div class="bottom-sheet" id="bottomSheet">
+        <div id="sheetDragArea" style="display: flex; justify-content: center; padding: 8px 0 4px; cursor: grab; flex-shrink: 0;">
             <div class="sheet-handle"></div>
         </div>
-        <button onclick="window.closeSheet()" style="position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; background: var(--bg-main); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; color: var(--text-secondary);">
+        <button id="sheetCloseBtn" onclick="window.closeSheet()" style="position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; background: rgba(255,255,255,0.08); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; color: #94a3b8; z-index: 1;">
             <i data-lucide="x"></i>
         </button>
-        <div class="flex-1 overflow-y-auto" id="sheet-content-container">
+        <div id="sheet-content-container">
             <!-- Content will be injected here -->
         </div>
     </div>
 
     <!-- Scripts -->
-    <script src="app.js?v=24"></script>
+    <script src="app.js?v=35"></script>
 </body>
 </html>

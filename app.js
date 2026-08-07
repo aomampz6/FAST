@@ -1,4 +1,6 @@
 let fastData = [];
+let parameterData = [];
+let onuConfigData = [];
 
 // Authentication Check
 const token = localStorage.getItem('fast_user_token');
@@ -27,6 +29,59 @@ async function loadDataFromAPI() {
     }
 }
 
+// Fetch reference parameters (managed in Admin > ข้อมูลพารามิเตอร์อ้างอิง) from API
+async function loadParametersFromAPI() {
+    try {
+        const token = localStorage.getItem('fast_user_token') || localStorage.getItem('fast_admin_token');
+        const res = await fetch(`${API_URL}/parameters`, {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        if (res.ok) {
+            parameterData = await res.json();
+        }
+    } catch (e) {
+        console.warn('Failed to fetch parameters from API', e);
+    }
+}
+
+// Fetch ONU setup configs (managed in Admin > ข้อมูลการตั้งค่า onu) from API. Records
+// marked Hidden by an admin are filtered out here so they never reach the user view.
+async function loadOnuConfigsFromAPI() {
+    try {
+        const token = localStorage.getItem('fast_user_token') || localStorage.getItem('fast_admin_token');
+        const res = await fetch(`${API_URL}/onu-configs`, {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        if (res.ok) {
+            const all = await res.json();
+            onuConfigData = all.filter(c => !c.Hidden);
+        }
+    } catch (e) {
+        console.warn('Failed to fetch ONU configs from API', e);
+    }
+}
+
+// First-time-use feedback gate: after a first-time user views a troubleshoot step
+// detail or an ONU setup config, they must submit feedback once before continuing.
+function getCurrentUserId() {
+    const t = localStorage.getItem('fast_user_token') || localStorage.getItem('fast_admin_token');
+    if (!t) return 'anonymous';
+    try {
+        const payload = JSON.parse(decodeURIComponent(atob(t.split('.')[1]).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+        return payload.id || 'anonymous';
+    } catch (e) {
+        return 'anonymous';
+    }
+}
+
+function needsFirstFeedback() {
+    return localStorage.getItem(`fast_first_feedback_done_${getCurrentUserId()}`) !== '1';
+}
+
+function markFirstFeedbackDone() {
+    localStorage.setItem(`fast_first_feedback_done_${getCurrentUserId()}`, '1');
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     // Basic auth check
     const token = localStorage.getItem('fast_user_token');
@@ -38,6 +93,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     
     await loadDataFromAPI();
+    await loadParametersFromAPI();
+    await loadOnuConfigsFromAPI();
 
     // Initialize Lucide icons
     lucide.createIcons();
@@ -124,6 +181,103 @@ document.addEventListener('DOMContentLoaded', async () => {
     initTheme();
 
     // View Data
+    // Builds the "ข้อมูลพารามิเตอร์อ้างอิง" table rows from parameterData (managed in
+    // Admin > ข้อมูลพารามิเตอร์อ้างอิง). Level controls the standard-value badge/text color.
+    function buildParameterRowsHtml() {
+        if (!parameterData || parameterData.length === 0) {
+            return `<tr><td colspan="4" style="text-align: center; color: var(--text-secondary); padding: 24px;">ยังไม่มีข้อมูลพารามิเตอร์อ้างอิงในระบบ</td></tr>`;
+        }
+
+        const levelColorVar = { danger: 'var(--danger)', warning: 'var(--warning)', info: 'var(--info)', none: 'var(--text-primary)' };
+        const levelBadgeClass = { danger: 'badge danger', warning: 'badge warning', info: 'badge info', none: '' };
+
+        return parameterData.map(p => {
+            const level = p.Level || 'none';
+            const textColor = levelColorVar[level] || levelColorVar.none;
+            const badgeClass = levelBadgeClass[level] || '';
+            const badgeStyle = level === 'none'
+                ? 'font-weight: 600; font-size: 14px; background: var(--bg-main); padding: 4px 8px; border-radius: 4px; display: inline-block; border: 1px solid var(--border-light); color: var(--text-primary);'
+                : 'font-weight: 600; width: fit-content; display: inline-block;';
+
+            return `
+                <tr>
+                    <td data-label="ประเภทอุปกรณ์">${p.Type}</td>
+                    <td data-label="พารามิเตอร์"><strong style="color: ${textColor};">${p.Parameter}</strong></td>
+                    <td data-label="เกณฑ์มาตรฐาน"><span class="${badgeClass}" style="${badgeStyle}">${p.Standard}</span></td>
+                    <td data-label="คำแนะนำของระบบ">${p.Recommendation || '-'}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    // Shared feedback box used by both the troubleshoot step sheet and the ONU setup
+    // detail view. When `required` is true (first-time user), it's marked mandatory
+    // and window.__feedbackGateActive blocks navigation/closing until submitted.
+    function buildFeedbackSectionHtml(inputId, btnId, recordId, contextLabel, required) {
+        if (required) window.__feedbackGateActive = true;
+
+        const labelHtml = required
+            ? `<span style="color: #fbbf24; font-weight: 700;">* จำเป็นสำหรับการใช้งานครั้งแรก</span>`
+            : `<span style="opacity: 0.7;">(ไม่บังคับ)</span>`;
+
+        return `
+            <div class="feedback-section">
+                <div class="feedback-label"><i data-lucide="message-circle" style="width: 16px; height: 16px;"></i> คำแนะนำเพิ่มเติมจากผู้ใช้งาน ${labelHtml}</div>
+                <textarea id="${inputId}" class="feedback-textarea" ${required ? 'required' : ''} placeholder="ระบุคำแนะนำ ข้อเสนอแนะ หรือรายละเอียดเพิ่มเติม เช่น ทำตามขั้นตอนแล้วอาการยังไม่ดีขึ้น พบว่าไฟกระพริบที่ช่อง WAN..."></textarea>
+                <button id="${btnId}" class="feedback-submit-btn" onclick="window.submitStepFeedback('${inputId}', '${btnId}', '${(recordId || '').replace(/'/g, '')}', '${(contextLabel || '').replace(/'/g, '')}', ${required})">
+                    <span>ส่งคำแนะนำ / บันทึกข้อมูล</span> <i data-lucide="arrow-right" style="width: 18px; height: 18px;"></i>
+                </button>
+            </div>
+        `;
+    }
+
+    function showFeedbackGateNotice(inputId) {
+        const ta = document.getElementById(inputId);
+        if (!ta) return;
+        ta.style.borderColor = '#ef4444';
+        ta.focus();
+        ta.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => { ta.style.borderColor = 'rgba(255,255,255,0.08)'; }, 1500);
+    }
+
+    window.submitStepFeedback = (inputId, btnId, recordId, contextLabel, required) => {
+        const textarea = document.getElementById(inputId);
+        const btn = document.getElementById(btnId);
+        const text = textarea.value.trim();
+
+        if (required && !text) {
+            showFeedbackGateNotice(inputId);
+            return;
+        }
+
+        const log = JSON.parse(localStorage.getItem('fast_feedback_log') || '[]');
+        log.push({ recordId, contextLabel, text, timestamp: Date.now() });
+        localStorage.setItem('fast_feedback_log', JSON.stringify(log));
+
+        textarea.value = '';
+        btn.innerHTML = `<i data-lucide="check" style="width: 18px; height: 18px;"></i> <span>บันทึกข้อมูลแล้ว</span>`;
+        btn.disabled = true;
+        lucide.createIcons();
+
+        if (required) {
+            markFirstFeedbackDone();
+            window.__feedbackGateActive = false;
+            const closeBtn = document.getElementById('sheetCloseBtn');
+            if (closeBtn) closeBtn.style.display = '';
+            // Sheet flow: auto-close once the gate is satisfied. ONU flow: just leave the confirmation shown.
+            if (document.getElementById('bottomSheet') && document.getElementById('bottomSheet').classList.contains('active')) {
+                setTimeout(() => window.closeSheet(), 900);
+            }
+            return;
+        }
+
+        setTimeout(() => {
+            btn.innerHTML = `<span>ส่งคำแนะนำ / บันทึกข้อมูล</span> <i data-lucide="arrow-right" style="width: 18px; height: 18px;"></i>`;
+            btn.disabled = false;
+            lucide.createIcons();
+        }, 2000);
+    };
+
     const views = {
         'user-profile': {
             title: 'ข้อมูลส่วนตัว',
@@ -337,24 +491,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td data-label="ประเภทอุปกรณ์">Fiber Optic (FTTx)</td>
-                                    <td data-label="พารามิเตอร์"><strong style="color: var(--danger);">Rx Power</strong></td>
-                                    <td data-label="เกณฑ์มาตรฐาน"><span class="badge danger" style="font-weight: 600; width: fit-content; display: inline-block;">-15 ถึง -25 dBm</span></td>
-                                    <td data-label="คำแนะนำของระบบ">หากค่าเกิน -25 dBm ระบบแนะนำให้เช็กสายพับ</td>
-                                </tr>
-                                <tr>
-                                    <td data-label="ประเภทอุปกรณ์">Fiber Optic (FTTx)</td>
-                                    <td data-label="พารามิเตอร์"><strong style="color: var(--warning);">Tx Power</strong></td>
-                                    <td data-label="เกณฑ์มาตรฐาน"><span class="badge warning" style="font-weight: 600; width: fit-content; display: inline-block;">0.5 ถึง 5.0 dBm</span></td>
-                                    <td data-label="คำแนะนำของระบบ">ให้ตรวจสอบคุณภาพสาย Fiber หากค่าที่ส่งออกมีความผิดปกติ</td>
-                                </tr>
-                                <tr>
-                                    <td data-label="ประเภทอุปกรณ์">Router</td>
-                                    <td data-label="พารามิเตอร์"><strong style="color: var(--info);">Client Devices</strong></td>
-                                    <td data-label="เกณฑ์มาตรฐาน"><span style="font-weight: 600; font-size: 14px; background: var(--bg-main); padding: 4px 8px; border-radius: 4px; display: inline-block; border: 1px solid var(--border-light); color: var(--text-primary);">เกิน 15-20 เครื่อง</span></td>
-                                    <td data-label="คำแนะนำของระบบ">แนะนำให้เปลี่ยนเราเตอร์ที่มีสเปกสูงขึ้น</td>
-                                </tr>
+                                ${buildParameterRowsHtml()}
                             </tbody>
                         </table>
                     </div>
@@ -470,27 +607,35 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="card mb-6">
                     <h3 class="mb-4">เลือกยี่ห้ออุปกรณ์ (Brand)</h3>
                     <div class="options-grid" id="brand-select">
-                        <button class="option-btn brand-card" onclick="showOnuConfig('Huawei')">
-                            <div class="brand-icon-wrapper"><i data-lucide="monitor"></i></div>
-                            <span>Huawei</span>
-                        </button>
-                        <button class="option-btn brand-card" onclick="showOnuConfig('ZTE')">
-                            <div class="brand-icon-wrapper"><i data-lucide="monitor"></i></div>
-                            <span>ZTE</span>
-                        </button>
-                        <button class="option-btn brand-card" onclick="showOnuConfig('Forth')">
-                            <div class="brand-icon-wrapper"><i data-lucide="monitor"></i></div>
-                            <span>Forth</span>
-                        </button>
-                        <button class="option-btn brand-card" onclick="showOnuConfig('Fiberhome')">
-                            <div class="brand-icon-wrapper"><i data-lucide="monitor"></i></div>
-                            <span>Fiberhome</span>
-                        </button>
+                        <!-- Populated by initOnuSetupFlow from admin-managed ONU configs -->
                     </div>
                 </div>
                 <div id="onu-config-result"></div>
-            `
+            `,
+            afterRender: () => window.initOnuSetupFlow()
         }
+    };
+
+    // ONU Setup Flow Logic — brands/modes are derived from onuConfigData (already
+    // filtered to exclude admin-hidden records) instead of being hardcoded.
+    window.initOnuSetupFlow = () => {
+        const brandSelect = document.getElementById('brand-select');
+        if (!brandSelect) return;
+
+        const brands = [...new Set(onuConfigData.map(c => c.Brand).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+
+        if (brands.length === 0) {
+            brandSelect.innerHTML = `<p style="color: var(--text-secondary); grid-column: 1 / -1;">ยังไม่มีข้อมูลการตั้งค่า ONU ในระบบ</p>`;
+            return;
+        }
+
+        brandSelect.innerHTML = brands.map(brand => `
+            <button class="option-btn brand-card" onclick="showOnuConfig('${brand.replace(/'/g, '')}')">
+                <div class="brand-icon-wrapper"><i data-lucide="monitor"></i></div>
+                <span>${brand}</span>
+            </button>
+        `).join('');
+        lucide.createIcons();
     };
 
     // Troubleshoot Flow Logic
@@ -577,81 +722,68 @@ document.addEventListener('DOMContentLoaded', async () => {
         lucide.createIcons();
     };
 
+    const STEP_EMOJI = ['🔍', '🔌', '📦', '🧵', '🛠️', '📶', '⚙️'];
+
     window.renderSymptomDetail = (indexStr, groupName) => {
         if (!indexStr) return;
-        
+
         const items = fastData.filter(item => item.Group === groupName);
         const item = items[parseInt(indexStr)];
         if (!item) return;
 
-        let symptomImage = '';
-        const searchStr = (item.Steps || '') + ' ' + (item.CheckPoint || '') + ' ' + (item.Symptom || '');
-        if (searchStr.includes('Power Meter') || searchStr.includes('dBm')) {
-            symptomImage = 'assets/optical_power_check.jpg';
-        } else if (searchStr.toLowerCase().includes('wi-fi') || searchStr.toLowerCase().includes('channel')) {
-            symptomImage = 'assets/wifi_channel_check.jpg';
-        } else if (groupName.includes('สถานะไฟ') || searchStr.includes('ไฟ PON') || searchStr.includes('ไฟ LOS')) {
-            symptomImage = 'assets/router_led_status.jpg';
-        }
-
-        let titleColor = '#1f2937';
-        if (searchStr.includes('LOS') || searchStr.includes('ไม่ติด')) titleColor = '#ef4444';
-        else if (searchStr.includes('กระพริบ')) titleColor = '#eab308';
-
-        let html = `
-            <div class="sheet-content active">
-                <h2 style="font-size: 20px; font-weight: 700; color: ${titleColor}; margin-bottom: 4px;">${item.Symptom || '-'}</h2>
-                <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 16px;">${item.Scoms || ''}</p>
-        `;
-
-        if (symptomImage) {
-            html += `
-                <img src="${symptomImage}" alt="Illustration" style="width: 100%; height: 160px; object-fit: cover; border-radius: 12px; margin-bottom: 20px; box-shadow: var(--shadow-sm);">
-            `;
-        }
-        
-        html += `
-            <div style="display: flex; flex-direction: column; gap: 8px;">
-                <h4 style="font-weight: 700; color: var(--text-primary); font-size: 14px; margin-bottom: 12px;">ขั้นตอนตรวจสอบ (แตะเพื่อขีดฆ่า)</h4>
-        `;
-
-        let stepNum = 1;
+        // Build the ordered step list: CheckPoint (what to check first) then each Steps line.
+        const steps = [];
         if (item.CheckPoint) {
-            html += `
-                <div class="step-item" onclick="window.toggleStep(this)" style="display: flex; align-items: flex-start; gap: 12px; padding: 12px; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: var(--shadow-sm);">
-                    <div class="step-number" style="width: 24px; height: 24px; border-radius: 50%; border: 2px solid #d1d5db; color: #6b7280; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px; font-weight: 700; position: relative;">
-                        <span class="number-text">${stepNum++}</span><i data-lucide="check" class="check-icon" style="position: absolute; width: 14px; height: 14px; color: white;"></i>
-                    </div>
-                    <div class="step-text" style="font-size: 14px; color: var(--text-primary); padding-top: 2px;">
-                        <strong style="color: var(--text-secondary); display: block; margin-bottom: 4px;">จุดที่ต้องเช็คจุดแรก:</strong>
-                        ${item.CheckPoint.replace(/"/g, '')}
-                    </div>
-                </div>
-            `;
+            steps.push({ title: 'จุดที่ต้องเช็คจุดแรก', desc: item.CheckPoint.replace(/"/g, '') });
         }
-
         if (item.Steps) {
-            const stepLines = item.Steps.replace(/"/g, '').split(/\n/).filter(line => line.trim().length > 0);
-            stepLines.forEach(line => {
-                html += `
-                    <div class="step-item" onclick="window.toggleStep(this)" style="display: flex; align-items: flex-start; gap: 12px; padding: 12px; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: var(--shadow-sm);">
-                        <div class="step-number" style="width: 24px; height: 24px; border-radius: 50%; border: 2px solid #d1d5db; color: #6b7280; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px; font-weight: 700; position: relative;">
-                            <span class="number-text">${stepNum++}</span><i data-lucide="check" class="check-icon" style="position: absolute; width: 14px; height: 14px; color: white;"></i>
-                        </div>
-                        <div class="step-text" style="font-size: 14px; color: var(--text-primary); padding-top: 2px;">
-                            ${line}
-                        </div>
-                    </div>
-                `;
+            item.Steps.replace(/"/g, '').split(/\n/).filter(line => line.trim().length > 0).forEach(line => {
+                steps.push({ title: line.trim().replace(/^[-•]\s*/, ''), desc: '' });
             });
         }
-        
-        html += `
+
+        const stepsHtml = steps.length > 0
+            ? steps.map((step, i) => `
+                <div class="step-card-dark">
+                    <div class="step-badge-number">${i + 1}</div>
+                    <div>
+                        <div class="step-card-title">${STEP_EMOJI[i % STEP_EMOJI.length]} ${step.title}</div>
+                        ${step.desc ? `<div class="step-card-desc">${step.desc}</div>` : ''}
+                    </div>
+                </div>
+            `).join('')
+            : `
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 24px 12px; color: #94a3b8; text-align: center;">
+                    <i data-lucide="info" style="width: 24px; height: 24px; opacity: 0.6;"></i>
+                    <span style="font-size: 13px;">ยังไม่มีขั้นตอนตรวจสอบสำหรับกรณีนี้ในระบบ</span>
+                </div>
+            `;
+
+        window.__feedbackGateActive = false;
+        const feedbackRequired = needsFirstFeedback();
+
+        const html = `
+            <div class="sheet-content active sheet-content-dark">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    ${item.ID ? `<span style="font-size: 11px; font-weight: 700; color: var(--nt-dark); background: var(--nt-yellow); padding: 2px 8px; border-radius: 6px;">${item.ID}</span>` : ''}
+                    <span style="font-size: 12px; color: #94a3b8;">${groupName}</span>
+                </div>
+                <h2 style="font-size: 20px; font-weight: 700; color: #ffffff; margin-bottom: 20px;">${item.Symptom || '-'}</h2>
+
+                <div class="step-section-header">
+                    <div class="step-section-title"><i data-lucide="wrench" style="width: 18px; height: 18px;"></i> ลำดับขั้นตอนการแก้ไขปัญหา</div>
+                    ${steps.length > 0 ? `<span class="step-count-badge">${steps.length} ขั้นตอน</span>` : ''}
+                </div>
+
+                ${stepsHtml}
+
+                ${buildFeedbackSectionHtml('feedback-text-input', 'feedback-submit-btn', item.ID, groupName, feedbackRequired)}
             </div>
-        </div>
         `;
 
         document.getElementById('sheet-content-container').innerHTML = html;
+        const closeBtn = document.getElementById('sheetCloseBtn');
+        if (closeBtn) closeBtn.style.display = feedbackRequired ? 'none' : '';
         lucide.createIcons();
         window.openSheet();
     };
@@ -668,6 +800,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     window.closeSheet = () => {
+        if (window.__feedbackGateActive) {
+            showFeedbackGateNotice('feedback-text-input');
+            return;
+        }
         const overlay = document.getElementById('sheetOverlay');
         const sheet = document.getElementById('bottomSheet');
         if (overlay && sheet) {
@@ -675,11 +811,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             sheet.classList.remove('active');
             document.body.style.overflow = '';
         }
-    };
-
-    window.toggleStep = (element) => {
-        element.classList.toggle('completed');
-        if (navigator.vibrate) navigator.vibrate(20);
     };
 
     window.showTroubleshootGroup = (groupName) => {
@@ -700,17 +831,42 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div id="symptom-list" style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;">
         `;
 
+        // Category label/icon derived from the group name (from backend Scom.Group) — keeps the
+        // header truthful to the actual data instead of always saying "ROUTER STATUS".
+        const nameLowerGroup = groupName.toLowerCase();
+        let headerLabel = 'อาการที่พบ';
+        let baseHeaderIcon = 'wrench';
+        let baseHeaderColor = '#14b8a6';
+        let isLedCategory = false;
+        if (nameLowerGroup.includes('ไฟ') || nameLowerGroup.includes('pon') || nameLowerGroup.includes('dsl')) {
+            headerLabel = 'ROUTER STATUS'; baseHeaderIcon = 'router'; baseHeaderColor = '#94a3b8'; isLedCategory = true;
+        } else if (nameLowerGroup.includes('disconnect')) {
+            headerLabel = 'CONNECTION'; baseHeaderIcon = 'network'; baseHeaderColor = '#ef4444';
+        } else if (nameLowerGroup.includes('connect')) {
+            headerLabel = 'INTERNET ACCESS'; baseHeaderIcon = 'wifi-off'; baseHeaderColor = '#f97316';
+        } else if (nameLowerGroup.includes('speed')) {
+            headerLabel = 'SPEED TEST'; baseHeaderIcon = 'gauge'; baseHeaderColor = '#8b5cf6';
+        } else if (nameLowerGroup.includes('web')) {
+            headerLabel = 'WEB ACCESS'; baseHeaderIcon = 'globe'; baseHeaderColor = '#3b82f6';
+        } else if (nameLowerGroup.includes('mail')) {
+            headerLabel = 'MAIL'; baseHeaderIcon = 'mail'; baseHeaderColor = '#0ea5e9';
+        } else if (nameLowerGroup.includes('ip-phone') || nameLowerGroup.includes('โทร')) {
+            headerLabel = 'IP-PHONE'; baseHeaderIcon = 'phone-call'; baseHeaderColor = '#22c55e';
+        } else if (nameLowerGroup.includes('อื่น')) {
+            headerLabel = 'OTHER CASE'; baseHeaderIcon = 'alert-circle'; baseHeaderColor = '#94a3b8';
+        }
+
         items.forEach((item, index) => {
             const sym = item.Symptom || 'ไม่ระบุอาการ';
             const lowerSym = sym.toLowerCase();
-            
+
             // Default Card styling (Dark Theme)
-            let headerIcon = 'router';
-            let headerColor = '#94a3b8'; // gray
+            let headerIcon = baseHeaderIcon;
+            let headerColor = baseHeaderColor;
             let ledsHtml = '';
             let subtitle = item.Scoms || ''; // Use Scoms as subtitle if possible
-            
-            if (groupName.includes('ไฟ') || lowerSym.includes('ไฟ') || subtitle.includes('ไฟ')) {
+
+            if (isLedCategory) {
                 // Determine LED states based on symptom text
                 let pwr = { class: 'led-green', text: 'PWR', textBg: 'transparent', textColor: '#94a3b8' };
                 let mid = { class: 'led-green', text: 'PON', textBg: 'transparent', textColor: '#94a3b8' };
@@ -772,13 +928,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="symptom-card" onclick="window.renderSymptomDetail('${index}', '${groupName}');" style="background: #1a1f36; border-radius: 16px; padding: 20px; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative; overflow: hidden; transition: transform 0.2s;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                         <div style="display: flex; align-items: center; gap: 8px; color: ${headerColor}; font-size: 12px; font-weight: 700; letter-spacing: 1px;">
-                            <i data-lucide="${headerIcon}" style="width: 16px; height: 16px;"></i> ROUTER STATUS
+                            <i data-lucide="${headerIcon}" style="width: 16px; height: 16px;"></i> ${headerLabel}
                         </div>
-                        <i data-lucide="chevron-right" style="color: #475569; width: 20px; height: 20px;"></i>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            ${item.ID ? `<span style="font-size: 11px; font-weight: 700; color: #64748b; background: rgba(148,163,184,0.1); padding: 2px 8px; border-radius: 6px;">${item.ID}</span>` : ''}
+                            <i data-lucide="chevron-right" style="color: #475569; width: 20px; height: 20px;"></i>
+                        </div>
                     </div>
-                    
+
                     ${ledsHtml}
-                    
+
                     <h3 style="color: #ffffff; font-size: 18px; margin: 0 0 4px 0; font-weight: 700; ${lowerSym.includes('los') ? 'color: #fca5a5;' : (lowerSym.includes('pon กระพริบ') ? 'color: #fde047;' : '')}">${sym}</h3>
                     <p style="color: #94a3b8; margin: 0; font-size: 13px;">${subtitle}</p>
                 </div>
@@ -797,6 +956,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Expose global methods
     window.app = {
         navigate: (viewId) => {
+            // First-time feedback gate: block leaving the current view until submitted.
+            if (window.__feedbackGateActive) {
+                showFeedbackGateNotice('onu-feedback-text-input');
+                return;
+            }
+
             // Update Active Nav
             navItems.forEach(item => {
                 if(item.getAttribute('data-view') === viewId) {
@@ -829,69 +994,81 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    window.showOnuConfigDetails = (mode) => {
+    window.showOnuConfigDetails = (brand, mode) => {
         const detailsDiv = document.getElementById('config-details-view');
-        
-        let title = '';
-        let imageSrc = '';
-        let instructions = '';
+        const config = onuConfigData.find(c => c.Brand === brand && c.Mode === mode);
+        if (!config) return;
 
-        if (mode === 'route') {
-            title = 'ตัวอย่างการตั้งค่า Route Mode';
-            imageSrc = 'assets/route_config.jpg';
-            instructions = '1. เข้าสู่หน้าตั้งค่าผ่าน 192.168.1.1<br>2. ไปที่เมนู WAN > Internet<br>3. กรอก Username และ Password ของลูกค้า<br>4. ระบุ VLAN ID ตามใบงาน';
-        } else {
-            // Fallback for others just to show the concept
-            title = `ตัวอย่างการตั้งค่า ${mode}`;
-            imageSrc = 'assets/route_config.jpg'; // Using the same image as a placeholder for others
-            instructions = `ทำตามคู่มือ SCOMs สำหรับการตั้งค่า ${mode}`;
-        }
+        window.__feedbackGateActive = false;
+        const feedbackRequired = needsFirstFeedback();
+
+        const imagesHtml = (config.Images && config.Images.length > 0)
+            ? `
+                <div class="onu-detail-images">
+                    ${config.Images.map(img => `
+                        <img src="/api/onu-configs/image?key=${encodeURIComponent(img.key)}" alt="${brand} ${mode}" onclick="window.openOnuImageLightbox(this.src)">
+                    `).join('')}
+                </div>
+            `
+            : '';
+
+        const guide = ONU_INTERACTIVE_GUIDES[`${brand}/${mode}`];
+        const guideHtml = guide ? `
+            <div style="margin-bottom: 16px; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+                <iframe src="${guide.url}" title="${guide.label}" style="width: 100%; height: clamp(480px, 85vh, 720px); border: none; display: block;" loading="lazy"></iframe>
+            </div>
+        ` : '';
 
         detailsDiv.innerHTML = `
             <div class="card" style="margin-top: 24px; animation: slideIn 0.3s ease; border-top: 4px solid var(--brand-primary);">
                 <h4 class="mb-4 flex-between">
-                    <span><i data-lucide="image" style="margin-right: 8px; vertical-align: middle;"></i> ${title}</span>
-                    <button class="icon-btn" onclick="document.getElementById('config-details-view').innerHTML=''"><i data-lucide="x"></i></button>
+                    <span><i data-lucide="settings" style="margin-right: 8px; vertical-align: middle;"></i> ${brand} — ${mode}</span>
+                    ${feedbackRequired ? '' : `<button class="icon-btn" onclick="document.getElementById('config-details-view').innerHTML=''"><i data-lucide="x"></i></button>`}
                 </h4>
+                ${guideHtml}
                 <div style="background: var(--bg-main); padding: 16px; border-radius: var(--radius-md); margin-bottom: 16px;">
-                    <p style="color: var(--text-secondary); line-height: 1.6;">${instructions}</p>
+                    <p style="color: var(--text-secondary); line-height: 1.6; white-space: pre-wrap;">${config.Details}</p>
                 </div>
-                <img src="${imageSrc}" alt="${title}" style="width: 100%; max-width: 800px; border-radius: var(--radius-md); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); display: block; margin: 0 auto;">
+                ${imagesHtml}
+                <div style="margin-top: 20px; background: #11142b; border-radius: 16px; padding: 20px;">
+                    ${buildFeedbackSectionHtml('onu-feedback-text-input', 'onu-feedback-submit-btn', `${brand}/${mode}`, `ONU Setup: ${brand} ${mode}`, feedbackRequired)}
+                </div>
             </div>
         `;
         lucide.createIcons();
         detailsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
 
+    window.openOnuImageLightbox = (src) => {
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 24px; cursor: zoom-out;';
+        overlay.onclick = () => overlay.remove();
+        overlay.innerHTML = `<img src="${src}" style="max-width: 100%; max-height: 100%; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">`;
+        document.body.appendChild(overlay);
+    };
+
+    // Interactive step-by-step guides (self-contained HTML pages under /guides) keyed by
+    // "Brand/Mode" so the guide shows inside that specific mode's detail view.
+    const ONU_INTERACTIVE_GUIDES = {
+        'Huawei/Router Mode (PPPoE)': { url: '/guides/huawei-hg8145v5.html?v=2', label: 'คู่มือ Interactive: Huawei HG8145V5' }
+    };
+
     window.showOnuConfig = (brand) => {
         const resultDiv = document.getElementById('onu-config-result');
+        const modes = onuConfigData.filter(c => c.Brand === brand);
+
         resultDiv.innerHTML = `
             <div class="card" style="animation: fadeIn 0.3s ease;">
                 <h3 class="mb-4 flex-between">
                     <span>ตั้งค่า ${brand} ONU</span>
                     <span class="badge warning" style="font-size: 14px;">โหมดการใช้งาน</span>
                 </h3>
-                
-                <div class="grid mb-4">
-                    <div class="resolution-box" style="margin-top: 0; background: rgba(34, 139, 230, 0.1); border-color: var(--info);">
-                        <h4 style="color: var(--info);"><i data-lucide="globe"></i> Internet</h4>
-                        <p class="mb-4">เลือกโหมดที่ต้องการติดตั้ง:</p>
-                        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                            <button class="btn-primary" style="background: var(--info); color: white;" onclick="showOnuConfigDetails('route')">Route Mode</button>
-                            <button class="btn-secondary" onclick="showOnuConfigDetails('Bridge Mode')">Bridge Mode</button>
-                        </div>
+                ${modes.length > 0 ? `
+                    <p class="mb-4">เลือกโหมดที่ต้องการดูรายละเอียด:</p>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                        ${modes.map(c => `<button class="btn-secondary" onclick="showOnuConfigDetails('${brand.replace(/'/g, '')}', '${c.Mode.replace(/'/g, '')}')">${c.Mode}</button>`).join('')}
                     </div>
-                    
-                    <div class="resolution-box" style="margin-top: 0; background: rgba(250, 82, 82, 0.1); border-color: var(--danger);">
-                        <h4 style="color: var(--danger);"><i data-lucide="phone"></i> IP-Phone</h4>
-                        <p class="mb-4">รายละเอียดการตั้งค่า:</p>
-                        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                            <button class="btn-secondary" style="border-color: var(--danger); color: var(--danger);" onclick="showOnuConfigDetails('ATA')">ATA</button>
-                            <button class="btn-secondary" style="border-color: var(--danger); color: var(--danger);" onclick="showOnuConfigDetails('Build-in')">Build-in</button>
-                        </div>
-                    </div>
-                </div>
-                <p style="color: var(--text-tertiary); font-size: 14px; text-align: center;">* คลิกที่ปุ่มด้านบนเพื่อดูตัวอย่างรูปภาพรายละเอียดการตั้งค่า</p>
+                ` : `<p style="color: var(--text-secondary);">ยังไม่มีข้อมูลการตั้งค่าสำหรับยี่ห้อนี้</p>`}
             </div>
             <div id="config-details-view"></div>
         `;

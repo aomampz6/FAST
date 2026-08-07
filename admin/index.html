@@ -18,6 +18,8 @@
         <div class="admin-tabs">
             <button class="tab-btn active" onclick="switchAdminTab('troubleshoot')">ข้อมูลการแก้ไขปัญหา</button>
             <button class="tab-btn" onclick="switchAdminTab('onu-setup')">ข้อมูลการตั้งค่า onu</button>
+            <button class="tab-btn" onclick="switchAdminTab('parameters')">ข้อมูลพารามิเตอร์อ้างอิง</button>
+            <button class="tab-btn" onclick="switchAdminTab('guides')">คู่มือ Interactive</button>
         </div>
         <main id="tab-troubleshoot" class="admin-content">
             <div class="actions-bar">
@@ -29,14 +31,13 @@
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Group</th>
                             <th>Scoms</th>
                             <th>Symptom</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="scom-tbody">
-                        <!-- Data loaded via JS -->
+                        <!-- Data loaded via JS, grouped by Group -->
                     </tbody>
                 </table>
             </div>
@@ -50,13 +51,56 @@
                 <table id="onu-table">
                     <thead>
                         <tr>
-                            <th>Brand</th>
                             <th>Mode</th>
                             <th>Details</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="onu-tbody">
+                        <!-- Data loaded via JS, grouped by Brand -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+
+        <main id="tab-parameters" class="admin-content hidden">
+            <div class="actions-bar">
+                <button id="add-new-parameter-btn" class="btn btn-primary"><i data-lucide="plus"></i> Add New Parameter</button>
+            </div>
+            <div class="table-container">
+                <table id="parameter-table">
+                    <thead>
+                        <tr>
+                            <th>ประเภทอุปกรณ์ (Type)</th>
+                            <th>พารามิเตอร์ (Parameter)</th>
+                            <th>เกณฑ์มาตรฐาน (Standard)</th>
+                            <th>คำแนะนำของระบบ (Recommendation)</th>
+                            <th>Level</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="parameter-tbody">
+                        <!-- Data loaded via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+
+        <main id="tab-guides" class="admin-content hidden">
+            <p style="color: #6B7280; margin-bottom: 16px; font-size: 14px;">
+                คู่มือ Interactive คือไฟล์ HTML แบบสมบูรณ์ในตัวเอง (ฝังใน ONU setup ผ่าน iframe) — แก้ไขซอร์สโค้ด HTML/JS ได้ตรงนี้
+            </p>
+            <div class="table-container">
+                <table id="guides-table">
+                    <thead>
+                        <tr>
+                            <th>ไฟล์</th>
+                            <th>ขนาด</th>
+                            <th>แก้ไขล่าสุด</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="guides-tbody">
                         <!-- Data loaded via JS -->
                     </tbody>
                 </table>
@@ -72,15 +116,18 @@
                 <input type="hidden" id="scom-id">
                 <div class="form-group">
                     <label>ID (เช่น U0001)</label>
-                    <input type="text" id="f-id" required>
+                    <select id="f-id-select" required></select>
+                    <input type="text" id="f-id" placeholder="ระบุ ID ใหม่ เช่น U0001" style="margin-top: 8px; display: none;">
                 </div>
                 <div class="form-group">
                     <label>Group</label>
-                    <input type="text" id="f-group" required>
+                    <select id="f-group-select" required></select>
+                    <input type="text" id="f-group" placeholder="ระบุชื่อกลุ่มใหม่" style="margin-top: 8px; display: none;">
                 </div>
                 <div class="form-group">
                     <label>Scoms (หัวข้อ)</label>
-                    <input type="text" id="f-scoms" required>
+                    <select id="f-scoms-select" required></select>
+                    <input type="text" id="f-scoms" placeholder="ระบุหัวข้อใหม่" style="margin-top: 8px; display: none;">
                 </div>
                 <div class="form-group">
                     <label>Symptom</label>
@@ -117,11 +164,13 @@
                 <input type="hidden" id="onu-id">
                 <div class="form-group">
                     <label>Brand (ยี่ห้อ)</label>
-                    <input type="text" id="o-brand" required>
+                    <select id="o-brand-select" required></select>
+                    <input type="text" id="o-brand" placeholder="ระบุยี่ห้อใหม่" style="margin-top: 8px; display: none;">
                 </div>
                 <div class="form-group">
                     <label>Mode (โหมด)</label>
-                    <input type="text" id="o-mode" required>
+                    <select id="o-mode-select" required></select>
+                    <input type="text" id="o-mode" placeholder="ระบุโหมดใหม่" style="margin-top: 8px; display: none;">
                 </div>
                 <div class="form-group">
                     <label>Details (รายละเอียดขั้นตอน)</label>
@@ -132,6 +181,74 @@
                     <button type="submit" class="btn btn-primary">Save</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Modal for managing images of an ONU Config (Brand/Mode) -->
+    <div id="onu-images-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3 id="onu-images-modal-title">รูปภาพประกอบ</h3>
+            <div id="onu-images-grid" class="onu-images-grid"></div>
+            <div class="form-group">
+                <label>เพิ่มรูปภาพ (เลือกได้หลายไฟล์)</label>
+                <input type="file" id="onu-images-input" accept="image/*" multiple>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn" id="onu-images-modal-close">Close</button>
+                <button type="button" class="btn btn-primary" id="onu-images-upload-btn">Upload</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Add/Edit Parameter -->
+    <div id="parameter-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3 id="parameter-modal-title">Add/Edit Parameter</h3>
+            <form id="parameter-form">
+                <input type="hidden" id="p-id">
+                <div class="form-group">
+                    <label>ประเภทอุปกรณ์ (Type)</label>
+                    <input type="text" id="p-type" required>
+                </div>
+                <div class="form-group">
+                    <label>พารามิเตอร์ (Parameter)</label>
+                    <input type="text" id="p-parameter" required>
+                </div>
+                <div class="form-group">
+                    <label>เกณฑ์มาตรฐาน (Standard)</label>
+                    <input type="text" id="p-standard" required>
+                </div>
+                <div class="form-group">
+                    <label>คำแนะนำของระบบ (Recommendation)</label>
+                    <textarea id="p-recommendation" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Level (สีของป้ายเกณฑ์มาตรฐาน)</label>
+                    <select id="p-level">
+                        <option value="danger">Danger (แดง)</option>
+                        <option value="warning">Warning (เหลือง/ส้ม)</option>
+                        <option value="info">Info (ฟ้า)</option>
+                        <option value="none" selected>None (เทา/ปกติ)</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn" id="parameter-modal-cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for editing a guide's raw HTML source -->
+    <div id="guide-editor-modal" class="modal hidden">
+        <div class="modal-content guide-editor-content">
+            <h3 id="guide-editor-title">Edit Guide</h3>
+            <p style="color: #6B7280; font-size: 13px; margin: -8px 0 12px;">แก้ไขซอร์สโค้ด HTML ทั้งไฟล์ — โปรดตรวจสอบให้ถูกต้องก่อนบันทึก เพราะจะเขียนทับไฟล์ทันที</p>
+            <textarea id="guide-editor-textarea" class="guide-editor-textarea" spellcheck="false"></textarea>
+            <div class="form-actions">
+                <button type="button" class="btn" id="guide-editor-cancel">Cancel</button>
+                <button type="button" class="btn btn-primary" id="guide-editor-save">Save</button>
+            </div>
         </div>
     </div>
 

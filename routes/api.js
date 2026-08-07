@@ -135,6 +135,13 @@ router.delete('/scoms/:id', verifyToken, async (req, res) => {
 
 // ONU Configs Routes
 const OnuConfig = require('../models/OnuConfig');
+const multer = require('multer');
+const { uploadImage, deleteImage, getImageObject } = require('../utils/s3');
+
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 10 * 1024 * 1024, files: 50 }
+});
 
 router.get('/onu-configs', verifyToken, async (req, res) => {
     try {
@@ -166,7 +173,160 @@ router.put('/onu-configs/:id', verifyToken, async (req, res) => {
 
 router.delete('/onu-configs/:id', verifyToken, async (req, res) => {
     try {
-        await OnuConfig.findByIdAndDelete(req.params.id);
+        const config = await OnuConfig.findById(req.params.id);
+        if (config) {
+            await Promise.all(config.Images.map(img => deleteImage(img.key).catch(() => {})));
+            await config.deleteOne();
+        }
+        res.json({ message: 'Deleted successfully' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// ONU Config Images — unlimited images per Brand/Mode record, stored in S3.
+router.post('/onu-configs/:id/images', verifyToken, upload.array('images', 50), async (req, res) => {
+    try {
+        const config = await OnuConfig.findById(req.params.id);
+        if (!config) return res.status(404).json({ message: 'Config not found' });
+
+        for (const file of req.files || []) {
+            const key = `onu-configs/${config._id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+            await uploadImage(key, file.buffer, file.mimetype);
+            config.Images.push({ key, originalName: file.originalname });
+        }
+
+        await config.save();
+        res.status(201).json(config);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+router.delete('/onu-configs/:id/images/:imageId', verifyToken, async (req, res) => {
+    try {
+        const config = await OnuConfig.findById(req.params.id);
+        if (!config) return res.status(404).json({ message: 'Config not found' });
+
+        const image = config.Images.find(img => img._id.toString() === req.params.imageId);
+        if (!image) return res.status(404).json({ message: 'Image not found' });
+
+        await deleteImage(image.key).catch(() => {});
+        config.Images = config.Images.filter(img => img._id.toString() !== req.params.imageId);
+        await config.save();
+        res.json(config);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Streams an image from S3. Unauthenticated (like the static assets/ folder) so plain
+// <img> tags can load it directly — these are instructional screenshots, not sensitive data.
+router.get('/onu-configs/image', async (req, res) => {
+    try {
+        const key = req.query.key;
+        if (!key) return res.status(400).json({ message: 'Missing key' });
+
+        const obj = await getImageObject(key);
+        res.setHeader('Content-Type', obj.ContentType || 'application/octet-stream');
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        obj.Body.pipe(res);
+    } catch (err) {
+        res.status(404).json({ message: 'Image not found' });
+    }
+});
+
+// Interactive Guide File Management — lets admins edit the raw HTML of the
+// self-contained guide pages under /guides (e.g. huawei-hg8145v5.html) that are
+// embedded via <iframe> in the ONU setup pages.
+const fs = require('fs');
+const path = require('path');
+const GUIDES_DIR = path.join(__dirname, '../guides');
+
+// Resolves a requested filename to a real path strictly inside GUIDES_DIR, rejecting
+// path traversal (../) and anything that isn't a plain .html filename.
+function resolveGuidePath(filename) {
+    if (!/^[a-zA-Z0-9._-]+\.html$/.test(filename)) return null;
+    const fullPath = path.join(GUIDES_DIR, filename);
+    if (path.dirname(fullPath) !== GUIDES_DIR) return null;
+    return fullPath;
+}
+
+router.get('/guides', verifyToken, async (req, res) => {
+    try {
+        const files = fs.readdirSync(GUIDES_DIR).filter(f => f.endsWith('.html'));
+        const list = files.map(filename => {
+            const stat = fs.statSync(path.join(GUIDES_DIR, filename));
+            return { filename, size: stat.size, updatedAt: stat.mtime };
+        });
+        res.json(list);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+router.get('/guides/:filename', verifyToken, async (req, res) => {
+    const fullPath = resolveGuidePath(req.params.filename);
+    if (!fullPath || !fs.existsSync(fullPath)) return res.status(404).json({ message: 'Guide not found' });
+
+    try {
+        const content = fs.readFileSync(fullPath, 'utf8');
+        res.json({ filename: req.params.filename, content });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+router.put('/guides/:filename', verifyToken, express.text({ type: '*/*', limit: '10mb' }), async (req, res) => {
+    const fullPath = resolveGuidePath(req.params.filename);
+    if (!fullPath || !fs.existsSync(fullPath)) return res.status(404).json({ message: 'Guide not found' });
+
+    if (typeof req.body !== 'string' || req.body.trim().length === 0) {
+        return res.status(400).json({ message: 'Empty content' });
+    }
+
+    try {
+        fs.writeFileSync(fullPath, req.body, 'utf8');
+        res.json({ message: 'Saved successfully' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Reference Parameters Routes
+const Parameter = require('../models/Parameter');
+
+router.get('/parameters', verifyToken, async (req, res) => {
+    try {
+        const parameters = await Parameter.find().sort({ createdAt: 1 });
+        res.json(parameters);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+router.post('/parameters', verifyToken, async (req, res) => {
+    try {
+        const parameter = new Parameter(req.body);
+        const newParameter = await parameter.save();
+        res.status(201).json(newParameter);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
+
+router.put('/parameters/:id', verifyToken, async (req, res) => {
+    try {
+        const updatedParameter = await Parameter.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        res.json(updatedParameter);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
+
+router.delete('/parameters/:id', verifyToken, async (req, res) => {
+    try {
+        await Parameter.findByIdAndDelete(req.params.id);
         res.json({ message: 'Deleted successfully' });
     } catch (err) {
         res.status(500).json({ message: err.message });
