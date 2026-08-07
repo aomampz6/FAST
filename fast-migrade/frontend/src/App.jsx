@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './shared/auth/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
+import AdminLayout from './components/AdminLayout';
 import LoginPage from './features/auth/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
@@ -28,15 +29,17 @@ export default function App() {
                     <Route path="onu-setup" element={<OnuSetupPage />} />
                     <Route path="phonebook" element={<PhonebookPage />} />
                     <Route path="profile" element={<ProfilePage />} />
-                    <Route
-                        path="admin/*"
-                        element={
-                            <ProtectedRoute requiredRole="admin">
-                                <AdminPage />
-                            </ProtectedRoute>
-                        }
-                    />
                 </Route>
+                <Route
+                    path="/admin/*"
+                    element={
+                        <ProtectedRoute requiredRole="admin">
+                            <AdminLayout>
+                                <AdminPage />
+                            </AdminLayout>
+                        </ProtectedRoute>
+                    }
+                />
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
         </AuthProvider>

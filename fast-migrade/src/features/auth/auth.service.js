@@ -12,6 +12,13 @@ async function login(username, password) {
         throw err;
     }
 
+    if (!user.isActive) {
+        onLoginFailure(username);
+        const err = new Error('Account suspended');
+        err.status = 403;
+        throw err;
+    }
+
     onLoginSuccess(user);
     const token = jwt.sign({ id: user._id, role: user.role }, jwtSecret, { expiresIn: '8h' });
     return { token, role: user.role };

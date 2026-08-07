@@ -1,0 +1,668 @@
+/*
+ * Admin panel visual theme — ports the "Apple style" design tokens used by
+ * the old static admin (archive/style.css + archive/admin/style.css).
+ *
+ * Everything here is scoped under `.admin-page` (the wrapper rendered by
+ * AdminPage.jsx) so it never leaks into the non-admin routes, which keep
+ * using the generic rules in App.css. This file is only imported by
+ * AdminPage.jsx.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap');
+
+/* ---------------------------------------------------------------------- */
+/* Design tokens (same values as archive/style.css :root, kept local here */
+/* so the admin theme renders correctly even if the shared index.css      */
+/* hasn't defined them yet).                                              */
+/* ---------------------------------------------------------------------- */
+.admin-page {
+    --nt-yellow: #FFD100;
+    --nt-yellow-hover: #E5BC00;
+    --nt-yellow-light: #FFF8D6;
+    --nt-dark: #1d1d1f;
+    --nt-gray: #86868b;
+
+    --brand-primary: var(--nt-yellow);
+    --brand-primary-hover: var(--nt-yellow-hover);
+
+    --bg-main: #f5f5f7;
+    --bg-surface: #ffffff;
+    --bg-surface-hover: #F9FAFB;
+    --text-primary: #1d1d1f;
+    --text-secondary: #86868b;
+    --text-tertiary: #a1a1a6;
+    --border-color: #d2d2d7;
+    --border-light: rgba(210, 210, 215, 0.5);
+
+    --shadow-sm: 0 4px 24px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 10px 40px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.1);
+    --shadow-glow: 0 8px 30px rgba(255, 209, 0, 0.3);
+
+    --danger: #EF4444;
+    --success: #10B981;
+    --warning: #F59E0B;
+    --info: #3B82F6;
+
+    --radius-sm: 8px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    font-family: 'Prompt', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 32px 40px 64px;
+}
+
+[data-theme="dark"] .admin-page {
+    --bg-main: #000000;
+    --bg-surface: #121212;
+    --bg-surface-hover: #1E1E1E;
+    --text-primary: #F8FAFC;
+    --text-secondary: #A1A1AA;
+    --border-color: #27272A;
+    --border-light: rgba(39, 39, 42, 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+    .admin-page:not([data-theme="light"]) {
+        --bg-main: #000000;
+        --bg-surface: #121212;
+        --bg-surface-hover: #1E1E1E;
+        --text-primary: #F8FAFC;
+        --text-secondary: #A1A1AA;
+        --border-color: #27272A;
+        --border-light: rgba(39, 39, 42, 0.5);
+    }
+}
+
+.admin-page * {
+    box-sizing: border-box;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Admin shell — the standalone page wrapper (AdminLayout.jsx), separate   */
+/* from the normal app's sidebar Layout. Declares its own copy of the     */
+/* token subset it needs so the topbar renders correctly even though it   */
+/* sits outside the `.admin-page` div that AdminPage.jsx renders below it.*/
+/* ---------------------------------------------------------------------- */
+.admin-shell {
+    --nt-yellow: #FFD100;
+    --nt-yellow-hover: #E5BC00;
+    --bg-surface: #ffffff;
+    --text-primary: #1d1d1f;
+    --text-secondary: #86868b;
+    --border-color: #d2d2d7;
+    --border-light: rgba(210, 210, 215, 0.5);
+    --danger: #EF4444;
+    --shadow-sm: 0 4px 24px rgba(0, 0, 0, 0.04);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-height: 100vh;
+    font-family: 'Prompt', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+    .admin-shell {
+        --bg-surface: #1A1A1A;
+        --text-primary: #F8FAFC;
+        --text-secondary: #A1A1AA;
+        --border-color: #27272A;
+        --border-light: rgba(39, 39, 42, 0.5);
+    }
+}
+
+.admin-topbar {
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 0 32px;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border-light);
+    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: 0;
+    z-index: 40;
+}
+
+.admin-back-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: color 160ms ease-out;
+}
+
+.admin-back-link:hover {
+    color: var(--nt-yellow-hover);
+}
+
+.admin-topbar-title {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--text-primary);
+    letter-spacing: -0.2px;
+}
+
+.admin-logout-btn {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 999px;
+    padding: 8px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform 160ms ease-out, background-color 160ms ease-out, color 160ms ease-out;
+}
+
+.admin-logout-btn:hover {
+    background: var(--danger);
+    color: #ffffff;
+}
+
+.admin-logout-btn:active {
+    transform: scale(0.97);
+}
+
+.admin-page h2 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--text-primary);
+    margin: 0 0 24px;
+}
+
+.admin-page h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 16px;
+    letter-spacing: -0.2px;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Tabs                                                                    */
+/* ---------------------------------------------------------------------- */
+.admin-page .admin-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 6px;
+    margin-bottom: 28px;
+    box-shadow: var(--shadow-sm);
+}
+
+.admin-page .admin-tabs a {
+    padding: 12px 20px;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14.5px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.admin-page .admin-tabs a:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-surface-hover);
+}
+
+.admin-page .admin-tabs a.active {
+    background: var(--nt-yellow);
+    color: var(--nt-dark);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Crossfade between routed tab panels */
+.admin-tab-content {
+    animation: admin-tab-fade 180ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@keyframes admin-tab-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Cards / sections                                                        */
+/* ---------------------------------------------------------------------- */
+.admin-page .admin-section {
+    animation: admin-fade-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes admin-fade-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.admin-page p.hint {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.admin-page .error-banner {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 16px;
+}
+
+.admin-page .feedback-status {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--success);
+    margin-bottom: 12px;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Forms                                                                   */
+/* ---------------------------------------------------------------------- */
+.admin-page .admin-form {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    margin-bottom: 28px;
+    box-shadow: var(--shadow-sm);
+}
+
+.admin-page .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin: 16px 0;
+}
+
+.admin-page .form-grid label,
+.admin-page .admin-form > label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.admin-page input,
+.admin-page textarea,
+.admin-page select {
+    font-family: inherit;
+    font-size: 14.5px;
+    color: var(--text-primary);
+    background-color: var(--bg-main);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    transition: var(--transition);
+}
+
+.admin-page textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.admin-page input:hover,
+.admin-page textarea:hover,
+.admin-page select:hover {
+    border-color: var(--text-tertiary);
+}
+
+.admin-page input:focus,
+.admin-page textarea:focus,
+.admin-page select:focus {
+    outline: none;
+    border-color: var(--nt-yellow);
+    box-shadow: 0 0 0 3px rgba(255, 209, 0, 0.25);
+}
+
+.admin-page .checkbox-label {
+    flex-direction: row !important;
+    align-items: center;
+    gap: 10px !important;
+}
+
+.admin-page .checkbox-label input[type='checkbox'] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--nt-yellow);
+}
+
+.admin-page .form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Buttons                                                                 */
+/* ---------------------------------------------------------------------- */
+.admin-page button {
+    font-family: inherit;
+    cursor: pointer;
+    border-radius: 30px;
+    border: 2px solid var(--border-color);
+    background-color: transparent;
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 14px;
+    padding: 10px 22px;
+    transition: transform 160ms ease-out, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-page button:hover {
+    background-color: var(--bg-surface-hover);
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+}
+
+.admin-page button:active {
+    transform: scale(0.97);
+}
+
+.admin-page button:focus-visible {
+    outline: 3px solid var(--nt-yellow);
+    outline-offset: 2px;
+}
+
+/* Primary action = form submit button */
+.admin-page .form-actions button[type='submit'] {
+    background: linear-gradient(135deg, var(--nt-yellow), #FFA000);
+    color: var(--nt-dark);
+    border: none;
+    box-shadow: 0 4px 12px rgba(255, 200, 0, 0.3);
+}
+
+.admin-page .form-actions button[type='submit']:hover {
+    filter: brightness(1.05);
+    box-shadow: 0 8px 20px rgba(255, 200, 0, 0.4);
+    transform: translateY(-1px);
+}
+
+.admin-page .form-actions button[type='submit']:active {
+    transform: translateY(0) scale(0.97);
+}
+
+/* Table row action buttons */
+.admin-page .data-table td button {
+    padding: 7px 16px;
+    font-size: 13px;
+    margin-right: 8px;
+    border-radius: var(--radius-sm);
+}
+
+.admin-page .data-table td button:not(.danger) {
+    color: var(--info);
+    border-color: rgba(59, 130, 246, 0.35);
+    background-color: rgba(59, 130, 246, 0.06);
+}
+
+.admin-page .data-table td button:not(.danger):hover {
+    background-color: var(--info);
+    border-color: var(--info);
+    color: #fff;
+}
+
+.admin-page button.danger {
+    color: var(--danger);
+    border-color: rgba(239, 68, 68, 0.35);
+    background-color: rgba(239, 68, 68, 0.06);
+}
+
+.admin-page button.danger:hover {
+    background-color: var(--danger);
+    color: #fff;
+    border-color: var(--danger);
+}
+
+/* image thumbnail delete "x" button — crisp, no bounce (destructive) */
+.admin-page .image-thumb button.danger {
+    padding: 2px 8px;
+    font-size: 12px;
+    border-radius: 50%;
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    line-height: 1;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Tables                                                                  */
+/* ---------------------------------------------------------------------- */
+.admin-page .data-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.admin-page .data-table th,
+.admin-page .data-table td {
+    padding: 16px 18px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 14.5px;
+}
+
+.admin-page .data-table th {
+    background-color: var(--bg-main);
+    color: var(--text-secondary);
+    font-weight: 700;
+    font-size: 12.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.admin-page .data-table tr:last-child td {
+    border-bottom: none;
+}
+
+.admin-page .data-table tbody tr {
+    transition: background-color 0.2s ease;
+    animation: admin-row-in 0.35s cubic-bezier(0.23, 1, 0.32, 1) backwards;
+}
+
+.admin-page .data-table tbody tr:hover td {
+    background-color: var(--bg-surface-hover);
+}
+
+@keyframes admin-row-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Stagger the first render of a table's rows (~35ms per row, capped) */
+.admin-page .data-table tbody tr:nth-child(1) { animation-delay: 0ms; }
+.admin-page .data-table tbody tr:nth-child(2) { animation-delay: 35ms; }
+.admin-page .data-table tbody tr:nth-child(3) { animation-delay: 70ms; }
+.admin-page .data-table tbody tr:nth-child(4) { animation-delay: 105ms; }
+.admin-page .data-table tbody tr:nth-child(5) { animation-delay: 140ms; }
+.admin-page .data-table tbody tr:nth-child(6) { animation-delay: 175ms; }
+.admin-page .data-table tbody tr:nth-child(7) { animation-delay: 210ms; }
+.admin-page .data-table tbody tr:nth-child(8) { animation-delay: 245ms; }
+.admin-page .data-table tbody tr:nth-child(n+9) { animation-delay: 280ms; }
+
+/* Hidden ONU config rows: dimmed, still fully manageable */
+.admin-page .data-table tr.admin-row-hidden {
+    opacity: 0.55;
+}
+
+.admin-page .data-table tr.admin-row-hidden:hover {
+    opacity: 0.85;
+}
+
+.admin-page .hidden-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    background: var(--bg-main);
+    border: 1px solid var(--border-color);
+    padding: 2px 10px;
+    border-radius: 999px;
+    margin-left: 8px;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Parameter Level badges                                                  */
+/* ---------------------------------------------------------------------- */
+.admin-page .level-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    font-weight: 700;
+    padding: 5px 14px;
+    border-radius: 999px;
+    letter-spacing: 0.3px;
+    text-transform: capitalize;
+}
+
+.admin-page .level-badge.level-danger {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--danger);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.admin-page .level-badge.level-warning {
+    background: rgba(245, 158, 11, 0.15);
+    color: #D97706;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+[data-theme="dark"] .admin-page .level-badge.level-warning {
+    color: var(--warning);
+}
+
+.admin-page .level-badge.level-info {
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--info);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.admin-page .level-badge.level-none {
+    background: var(--bg-main);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+/* ---------------------------------------------------------------------- */
+/* User status badges                                                      */
+/* ---------------------------------------------------------------------- */
+.admin-page .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    font-weight: 700;
+    padding: 5px 14px;
+    border-radius: 999px;
+    letter-spacing: 0.3px;
+}
+
+.admin-page .status-badge.status-active {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--success);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.admin-page .status-badge.status-suspended {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--danger);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.admin-page .data-table td button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Image gallery (ONU config images)                                       */
+/* ---------------------------------------------------------------------- */
+.admin-page .image-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 8px 0 12px;
+}
+
+.admin-page .image-gallery img {
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    object-fit: cover;
+    transition: transform 0.15s ease-out;
+}
+
+.admin-page .image-gallery.small img {
+    width: 72px;
+    height: 72px;
+}
+
+.admin-page .image-gallery img:hover {
+    transform: scale(1.05);
+}
+
+.admin-page .image-thumb {
+    position: relative;
+    display: inline-block;
+    margin: 0;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Guide editor                                                            */
+/* ---------------------------------------------------------------------- */
+.admin-page .guide-editor {
+    width: 100%;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    background-color: var(--bg-main);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    white-space: pre;
+    color: var(--text-primary);
+}
+
+.admin-page .guide-editor:focus {
+    outline: none;
+    border-color: var(--nt-yellow);
+    box-shadow: 0 0 0 3px rgba(255, 209, 0, 0.25);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Reduced motion                                                          */
+/* ---------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+    .admin-page .admin-section,
+    .admin-page .admin-tab-content,
+    .admin-page .data-table tbody tr,
+    .admin-page button,
+    .admin-page .image-gallery img {
+        animation: none !important;
+        transition: none !important;
+    }
+}

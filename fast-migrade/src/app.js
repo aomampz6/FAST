@@ -11,6 +11,7 @@ const onuConfigsRouter = require('./features/onu-configs/onuConfigs.router');
 const guidesRouter = require('./features/guides/guides.router');
 const phonebookRouter = require('./features/phonebook/phonebook.router');
 const feedbackRouter = require('./features/feedback/feedback.router');
+const usersRouter = require('./features/users/users.router');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -35,6 +36,7 @@ app.use('/api/onu-configs', onuConfigsRouter);
 app.use('/api/guides', guidesRouter);
 app.use('/api/phonebook', phonebookRouter);
 app.use('/api/feedback', feedbackRouter);
+app.use('/api/users', usersRouter);
 
 // The Docker build copies the built React app into ./public (see Dockerfile).
 // In local backend-only dev this directory doesn't exist — the frontend runs
