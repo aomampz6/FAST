@@ -52,3 +52,10 @@ Backend rewrite ของ FAST เดิม (ดูโค้ดเก่าใ�
 - [x] `src/app.js` เพิ่ม `express.static('public')` + SPA fallback route (skip อัตโนมัติถ้า `public/` ไม่มี เช่นตอน dev backend อย่างเดียว)
 - [x] `fast-migrade/docker-compose.yml` (required env ทุกตัวไม่มี default เดาได้ + S3 vars สำหรับ onu-configs)
 - [ ] ย้าย Coolify build context จาก root เดิมเป็น `fast-migrade/` (ทำใน Coolify UI ตอน deploy จริง)
+
+### 4. Design theme + Admin restructure ✅ เสร็จแล้ว
+
+- [x] ดึง Apple-style theme เดิมจาก `archive/style.css` + `archive/admin/style.css` มาใช้ทั้งระบบ (สี/font Prompt/glassmorphism header/sidebar) พร้อม animation ตาม `emil-design-eng` + `ui-ux-pro-max` (transform/opacity only, ease-out โค้งเฉพาะ, stagger, prefers-reduced-motion)
+- [x] แยก Admin Panel เป็นหน้าของตัวเองจริง (`AdminLayout.jsx`, route แยกจาก `Layout.jsx` หลัก) — admin login แล้วเห็นแอปปกติก่อน มีลิงก์ "Admin" แยกไปหน้า admin ที่มี topbar ของตัวเอง + "Back to App"
+- [x] `features/users` (backend + frontend) — CRUD ผู้ใช้ครบ + suspend/activate ผ่าน `isActive` field, login ของ user ที่ถูก suspend ได้ `403`, กัน admin ลบ/suspend ตัวเอง (400 + disable ปุ่มฝั่ง UI)
+  - **ข้อจำกัดที่ยอมรับ**: token ที่ออกไปก่อนโดน suspend ยังใช้ได้จนหมดอายุ (8 ชม.) เพราะไม่มี token revocation store — ถ้าต้องการ block ทันทีต้องทำเพิ่มในรอบถัดไป
