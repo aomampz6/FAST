@@ -18,7 +18,7 @@ export default function PhonebookPage() {
     if (loading) {
         return (
             <div className="page">
-                <h2>Phonebook</h2>
+                <h2>สมุดโทรศัพท์</h2>
                 <div className="page-loading">
                     <div className="skeleton-line w-40" />
                     <div className="skeleton-line w-80" />
@@ -60,7 +60,7 @@ export default function PhonebookPage() {
 
     return (
         <div className="page">
-            <h2>Phonebook</h2>
+            <h2>สมุดโทรศัพท์</h2>
             <div className="phonebook-groups">
                 {groups.map((group) => (
                     <div className="phonebook-group" key={group._id}>
@@ -68,18 +68,18 @@ export default function PhonebookPage() {
                             <h3>{group.title}</h3>
                             {isAdmin && (
                                 <button className="danger" onClick={() => deleteGroup(group._id)}>
-                                    Delete group
+                                    ลบกลุ่ม
                                 </button>
                             )}
                         </div>
                         <table className="data-table">
                             <thead>
                                 <tr>
-                                    <th>Title</th>
-                                    <th>Subtitle</th>
-                                    <th>Phone</th>
-                                    <th>Extension</th>
-                                    {isAdmin && <th>Actions</th>}
+                                    <th>ชื่องาน/รายละเอียด</th>
+                                    <th>รายละเอียดรอง</th>
+                                    <th>เบอร์โทรศัพท์</th>
+                                    <th>เบอร์ต่อ</th>
+                                    {isAdmin && <th>จัดการ</th>}
                                 </tr>
                             </thead>
                             <tbody>
@@ -134,9 +134,9 @@ export default function PhonebookPage() {
                                                 </td>
                                                 <td>
                                                     <button onClick={(e) => handleUpdateContact(e, group._id, contact._id)}>
-                                                        Save
+                                                        บันทึก
                                                     </button>
-                                                    <button onClick={() => setEditingContact(null)}>Cancel</button>
+                                                    <button onClick={() => setEditingContact(null)}>ยกเลิก</button>
                                                 </td>
                                             </>
                                         ) : (
@@ -156,13 +156,13 @@ export default function PhonebookPage() {
                                                                 })
                                                             }
                                                         >
-                                                            Edit
+                                                            แก้ไข
                                                         </button>
                                                         <button
                                                             className="danger"
                                                             onClick={() => deleteContact(group._id, contact._id)}
                                                         >
-                                                            Delete
+                                                            ลบ
                                                         </button>
                                                     </td>
                                                 )}
@@ -172,7 +172,7 @@ export default function PhonebookPage() {
                                 ))}
                                 {group.contacts.length === 0 && (
                                     <tr>
-                                        <td colSpan={isAdmin ? 5 : 4}>No contacts.</td>
+                                        <td colSpan={isAdmin ? 5 : 4}>ยังไม่มีข้อมูลเบอร์โทรศัพท์</td>
                                     </tr>
                                 )}
                             </tbody>
@@ -181,30 +181,30 @@ export default function PhonebookPage() {
                         {isAdmin && (
                             <form className="inline-form" onSubmit={(e) => handleAddContact(e, group._id)}>
                                 <input
-                                    placeholder="Title"
+                                    placeholder="ชื่องาน/รายละเอียด"
                                     value={getDraft(group._id).title}
                                     onChange={(e) => setDraft(group._id, { ...getDraft(group._id), title: e.target.value })}
                                 />
                                 <input
-                                    placeholder="Subtitle"
+                                    placeholder="รายละเอียดรอง (เว้นว่างได้)"
                                     value={getDraft(group._id).subtitle}
                                     onChange={(e) =>
                                         setDraft(group._id, { ...getDraft(group._id), subtitle: e.target.value })
                                     }
                                 />
                                 <input
-                                    placeholder="Phone"
+                                    placeholder="เบอร์โทรศัพท์"
                                     value={getDraft(group._id).phone}
                                     onChange={(e) => setDraft(group._id, { ...getDraft(group._id), phone: e.target.value })}
                                 />
                                 <input
-                                    placeholder="Extension"
+                                    placeholder="เบอร์ต่อ (เว้นว่างได้)"
                                     value={getDraft(group._id).extension}
                                     onChange={(e) =>
                                         setDraft(group._id, { ...getDraft(group._id), extension: e.target.value })
                                     }
                                 />
-                                <button type="submit">Add contact</button>
+                                <button type="submit">เพิ่มเบอร์โทร</button>
                             </form>
                         )}
                     </div>
@@ -213,29 +213,29 @@ export default function PhonebookPage() {
 
             {isAdmin && (
                 <div className="phonebook-group">
-                    <h3>New group</h3>
+                    <h3>เพิ่มกลุ่มส่วนงานใหม่</h3>
                     <form className="inline-form" onSubmit={handleCreateGroup}>
                         <input
-                            placeholder="Title"
+                            placeholder="ชื่อกลุ่มส่วนงานใหม่"
                             value={newGroup.title}
                             onChange={(e) => setNewGroup({ ...newGroup, title: e.target.value })}
                         />
                         <input
-                            placeholder="Icon"
+                            placeholder="ไอคอน (ชื่อ Lucide icon)"
                             value={newGroup.icon}
                             onChange={(e) => setNewGroup({ ...newGroup, icon: e.target.value })}
                         />
                         <input
-                            placeholder="Color"
+                            placeholder="สีหลัก เช่น #FFD100"
                             value={newGroup.color}
                             onChange={(e) => setNewGroup({ ...newGroup, color: e.target.value })}
                         />
                         <input
-                            placeholder="Background color"
+                            placeholder="สีพื้นหลัง เช่น rgba(255,209,0,0.1)"
                             value={newGroup.bgColor}
                             onChange={(e) => setNewGroup({ ...newGroup, bgColor: e.target.value })}
                         />
-                        <button type="submit">Create group</button>
+                        <button type="submit">สร้างกลุ่ม</button>
                     </form>
                 </div>
             )}

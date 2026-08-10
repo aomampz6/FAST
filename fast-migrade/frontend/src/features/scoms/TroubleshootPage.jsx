@@ -41,17 +41,17 @@ export default function TroubleshootPage() {
                 rating: Number(rating),
                 comment,
             });
-            setFeedbackStatus('Thanks for your feedback!');
+            setFeedbackStatus('ขอบคุณสำหรับคำแนะนำของคุณ');
             setComment('');
         } catch (err) {
-            setFeedbackStatus(err.response?.data?.message || 'Failed to submit feedback');
+            setFeedbackStatus(err.response?.data?.message || 'ไม่สามารถส่งคำแนะนำได้ กรุณาลองใหม่อีกครั้ง');
         }
     }
 
     if (loading) {
         return (
             <div className="page">
-                <h2>Troubleshoot</h2>
+                <h2>ตรวจสอบและแก้ไขงานเสีย</h2>
                 <div className="page-loading">
                     <div className="skeleton-line w-40" />
                     <div className="skeleton-line w-80" />
@@ -64,10 +64,10 @@ export default function TroubleshootPage() {
 
     return (
         <div className="page">
-            <h2>Troubleshoot</h2>
+            <h2>ตรวจสอบและแก้ไขงานเสีย</h2>
             <div className="two-column">
                 <div className="column">
-                    <h3>Groups</h3>
+                    <h3>หมวดหมู่อาการเสีย</h3>
                     <ul className="pick-list">
                         {groups.map((g) => (
                             <li key={g}>
@@ -84,7 +84,7 @@ export default function TroubleshootPage() {
 
                 {selectedGroup && (
                     <div className="column">
-                        <h3>Symptoms in {selectedGroup}</h3>
+                        <h3>อาการที่พบใน {selectedGroup}</h3>
                         <ul className="pick-list">
                             {symptomsInGroup.map((item) => (
                                 <li key={item._id}>
@@ -104,23 +104,23 @@ export default function TroubleshootPage() {
                     <div className="column detail-column">
                         <h3>{selectedItem.Symptom || selectedItem.Scoms}</h3>
                         <p>
-                            <strong>Equipment:</strong> {selectedItem.Equipment}
+                            <strong>อุปกรณ์:</strong> {selectedItem.Equipment}
                         </p>
                         <p>
-                            <strong>Check Point:</strong> {selectedItem.CheckPoint}
+                            <strong>จุดที่ต้องเช็คจุดแรก:</strong> {selectedItem.CheckPoint}
                         </p>
                         <p>
-                            <strong>Steps:</strong>
+                            <strong>ลำดับขั้นตอนการแก้ไขปัญหา:</strong>
                         </p>
                         <pre className="steps-block">{selectedItem.Steps}</pre>
                         <p>
-                            <strong>Normal Value:</strong> {selectedItem.NormalValue}
+                            <strong>ค่ามาตรฐานปกติ:</strong> {selectedItem.NormalValue}
                         </p>
 
                         <form className="feedback-form" onSubmit={handleFeedback}>
-                            <h4>Was this helpful?</h4>
+                            <h4>คำแนะนำเพิ่มเติมจากผู้ใช้งาน</h4>
                             <label>
-                                Rating
+                                ให้คะแนนความช่วยเหลือ
                                 <select value={rating} onChange={(e) => setRating(e.target.value)}>
                                     {[1, 2, 3, 4, 5].map((n) => (
                                         <option key={n} value={n}>
@@ -130,10 +130,14 @@ export default function TroubleshootPage() {
                                 </select>
                             </label>
                             <label>
-                                Comment
-                                <textarea value={comment} onChange={(e) => setComment(e.target.value)} />
+                                ความคิดเห็นเพิ่มเติม
+                                <textarea
+                                    value={comment}
+                                    onChange={(e) => setComment(e.target.value)}
+                                    placeholder="ระบุคำแนะนำ ข้อเสนอแนะ หรือรายละเอียดเพิ่มเติม"
+                                />
                             </label>
-                            <button type="submit">Submit feedback</button>
+                            <button type="submit">ส่งคำแนะนำ / บันทึกข้อมูล</button>
                             {feedbackStatus && <p className="feedback-status">{feedbackStatus}</p>}
                         </form>
                     </div>

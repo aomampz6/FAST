@@ -72,17 +72,17 @@ export default function OnuSetupPage() {
                 rating: Number(rating),
                 comment,
             });
-            setFeedbackStatus('Thanks for your feedback!');
+            setFeedbackStatus('ขอบคุณสำหรับคำแนะนำของคุณ');
             setComment('');
         } catch (err) {
-            setFeedbackStatus(err.response?.data?.message || 'Failed to submit feedback');
+            setFeedbackStatus(err.response?.data?.message || 'ไม่สามารถส่งคำแนะนำได้ กรุณาลองใหม่อีกครั้ง');
         }
     }
 
     if (loading) {
         return (
             <div className="page">
-                <h2>ONU Setup</h2>
+                <h2>ตั้งค่าอุปกรณ์ ONU</h2>
                 <div className="page-loading">
                     <div className="skeleton-line w-40" />
                     <div className="skeleton-line w-80" />
@@ -95,10 +95,10 @@ export default function OnuSetupPage() {
 
     return (
         <div className="page">
-            <h2>ONU Setup</h2>
+            <h2>ตั้งค่าอุปกรณ์ ONU</h2>
             <div className="two-column">
                 <div className="column">
-                    <h3>Brands</h3>
+                    <h3>เลือกยี่ห้ออุปกรณ์ (Brand)</h3>
                     <ul className="pick-list">
                         {brands.map((b) => (
                             <li key={b}>
@@ -112,7 +112,7 @@ export default function OnuSetupPage() {
 
                 {selectedBrand && (
                     <div className="column">
-                        <h3>Modes for {selectedBrand}</h3>
+                        <h3>เลือกโหมดที่ต้องการดูรายละเอียด: {selectedBrand}</h3>
                         <ul className="pick-list">
                             {modesForBrand.map((m) => (
                                 <li key={m._id}>
@@ -130,7 +130,7 @@ export default function OnuSetupPage() {
 
                 {selectedMode && (
                     <div className="column detail-column">
-                        <h3>{selectedMode.Brand} - {selectedMode.Mode}</h3>
+                        <h3>ตั้งค่า {selectedMode.Brand} — {selectedMode.Mode}</h3>
                         <pre className="steps-block">{selectedMode.Details}</pre>
 
                         {selectedMode.Images?.length > 0 && (
@@ -143,15 +143,15 @@ export default function OnuSetupPage() {
 
                         {guideContent && (
                             <div className="guide-frame-wrap">
-                                <h4>Guide</h4>
-                                <iframe title="Setup guide" className="guide-frame" srcDoc={guideContent} />
+                                <h4>คู่มือการตั้งค่า</h4>
+                                <iframe title="คู่มือการตั้งค่า" className="guide-frame" srcDoc={guideContent} />
                             </div>
                         )}
 
                         <form className="feedback-form" onSubmit={handleFeedback}>
-                            <h4>Was this helpful?</h4>
+                            <h4>คำแนะนำเพิ่มเติมจากผู้ใช้งาน</h4>
                             <label>
-                                Rating
+                                ให้คะแนนความช่วยเหลือ
                                 <select value={rating} onChange={(e) => setRating(e.target.value)}>
                                     {[1, 2, 3, 4, 5].map((n) => (
                                         <option key={n} value={n}>
@@ -161,10 +161,14 @@ export default function OnuSetupPage() {
                                 </select>
                             </label>
                             <label>
-                                Comment
-                                <textarea value={comment} onChange={(e) => setComment(e.target.value)} />
+                                ความคิดเห็นเพิ่มเติม
+                                <textarea
+                                    value={comment}
+                                    onChange={(e) => setComment(e.target.value)}
+                                    placeholder="ระบุคำแนะนำ ข้อเสนอแนะ หรือรายละเอียดเพิ่มเติม"
+                                />
                             </label>
-                            <button type="submit">Submit feedback</button>
+                            <button type="submit">ส่งคำแนะนำ / บันทึกข้อมูล</button>
                             {feedbackStatus && <p className="feedback-status">{feedbackStatus}</p>}
                         </form>
                     </div>

@@ -3,12 +3,17 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../shared/auth/AuthContext';
 
 const PAGE_TITLES = [
-    { path: '/troubleshoot', title: 'Troubleshoot' },
-    { path: '/onu-setup', title: 'ONU Setup' },
-    { path: '/phonebook', title: 'Phonebook' },
-    { path: '/profile', title: 'Profile' },
-    { path: '/admin', title: 'Admin' },
+    { path: '/troubleshoot', title: 'ตรวจสอบและแก้ไขงานเสีย' },
+    { path: '/onu-setup', title: 'การตั้งค่าอุปกรณ์ FTTx (ONU)' },
+    { path: '/phonebook', title: 'ข้อมูล สมุดโทรศัพท์' },
+    { path: '/profile', title: 'ข้อมูลส่วนตัว' },
+    { path: '/admin', title: 'ผู้ดูแลระบบ' },
 ];
+
+const ROLE_LABEL = {
+    admin: 'ผู้ดูแลระบบ',
+    user: 'ช่างเทคนิค',
+};
 
 export default function Layout() {
     const { role, logout } = useAuth();
@@ -22,7 +27,7 @@ export default function Layout() {
     }
 
     const match = PAGE_TITLES.find((entry) => location.pathname.startsWith(entry.path));
-    const pageTitle = match ? match.title : 'Dashboard';
+    const pageTitle = match ? match.title : 'หน้าหลัก';
 
     return (
         <div className="app-shell">
@@ -34,14 +39,14 @@ export default function Layout() {
                         </div>
                         <div>
                             <h1 className="logo-text">FAST</h1>
-                            <p className="subtitle">Field Assistant</p>
+                            <p className="subtitle">Field Assistant System</p>
                         </div>
                     </div>
                     <button
                         type="button"
                         className="sidebar-toggle"
                         onClick={() => setCollapsed((prev) => !prev)}
-                        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                        aria-label={collapsed ? 'ขยายแถบเมนู' : 'ย่อแถบเมนู'}
                     >
                         {collapsed ? '›' : '‹'}
                     </button>
@@ -49,30 +54,30 @@ export default function Layout() {
 
                 <nav className="sidebar-nav">
                     <NavLink to="/" end className="nav-item">
-                        <span>Dashboard</span>
+                        <span>หน้าหลัก</span>
                     </NavLink>
                     <NavLink to="/troubleshoot" className="nav-item">
-                        <span>Troubleshoot</span>
+                        <span>ตรวจสอบงานเสีย</span>
                     </NavLink>
                     <NavLink to="/onu-setup" className="nav-item">
-                        <span>ONU Setup</span>
+                        <span>ตั้งค่าอุปกรณ์ ONU</span>
                     </NavLink>
                     <NavLink to="/phonebook" className="nav-item">
-                        <span>Phonebook</span>
+                        <span>สมุดโทรศัพท์</span>
                     </NavLink>
                     <NavLink to="/profile" className="nav-item">
-                        <span>Profile</span>
+                        <span>ข้อมูลส่วนตัว</span>
                     </NavLink>
                     {role === 'admin' && (
                         <NavLink to="/admin" className="nav-item">
-                            <span>Admin</span>
+                            <span>ผู้ดูแลระบบ</span>
                         </NavLink>
                     )}
                 </nav>
 
                 <div className="sidebar-footer-block">
                     <button type="button" className="nav-item logout-btn" onClick={handleLogout}>
-                        <span>Logout</span>
+                        <span>ออกจากระบบ</span>
                     </button>
                 </div>
             </aside>
@@ -83,7 +88,7 @@ export default function Layout() {
                     <div className="header-actions">
                         <div className="user-profile">
                             <span className="user-avatar">{role ? role[0].toUpperCase() : 'U'}</span>
-                            <span>{role}</span>
+                            <span>{ROLE_LABEL[role] || role}</span>
                         </div>
                     </div>
                 </header>

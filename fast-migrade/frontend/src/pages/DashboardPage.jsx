@@ -1,10 +1,10 @@
 import { useParameters } from '../features/parameters/useParameters';
 
 const LEVEL_LABEL = {
-    danger: 'Danger',
-    warning: 'Warning',
-    info: 'Info',
-    none: 'None',
+    danger: 'อันตราย',
+    warning: 'คำเตือน',
+    info: 'ข้อมูล',
+    none: 'ปกติ',
 };
 
 export default function DashboardPage() {
@@ -12,8 +12,8 @@ export default function DashboardPage() {
 
     return (
         <div className="page">
-            <h2>Dashboard</h2>
-            <p>Reference parameters and standards.</p>
+            <h2>หน้าหลัก</h2>
+            <p>ข้อมูลพารามิเตอร์อ้างอิงและเกณฑ์มาตรฐาน</p>
             {loading && (
                 <div className="page-loading">
                     <div className="skeleton-line w-40" />
@@ -26,11 +26,11 @@ export default function DashboardPage() {
                 <table className="data-table">
                     <thead>
                         <tr>
-                            <th>Type</th>
-                            <th>Parameter</th>
-                            <th>Standard</th>
-                            <th>Recommendation</th>
-                            <th>Level</th>
+                            <th>ประเภทอุปกรณ์ (Type)</th>
+                            <th>พารามิเตอร์ (Parameter)</th>
+                            <th>เกณฑ์มาตรฐาน (Standard)</th>
+                            <th>คำแนะนำของระบบ (Recommendation)</th>
+                            <th>ระดับ</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -45,7 +45,7 @@ export default function DashboardPage() {
                         ))}
                         {parameters.length === 0 && (
                             <tr>
-                                <td colSpan={5}>No parameters found.</td>
+                                <td colSpan={5}>ยังไม่มีข้อมูลพารามิเตอร์อ้างอิงในระบบ</td>
                             </tr>
                         )}
                     </tbody>
