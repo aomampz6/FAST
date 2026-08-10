@@ -15,11 +15,11 @@ export default function AdminLayout({ children }) {
         <div className="admin-shell">
             <header className="admin-topbar">
                 <Link to="/" className="admin-back-link">
-                    ← Back to App
+                    ← กลับสู่หน้าหลัก
                 </Link>
-                <span className="admin-topbar-title">Admin Panel</span>
+                <span className="admin-topbar-title">แผงควบคุมผู้ดูแลระบบ</span>
                 <button type="button" className="admin-logout-btn" onClick={handleLogout}>
-                    Logout
+                    ออกจากระบบ
                 </button>
             </header>
             {children}

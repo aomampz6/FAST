@@ -12,25 +12,25 @@ export default function AdminPage() {
 
     return (
         <div className="page admin-page">
-            <h2>Admin</h2>
+            <h2>จัดการข้อมูลระบบ</h2>
             <nav className="admin-tabs">
                 <NavLink to="/admin/scoms" className={({ isActive }) => (isActive ? 'active' : undefined)}>
-                    Scoms
+                    ข้อมูลการแก้ไขปัญหา
                 </NavLink>
                 <NavLink to="/admin/parameters" className={({ isActive }) => (isActive ? 'active' : undefined)}>
-                    Parameters
+                    ข้อมูลพารามิเตอร์อ้างอิง
                 </NavLink>
                 <NavLink to="/admin/onu-configs" className={({ isActive }) => (isActive ? 'active' : undefined)}>
-                    ONU Configs
+                    ข้อมูลการตั้งค่า onu
                 </NavLink>
                 <NavLink to="/admin/guides" className={({ isActive }) => (isActive ? 'active' : undefined)}>
-                    Guides
+                    คู่มือ Interactive
                 </NavLink>
                 <NavLink to="/admin/phonebook" className={({ isActive }) => (isActive ? 'active' : undefined)}>
-                    Phonebook
+                    ข้อมูลสมุดโทรศัพท์
                 </NavLink>
                 <NavLink to="/admin/users" className={({ isActive }) => (isActive ? 'active' : undefined)}>
-                    Users
+                    จัดการผู้ใช้งาน
                 </NavLink>
             </nav>
             <div className="admin-tab-content" key={location.pathname}>

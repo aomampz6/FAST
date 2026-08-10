@@ -20,29 +20,29 @@ export default function AdminGuidesTab() {
         setStatus(null);
         try {
             await writeGuide(selected, content);
-            setStatus('Saved successfully');
+            setStatus('บันทึกสำเร็จ');
             await refresh();
         } catch (err) {
-            setStatus(err.response?.data?.message || 'Save failed');
+            setStatus(err.response?.data?.message || 'บันทึกไม่สำเร็จ');
         }
     }
 
-    if (loading) return <p>Loading...</p>;
+    if (loading) return <p>กำลังโหลด...</p>;
     if (error) return <div className="error-banner">{error}</div>;
 
     return (
         <div className="admin-section">
             <p className="hint">
-                Guides are plain HTML files that already exist on disk; this editor can update their contents but
-                cannot create or delete files.
+                คู่มือ Interactive คือไฟล์ HTML แบบสมบูรณ์ในตัวเอง (ฝังใน ONU setup ผ่าน iframe) — แก้ไขซอร์สโค้ด
+                HTML/JS ได้ตรงนี้
             </p>
             <table className="data-table">
                 <thead>
                     <tr>
-                        <th>Filename</th>
-                        <th>Size</th>
-                        <th>Updated</th>
-                        <th>Actions</th>
+                        <th>ไฟล์</th>
+                        <th>ขนาด</th>
+                        <th>แก้ไขล่าสุด</th>
+                        <th>การดำเนินการ</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -50,15 +50,15 @@ export default function AdminGuidesTab() {
                         <tr key={g.filename}>
                             <td>{g.filename}</td>
                             <td>{g.size}</td>
-                            <td>{new Date(g.updatedAt).toLocaleString()}</td>
+                            <td>{new Date(g.updatedAt).toLocaleString('th-TH')}</td>
                             <td>
-                                <button onClick={() => openGuide(g.filename)}>Edit</button>
+                                <button onClick={() => openGuide(g.filename)}>แก้ไข</button>
                             </td>
                         </tr>
                     ))}
                     {guides.length === 0 && (
                         <tr>
-                            <td colSpan={4}>No guide files found.</td>
+                            <td colSpan={4}>ยังไม่มีไฟล์คู่มือ</td>
                         </tr>
                     )}
                 </tbody>
@@ -66,7 +66,10 @@ export default function AdminGuidesTab() {
 
             {selected && (
                 <form className="admin-form" onSubmit={handleSave}>
-                    <h3>Editing {selected}</h3>
+                    <h3>แก้ไขไฟล์: {selected}</h3>
+                    <p className="hint">
+                        แก้ไขซอร์สโค้ด HTML ทั้งไฟล์ — โปรดตรวจสอบให้ถูกต้องก่อนบันทึก เพราะจะเขียนทับไฟล์ทันที
+                    </p>
                     {status && <div className="feedback-status">{status}</div>}
                     <textarea
                         className="guide-editor"
@@ -75,9 +78,9 @@ export default function AdminGuidesTab() {
                         rows={20}
                     />
                     <div className="form-actions">
-                        <button type="submit">Save</button>
+                        <button type="submit">บันทึก</button>
                         <button type="button" onClick={() => setSelected(null)}>
-                            Close
+                            ยกเลิก
                         </button>
                     </div>
                 </form>

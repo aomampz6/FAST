@@ -42,7 +42,7 @@ export default function AdminOnuConfigsTab() {
             }
             resetForm();
         } catch (err) {
-            setFormError(err.response?.data?.message || 'Save failed');
+            setFormError(err.response?.data?.message || 'บันทึกไม่สำเร็จ');
         }
     }
 
@@ -53,25 +53,40 @@ export default function AdminOnuConfigsTab() {
         setImageFiles((prev) => ({ ...prev, [id]: null }));
     }
 
-    if (loading) return <p>Loading...</p>;
+    async function handleDelete(id) {
+        if (!window.confirm('ต้องการลบการตั้งค่า ONU นี้ใช่หรือไม่?')) return;
+        try {
+            await deleteOnuConfig(id);
+        } catch (err) {
+            setFormError(err.response?.data?.message || 'ลบข้อมูลไม่สำเร็จ');
+        }
+    }
+
+    async function handleDeleteImage(configId, imageId) {
+        if (!window.confirm('ต้องการลบรูปภาพนี้ใช่หรือไม่?')) return;
+        await removeOnuConfigImage(configId, imageId);
+    }
+
+    // See AdminScomsTab for why this doesn't gate on every refetch.
+    if (loading && configs.length === 0) return <p>กำลังโหลด...</p>;
     if (error) return <div className="error-banner">{error}</div>;
 
     return (
         <div className="admin-section">
             <form className="admin-form" onSubmit={handleSubmit}>
-                <h3>{editingId ? 'Edit ONU Config' : 'New ONU Config'}</h3>
+                <h3>{editingId ? 'แก้ไขการตั้งค่า ONU' : 'เพิ่มการตั้งค่า ONU ใหม่'}</h3>
                 {formError && <div className="error-banner">{formError}</div>}
                 <div className="form-grid">
                     <label>
-                        Brand
+                        Brand (ยี่ห้อ)
                         <input value={form.Brand} onChange={(e) => setForm({ ...form, Brand: e.target.value })} required />
                     </label>
                     <label>
-                        Mode
+                        Mode (โหมด)
                         <input value={form.Mode} onChange={(e) => setForm({ ...form, Mode: e.target.value })} required />
                     </label>
                     <label>
-                        Details
+                        Details (รายละเอียดขั้นตอน)
                         <textarea value={form.Details} onChange={(e) => setForm({ ...form, Details: e.target.value })} required />
                     </label>
                     <label className="checkbox-label">
@@ -80,14 +95,14 @@ export default function AdminOnuConfigsTab() {
                             checked={form.Hidden}
                             onChange={(e) => setForm({ ...form, Hidden: e.target.checked })}
                         />
-                        Hidden
+                        ซ่อนจากผู้ใช้งาน
                     </label>
                 </div>
                 <div className="form-actions">
-                    <button type="submit">{editingId ? 'Save' : 'Create'}</button>
+                    <button type="submit">{editingId ? 'บันทึก' : 'เพิ่มข้อมูล'}</button>
                     {editingId && (
                         <button type="button" onClick={resetForm}>
-                            Cancel
+                            ยกเลิก
                         </button>
                     )}
                 </div>
@@ -98,9 +113,9 @@ export default function AdminOnuConfigsTab() {
                     <tr>
                         <th>Brand</th>
                         <th>Mode</th>
-                        <th>Hidden</th>
-                        <th>Images</th>
-                        <th>Actions</th>
+                        <th>การแสดงผล</th>
+                        <th>รูปภาพ</th>
+                        <th>การดำเนินการ</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -109,8 +124,8 @@ export default function AdminOnuConfigsTab() {
                             <td>{item.Brand}</td>
                             <td>{item.Mode}</td>
                             <td>
-                                {item.Hidden ? 'Yes' : 'No'}
-                                {item.Hidden && <span className="hidden-badge">Hidden</span>}
+                                {item.Hidden ? 'ซ่อน' : 'แสดง'}
+                                {item.Hidden && <span className="hidden-badge">ซ่อนอยู่</span>}
                             </td>
                             <td>
                                 <div className="image-gallery small">
@@ -119,9 +134,9 @@ export default function AdminOnuConfigsTab() {
                                             <img src={getOnuImageUrl(img.key)} alt={img.originalName || ''} />
                                             <button
                                                 className="danger"
-                                                onClick={() => removeOnuConfigImage(item._id, img._id)}
+                                                onClick={() => handleDeleteImage(item._id, img._id)}
                                             >
-                                                x
+                                                ×
                                             </button>
                                         </div>
                                     ))}
@@ -133,19 +148,19 @@ export default function AdminOnuConfigsTab() {
                                         setImageFiles((prev) => ({ ...prev, [item._id]: e.target.files }))
                                     }
                                 />
-                                <button onClick={() => handleUpload(item._id)}>Upload</button>
+                                <button onClick={() => handleUpload(item._id)}>อัปโหลด</button>
                             </td>
                             <td>
-                                <button onClick={() => startEdit(item)}>Edit</button>
-                                <button className="danger" onClick={() => deleteOnuConfig(item._id)}>
-                                    Delete
+                                <button onClick={() => startEdit(item)}>แก้ไข</button>
+                                <button className="danger" onClick={() => handleDelete(item._id)}>
+                                    ลบ
                                 </button>
                             </td>
                         </tr>
                     ))}
                     {configs.length === 0 && (
                         <tr>
-                            <td colSpan={5}>No records.</td>
+                            <td colSpan={5}>ไม่มีข้อมูล</td>
                         </tr>
                     )}
                 </tbody>

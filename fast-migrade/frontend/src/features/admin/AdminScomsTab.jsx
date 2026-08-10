@@ -12,6 +12,19 @@ const emptyForm = {
     Equipment: '',
 };
 
+// Thai field labels, matching the old admin panel's wording (ID/Group/Scoms
+// hints) and extended consistently to the remaining technical field names.
+const FIELD_LABELS = {
+    ID: 'ID (เช่น U0001)',
+    Group: 'Group (กลุ่ม)',
+    Scoms: 'Scoms (หัวข้อ)',
+    Symptom: 'Symptom (อาการ)',
+    CheckPoint: 'CheckPoint (จุดตรวจสอบ)',
+    Steps: 'Steps (ขั้นตอนแก้ไข)',
+    NormalValue: 'NormalValue (ค่าปกติ)',
+    Equipment: 'Equipment (อุปกรณ์)',
+};
+
 export default function AdminScomsTab() {
     const { scoms, loading, error, createScom, updateScom, deleteScom } = useScoms();
     const [form, setForm] = useState(emptyForm);
@@ -49,22 +62,36 @@ export default function AdminScomsTab() {
             }
             resetForm();
         } catch (err) {
-            setFormError(err.response?.data?.message || 'Save failed');
+            setFormError(err.response?.data?.message || 'บันทึกไม่สำเร็จ');
         }
     }
 
-    if (loading) return <p>Loading...</p>;
+    async function handleDelete(id) {
+        if (!window.confirm('ต้องการลบข้อมูลนี้ใช่หรือไม่?')) return;
+        try {
+            await deleteScom(id);
+        } catch (err) {
+            setFormError(err.response?.data?.message || 'ลบข้อมูลไม่สำเร็จ');
+        }
+    }
+
+    // Only block the whole tab behind "Loading..." before the first fetch
+    // resolves. Later refetches (after create/edit/delete) also set
+    // `loading`, but the table already holds the previous data — bailing out
+    // here would unmount and remount the table, replaying every row's
+    // entrance animation and reading as a flicker.
+    if (loading && scoms.length === 0) return <p>กำลังโหลด...</p>;
     if (error) return <div className="error-banner">{error}</div>;
 
     return (
         <div className="admin-section">
             <form className="admin-form" onSubmit={handleSubmit}>
-                <h3>{editingId ? 'Edit Scom' : 'New Scom'}</h3>
+                <h3>{editingId ? 'แก้ไขข้อมูล Scom' : 'เพิ่ม Scom ใหม่'}</h3>
                 {formError && <div className="error-banner">{formError}</div>}
                 <div className="form-grid">
                     {Object.keys(emptyForm).map((field) => (
                         <label key={field}>
-                            {field}
+                            {FIELD_LABELS[field] || field}
                             {field === 'Steps' ? (
                                 <textarea
                                     value={form[field]}
@@ -81,10 +108,10 @@ export default function AdminScomsTab() {
                     ))}
                 </div>
                 <div className="form-actions">
-                    <button type="submit">{editingId ? 'Save' : 'Create'}</button>
+                    <button type="submit">{editingId ? 'บันทึก' : 'เพิ่มข้อมูล'}</button>
                     {editingId && (
                         <button type="button" onClick={resetForm}>
-                            Cancel
+                            ยกเลิก
                         </button>
                     )}
                 </div>
@@ -97,7 +124,7 @@ export default function AdminScomsTab() {
                         <th>Group</th>
                         <th>Scoms</th>
                         <th>Symptom</th>
-                        <th>Actions</th>
+                        <th>การดำเนินการ</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -108,16 +135,16 @@ export default function AdminScomsTab() {
                             <td>{item.Scoms}</td>
                             <td>{item.Symptom}</td>
                             <td>
-                                <button onClick={() => startEdit(item)}>Edit</button>
-                                <button className="danger" onClick={() => deleteScom(item._id)}>
-                                    Delete
+                                <button onClick={() => startEdit(item)}>แก้ไข</button>
+                                <button className="danger" onClick={() => handleDelete(item._id)}>
+                                    ลบ
                                 </button>
                             </td>
                         </tr>
                     ))}
                     {scoms.length === 0 && (
                         <tr>
-                            <td colSpan={5}>No records.</td>
+                            <td colSpan={5}>ไม่มีข้อมูล</td>
                         </tr>
                     )}
                 </tbody>
