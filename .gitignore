@@ -1,3 +1,7 @@
 node_modules/
 .env
 .DS_Store
+
+# Guide edit backups (created automatically before every overwrite); guide
+# HTML itself under guides/ is tracked, only the timestamped .bak copies are not.
+guides/.history/*.bak
