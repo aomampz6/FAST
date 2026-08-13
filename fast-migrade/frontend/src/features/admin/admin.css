@@ -47,7 +47,7 @@
     --radius-sm: 8px;
     --radius-md: 16px;
     --radius-lg: 24px;
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition: background-color 180ms ease-out, border-color 180ms ease-out, color 180ms ease-out, box-shadow 180ms ease-out;
 
     font-family: 'Prompt', -apple-system, BlinkMacSystemFont, sans-serif;
     background-color: var(--bg-main);
@@ -64,18 +64,6 @@
     --text-secondary: #A1A1AA;
     --border-color: #27272A;
     --border-light: rgba(39, 39, 42, 0.5);
-}
-
-@media (prefers-color-scheme: dark) {
-    .admin-page:not([data-theme="light"]) {
-        --bg-main: #000000;
-        --bg-surface: #121212;
-        --bg-surface-hover: #1E1E1E;
-        --text-primary: #F8FAFC;
-        --text-secondary: #A1A1AA;
-        --border-color: #27272A;
-        --border-light: rgba(39, 39, 42, 0.5);
-    }
 }
 
 .admin-page * {
@@ -98,29 +86,19 @@
     --border-light: rgba(210, 210, 215, 0.5);
     --danger: #EF4444;
     --shadow-sm: 0 4px 24px rgba(0, 0, 0, 0.04);
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition: background-color 180ms ease-out, border-color 180ms ease-out, color 180ms ease-out, box-shadow 180ms ease-out;
     min-height: 100vh;
     font-family: 'Prompt', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-    .admin-shell {
-        --bg-surface: #1A1A1A;
-        --text-primary: #F8FAFC;
-        --text-secondary: #A1A1AA;
-        --border-color: #27272A;
-        --border-light: rgba(39, 39, 42, 0.5);
-    }
-}
-
 .admin-topbar {
-    height: 64px;
+    height: 72px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 24px;
-    padding: 0 32px;
-    background: var(--bg-surface);
+    padding: 0 clamp(20px, 4vw, 56px);
+    background: color-mix(in srgb, var(--bg-surface) 88%, transparent);
     border-bottom: 1px solid var(--border-light);
     box-shadow: var(--shadow-sm);
     position: sticky;
@@ -129,15 +107,18 @@
 }
 
 .admin-back-link {
-    color: var(--text-secondary);
+    color: var(--text-primary);
     text-decoration: none;
     font-weight: 600;
     font-size: 14px;
-    transition: color 160ms ease-out;
+    padding: 9px 12px;
+    border-radius: 999px;
+    transition: background-color 160ms ease-out, color 160ms ease-out;
 }
 
 .admin-back-link:hover {
-    color: var(--nt-yellow-hover);
+    background: var(--nt-yellow-light);
+    color: var(--nt-dark);
 }
 
 .admin-topbar-title {
@@ -169,12 +150,30 @@
     transform: scale(0.97);
 }
 
-.admin-page h2 {
-    font-size: 28px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
+.admin-page-hero {
+    max-width: 1200px;
+    margin: 0 auto 28px;
+}
+
+.admin-page-eyebrow {
+    color: #a66f00;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+}
+
+.admin-page h1 {
+    font-size: clamp(28px, 3vw, 40px);
+    font-weight: 800;
+    letter-spacing: -0.04em;
     color: var(--text-primary);
-    margin: 0 0 24px;
+    margin: 6px 0 8px;
+}
+
+.admin-page-hero p {
+    color: var(--text-secondary);
+    margin: 0;
+    font-size: 15px;
 }
 
 .admin-page h3 {
@@ -189,6 +188,9 @@
 /* Tabs                                                                    */
 /* ---------------------------------------------------------------------- */
 .admin-page .admin-tabs {
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
@@ -196,7 +198,7 @@
     border: 1px solid var(--border-light);
     border-radius: var(--radius-md);
     padding: 6px;
-    margin-bottom: 28px;
+    margin-bottom: 24px;
     box-shadow: var(--shadow-sm);
 }
 
@@ -210,7 +212,7 @@
     font-weight: 600;
     font-size: 14.5px;
     cursor: pointer;
-    transition: var(--transition);
+    transition: background-color 160ms ease-out, color 160ms ease-out, transform 160ms ease-out, box-shadow 160ms ease-out;
 }
 
 .admin-page .admin-tabs a:hover {
@@ -224,6 +226,13 @@
     box-shadow: var(--shadow-sm);
 }
 
+.admin-page .admin-tabs a:focus-visible,
+.admin-back-link:focus-visible,
+.admin-logout-btn:focus-visible {
+    outline: 3px solid var(--nt-yellow);
+    outline-offset: 3px;
+}
+
 /* Crossfade between routed tab panels.
  * Note: the tab panel itself no longer carries its own fade — its child
  * `.admin-section` already animates in (admin-fade-up below). Animating
@@ -234,18 +243,26 @@
        competes with the sticky topbar (z-index: 40) above it. */
     position: relative;
     z-index: 0;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 /* ---------------------------------------------------------------------- */
 /* Cards / sections                                                        */
 /* ---------------------------------------------------------------------- */
 .admin-page .admin-section {
-    animation: admin-fade-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: admin-fade-up 220ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes admin-fade-up {
     from { opacity: 0; transform: translateY(12px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .admin-page .admin-section {
+        animation: none;
+    }
 }
 
 .admin-page p.hint {
@@ -273,6 +290,66 @@
 }
 
 /* ---------------------------------------------------------------------- */
+/* Card header (icon + title + subtitle), reused by form cards and the     */
+/* table card so every section reads with the same visual weight.         */
+/* ---------------------------------------------------------------------- */
+.admin-page .admin-card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    box-shadow: var(--shadow-sm);
+}
+
+.admin-page .admin-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.admin-page .admin-card-header-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.admin-page .admin-card-header-row .admin-card-header {
+    margin-bottom: 0;
+}
+
+.admin-page .admin-card-icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-sm);
+    background: var(--nt-yellow-light, rgba(255, 209, 0, 0.15));
+    color: #a17400;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+[data-theme="dark"] .admin-page .admin-card-icon {
+    background: rgba(255, 209, 0, 0.15);
+    color: var(--nt-yellow);
+}
+
+.admin-page .admin-card-header h3 {
+    margin: 0 0 4px;
+}
+
+.admin-page .admin-card-subtitle {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* ---------------------------------------------------------------------- */
 /* Forms                                                                   */
 /* ---------------------------------------------------------------------- */
 .admin-page .admin-form {
@@ -282,6 +359,45 @@
     padding: 32px;
     margin-bottom: 28px;
     box-shadow: var(--shadow-sm);
+}
+
+.admin-page .admin-fieldset {
+    border: none;
+    padding: 0;
+    margin: 0 0 24px;
+}
+
+.admin-page .admin-fieldset:last-of-type {
+    margin-bottom: 0;
+}
+
+.admin-page .admin-fieldset legend {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-secondary);
+    padding: 0 0 12px;
+    width: 100%;
+    border-bottom: 1px solid var(--border-light);
+    margin-bottom: 16px;
+}
+
+.admin-page .field-label-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.admin-page .required-mark {
+    color: var(--danger);
+}
+
+.admin-page .field-hint {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--text-tertiary);
+    margin-top: 2px;
 }
 
 .admin-page .form-grid {
@@ -444,6 +560,71 @@
 }
 
 /* ---------------------------------------------------------------------- */
+/* Search box                                                              */
+/* ---------------------------------------------------------------------- */
+.admin-page .admin-search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-width: 240px;
+}
+
+.admin-page .admin-search-icon {
+    position: absolute;
+    left: 12px;
+    color: var(--text-tertiary);
+    pointer-events: none;
+}
+
+.admin-page .admin-search-box input {
+    width: 100%;
+    padding-left: 38px;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Empty / no-results states                                              */
+/* ---------------------------------------------------------------------- */
+.admin-page .admin-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 48px 24px;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.admin-page .admin-empty-state svg {
+    color: var(--text-tertiary);
+}
+
+.admin-page .admin-empty-state p {
+    margin: 0;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.admin-page .admin-empty-state button {
+    margin-top: 4px;
+    padding: 6px 16px;
+    font-size: 13px;
+}
+
+/* Horizontal scroll on narrow viewports instead of squeezing/wrapping the  */
+/* table into illegibility — the table keeps its natural column widths and */
+/* the container scrolls, with a subtle edge fade as a scroll affordance.  */
+.admin-page .table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 720px) {
+    .admin-page .data-table {
+        min-width: 640px;
+    }
+}
+
+/* ---------------------------------------------------------------------- */
 /* Tables                                                                  */
 /* ---------------------------------------------------------------------- */
 .admin-page .data-table {
@@ -479,9 +660,23 @@
     border-bottom: none;
 }
 
+/* `opacity: 1` here is deliberate, not redundant: this is the row's real
+ * content state, applied whether or not the entrance animation below ever
+ * plays. Previously this used `animation-fill-mode: backwards`, which holds
+ * the keyframe's `from` value (opacity: 0) for the whole animation-delay
+ * window — if the tab isn't in the foreground at the exact moment the
+ * delayed animation is due to start (trivially easy: switch away for a
+ * second while a tab loads), Chromium can leave the animation stuck at that
+ * "before start" state indefinitely, and rows never render even though the
+ * data is genuinely there in the DOM. Dropping `backwards` means the browser
+ * always paints this base rule (fully visible) until/unless the animation
+ * actually manages to run — a stalled/never-started animation now degrades
+ * to "no fade-in effect", never to "invisible data".
+ */
 .admin-page .data-table tbody tr {
+    opacity: 1;
     transition: background-color 0.2s ease;
-    animation: admin-row-in 0.35s cubic-bezier(0.23, 1, 0.32, 1) backwards;
+    animation: admin-row-in 0.35s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .admin-page .data-table tbody tr:hover td {
@@ -489,7 +684,7 @@
 }
 
 @keyframes admin-row-in {
-    from { opacity: 0; transform: translateY(8px); }
+    from { opacity: 0.4; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
 }
 

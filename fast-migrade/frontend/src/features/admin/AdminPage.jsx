@@ -12,8 +12,12 @@ export default function AdminPage() {
 
     return (
         <div className="page admin-page">
-            <h2>จัดการข้อมูลระบบ</h2>
-            <nav className="admin-tabs">
+            <header className="admin-page-hero">
+                <span className="admin-page-eyebrow">ADMIN WORKSPACE</span>
+                <h1>จัดการข้อมูลระบบ</h1>
+                <p>จัดการข้อมูลคู่มือ อุปกรณ์ และผู้ใช้งานจากพื้นที่ทำงานเดียว</p>
+            </header>
+            <nav className="admin-tabs" aria-label="เมนูจัดการข้อมูลระบบ">
                 <NavLink to="/admin/scoms" className={({ isActive }) => (isActive ? 'active' : undefined)}>
                     ข้อมูลการแก้ไขปัญหา
                 </NavLink>

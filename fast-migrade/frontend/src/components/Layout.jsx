@@ -1,6 +1,29 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import {
+    LayoutDashboard,
+    LogOut,
+    Moon,
+    Phone,
+    Router as RouterIcon,
+    Settings,
+    Sun,
+    User,
+    Wrench,
+    Zap,
+} from 'lucide-react';
 import { useAuth } from '../shared/auth/AuthContext';
+
+function useTheme() {
+    const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
+
+    useEffect(() => {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+    }, [theme]);
+
+    return [theme, () => setTheme((prev) => (prev === 'light' ? 'dark' : 'light'))];
+}
 
 const PAGE_TITLES = [
     { path: '/troubleshoot', title: 'ตรวจสอบและแก้ไขงานเสีย' },
@@ -20,6 +43,7 @@ export default function Layout() {
     const navigate = useNavigate();
     const location = useLocation();
     const [collapsed, setCollapsed] = useState(false);
+    const [theme, toggleTheme] = useTheme();
 
     function handleLogout() {
         logout();
@@ -35,7 +59,7 @@ export default function Layout() {
                 <div className="sidebar-header">
                     <div className="logo">
                         <div className="logo-box">
-                            <span className="logo-mark">FS</span>
+                            <Zap className="logo-mark" style={{ width: 24, height: 24 }} />
                         </div>
                         <div>
                             <h1 className="logo-text">FAST</h1>
@@ -54,22 +78,28 @@ export default function Layout() {
 
                 <nav className="sidebar-nav">
                     <NavLink to="/" end className="nav-item">
+                        <LayoutDashboard size={22} />
                         <span>หน้าหลัก</span>
                     </NavLink>
                     <NavLink to="/troubleshoot" className="nav-item">
+                        <Wrench size={22} />
                         <span>ตรวจสอบงานเสีย</span>
                     </NavLink>
                     <NavLink to="/onu-setup" className="nav-item">
+                        <RouterIcon size={22} />
                         <span>ตั้งค่าอุปกรณ์ ONU</span>
                     </NavLink>
                     <NavLink to="/phonebook" className="nav-item">
+                        <Phone size={22} />
                         <span>สมุดโทรศัพท์</span>
                     </NavLink>
                     <NavLink to="/profile" className="nav-item">
+                        <User size={22} />
                         <span>ข้อมูลส่วนตัว</span>
                     </NavLink>
                     {role === 'admin' && (
                         <NavLink to="/admin" className="nav-item">
+                            <Settings size={22} />
                             <span>ผู้ดูแลระบบ</span>
                         </NavLink>
                     )}
@@ -77,6 +107,7 @@ export default function Layout() {
 
                 <div className="sidebar-footer-block">
                     <button type="button" className="nav-item logout-btn" onClick={handleLogout}>
+                        <LogOut size={22} />
                         <span>ออกจากระบบ</span>
                     </button>
                 </div>
@@ -86,6 +117,14 @@ export default function Layout() {
                 <header className="top-header">
                     <h2>{pageTitle}</h2>
                     <div className="header-actions">
+                        <button
+                            type="button"
+                            className="icon-btn"
+                            onClick={toggleTheme}
+                            aria-label={theme === 'light' ? 'สลับเป็นโหมดมืด' : 'สลับเป็นโหมดสว่าง'}
+                        >
+                            {theme === 'light' ? <Moon /> : <Sun />}
+                        </button>
                         <div className="user-profile">
                             <span className="user-avatar">{role ? role[0].toUpperCase() : 'U'}</span>
                             <span>{ROLE_LABEL[role] || role}</span>
