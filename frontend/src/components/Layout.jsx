@@ -77,37 +77,42 @@ export default function Layout() {
                 </div>
 
                 <nav className="sidebar-nav">
-                    <NavLink to="/" end className="nav-item">
-                        <LayoutDashboard size={22} />
+                    <NavLink to="/" end className="nav-item" data-label="หน้าหลัก">
+                        <span className="nav-icon"><LayoutDashboard size={22} /></span>
                         <span>หน้าหลัก</span>
                     </NavLink>
-                    <NavLink to="/troubleshoot" className="nav-item">
-                        <Wrench size={22} />
+                    <NavLink to="/troubleshoot" className="nav-item" data-label="ตรวจสอบงานเสีย">
+                        <span className="nav-icon"><Wrench size={22} /></span>
                         <span>ตรวจสอบงานเสีย</span>
                     </NavLink>
-                    <NavLink to="/onu-setup" className="nav-item">
-                        <RouterIcon size={22} />
+                    <NavLink to="/onu-setup" className="nav-item" data-label="ตั้งค่าอุปกรณ์ ONU">
+                        <span className="nav-icon"><RouterIcon size={22} /></span>
                         <span>ตั้งค่าอุปกรณ์ ONU</span>
                     </NavLink>
-                    <NavLink to="/phonebook" className="nav-item">
-                        <Phone size={22} />
+                    <NavLink to="/phonebook" className="nav-item" data-label="สมุดโทรศัพท์">
+                        <span className="nav-icon"><Phone size={22} /></span>
                         <span>สมุดโทรศัพท์</span>
                     </NavLink>
-                    <NavLink to="/profile" className="nav-item">
-                        <User size={22} />
+                    <NavLink to="/profile" className="nav-item" data-label="ข้อมูลส่วนตัว">
+                        <span className="nav-icon"><User size={22} /></span>
                         <span>ข้อมูลส่วนตัว</span>
                     </NavLink>
                     {role === 'admin' && (
-                        <NavLink to="/admin" className="nav-item">
-                            <Settings size={22} />
+                        <NavLink to="/admin" className="nav-item" data-label="ผู้ดูแลระบบ">
+                            <span className="nav-icon"><Settings size={22} /></span>
                             <span>ผู้ดูแลระบบ</span>
                         </NavLink>
                     )}
                 </nav>
 
                 <div className="sidebar-footer-block">
-                    <button type="button" className="nav-item logout-btn" onClick={handleLogout}>
-                        <LogOut size={22} />
+                    <button
+                        type="button"
+                        className="nav-item logout-btn"
+                        onClick={handleLogout}
+                        data-label="ออกจากระบบ"
+                    >
+                        <span className="nav-icon"><LogOut size={22} /></span>
                         <span>ออกจากระบบ</span>
                     </button>
                 </div>
