@@ -27,8 +27,11 @@ export default function LoginPage() {
     return (
         <div className="login-page">
             <form className="login-form" onSubmit={handleSubmit}>
-                <h1>FAST System</h1>
-                <p className="login-subtitle">Field Assistant System For Technician</p>
+                <div className="login-brand">
+                    <img src="/nt-logo.webp" alt="NT" className="login-logo" />
+                    <h1>FAST System</h1>
+                    <p className="login-subtitle">Field Assistant System for Technician</p>
+                </div>
                 {error && <div className="error-banner">{error}</div>}
                 <label>
                     ชื่อผู้ใช้งาน (Username)
