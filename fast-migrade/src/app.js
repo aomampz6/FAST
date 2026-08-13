@@ -44,7 +44,7 @@ app.use('/api/users', usersRouter);
 const PUBLIC_DIR = path.join(__dirname, '../public');
 if (fs.existsSync(PUBLIC_DIR)) {
     app.use(express.static(PUBLIC_DIR));
-    app.get('*', (req, res, next) => {
+    app.get('/{*splat}', (req, res, next) => {
         if (req.path.startsWith('/api/')) return next();
         res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
     });
