@@ -16,7 +16,17 @@ const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
-app.use(helmet());
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            // This deployment is also accessed directly over LAN HTTP. Helmet's
+            // default upgrades relative assets to HTTPS, but port 10300 serves HTTP.
+            upgradeInsecureRequests: null,
+        },
+    },
+    crossOriginOpenerPolicy: false,
+    originAgentCluster: false,
+}));
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
