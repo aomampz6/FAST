@@ -8,7 +8,8 @@ const scomSchema = new mongoose.Schema({
     CheckPoint: { type: String, required: false },
     Steps: { type: String, required: false },
     NormalValue: { type: String, required: false },
-    Equipment: { type: String, required: false }
+    Equipment: { type: String, required: false },
+    hidden: { type: Boolean, default: false }
 }, {
     timestamps: true
 });

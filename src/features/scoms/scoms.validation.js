@@ -8,7 +8,8 @@ const createScomSchema = z.object({
     CheckPoint: z.string().optional(),
     Steps: z.string().optional(),
     NormalValue: z.string().optional(),
-    Equipment: z.string().optional()
+    Equipment: z.string().optional(),
+    hidden: z.boolean().optional()
 });
 
 const updateScomSchema = createScomSchema.partial();

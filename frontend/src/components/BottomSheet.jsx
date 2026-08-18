@@ -51,7 +51,7 @@ export default function BottomSheet({ open, onClose, hideClose, children }) {
                     </button>
                 )}
                 <div id="sheet-content-container" ref={contentContainerRef}>
-                    <div className={`sheet-content sheet-content-dark${open ? ' active' : ''}`}>{children}</div>
+                    <div className={`sheet-content sheet-content-inner${open ? ' active' : ''}`}>{children}</div>
                 </div>
             </div>
         </>,

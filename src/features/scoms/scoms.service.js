@@ -1,7 +1,8 @@
 const Scom = require('./scoms.model');
 
-async function getAll() {
-    return Scom.find().sort({ ID: 1 });
+async function getAll(role) {
+    const filter = role === 'admin' ? {} : { hidden: { $ne: true } };
+    return Scom.find(filter).sort({ ID: 1 });
 }
 
 async function create(data) {

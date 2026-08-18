@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard,
     LogOut,
+    Menu,
     Moon,
     Phone,
     Router as RouterIcon,
@@ -10,6 +11,7 @@ import {
     Sun,
     User,
     Wrench,
+    X,
     Zap,
 } from 'lucide-react';
 import { useAuth } from '../shared/auth/AuthContext';
@@ -43,7 +45,15 @@ export default function Layout() {
     const navigate = useNavigate();
     const location = useLocation();
     const [collapsed, setCollapsed] = useState(false);
+    const [mobileNavOpen, setMobileNavOpen] = useState(false);
     const [theme, toggleTheme] = useTheme();
+
+    // Closing on every route change covers both a nav-link tap and the
+    // browser back/forward buttons, so the drawer never stays stuck open
+    // over the new page on mobile.
+    useEffect(() => {
+        setMobileNavOpen(false);
+    }, [location.pathname]);
 
     function handleLogout() {
         logout();
@@ -55,7 +65,12 @@ export default function Layout() {
 
     return (
         <div className="app-shell">
-            <aside className={`sidebar${collapsed ? ' collapsed' : ''}`}>
+            <div
+                className={`mobile-nav-overlay${mobileNavOpen ? ' active' : ''}`}
+                onClick={() => setMobileNavOpen(false)}
+            />
+
+            <aside className={`sidebar${collapsed ? ' collapsed' : ''}${mobileNavOpen ? ' mobile-open' : ''}`}>
                 <div className="sidebar-header">
                     <div className="logo">
                         <div className="logo-box">
@@ -73,6 +88,14 @@ export default function Layout() {
                         aria-label={collapsed ? 'ขยายแถบเมนู' : 'ย่อแถบเมนู'}
                     >
                         {collapsed ? '›' : '‹'}
+                    </button>
+                    <button
+                        type="button"
+                        className="mobile-nav-close"
+                        onClick={() => setMobileNavOpen(false)}
+                        aria-label="ปิดเมนู"
+                    >
+                        <X size={20} />
                     </button>
                 </div>
 
@@ -120,6 +143,14 @@ export default function Layout() {
 
             <div className="main-content">
                 <header className="top-header">
+                    <button
+                        type="button"
+                        className="mobile-nav-toggle"
+                        onClick={() => setMobileNavOpen(true)}
+                        aria-label="เปิดเมนู"
+                    >
+                        <Menu size={22} />
+                    </button>
                     <h2>{pageTitle}</h2>
                     <div className="header-actions">
                         <button

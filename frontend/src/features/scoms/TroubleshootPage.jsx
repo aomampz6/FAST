@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import {
     AlertCircle,
     AlertTriangle,
@@ -405,6 +405,7 @@ export default function TroubleshootPage() {
             <BottomSheet open={!!selectedItem} onClose={closeSheet} hideClose={feedbackRequired}>
                 {selectedItem && (
                     <SymptomDetail
+                        key={selectedItem._id || selectedItem.ID}
                         item={selectedItem}
                         groupName={selectedGroup}
                         comment={comment}
@@ -448,6 +449,18 @@ function SymptomDetail({
             });
     }
 
+    const [activeStep, setActiveStep] = useState(0);
+    const currentStep = steps[activeStep];
+    const stepPanelRef = useRef(null);
+
+    // On mobile the sidebar and panel stack in one column, so tapping a step
+    // further down the list otherwise leaves the newly active panel wherever
+    // it landed in the scroll — bring its top edge to the top of the sheet.
+    function selectStep(i) {
+        setActiveStep(i);
+        stepPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
     return (
         <div>
             <div className="sheet-detail-top">
@@ -464,17 +477,53 @@ function SymptomDetail({
             </div>
 
             {steps.length > 0 ? (
-                steps.map((step, i) => (
-                    <div className="step-card-dark" key={i}>
-                        <div className="step-badge-number">{i + 1}</div>
-                        <div>
-                            <div className="step-card-title">
-                                {STEP_EMOJI[i % STEP_EMOJI.length]} {step.title}
-                            </div>
-                            {step.desc && <div className="step-card-desc">{step.desc}</div>}
+                <div className="step-flow">
+                    <nav className="step-sidebar" aria-label="ขั้นตอนการแก้ไข">
+                        {steps.map((step, i) => (
+                            <button
+                                key={i}
+                                type="button"
+                                className={`step-sidebar-btn${i === activeStep ? ' active' : ''}`}
+                                onClick={() => selectStep(i)}
+                            >
+                                <span className="step-sidebar-badge">{i + 1}</span>
+                                <span className="step-sidebar-label">{step.title}</span>
+                            </button>
+                        ))}
+                    </nav>
+
+                    <div className="step-panel" ref={stepPanelRef}>
+                        <div className="step-panel-header">
+                            <span className="step-panel-badge">{activeStep + 1}</span>
+                            <h4 className="step-panel-title">
+                                {STEP_EMOJI[activeStep % STEP_EMOJI.length]} {currentStep.title}
+                            </h4>
+                        </div>
+                        {currentStep.desc && <p className="step-panel-desc">{currentStep.desc}</p>}
+
+                        <div className="step-nav-controls">
+                            <button
+                                type="button"
+                                className="step-nav-btn"
+                                onClick={() => selectStep(Math.max(0, activeStep - 1))}
+                                disabled={activeStep === 0}
+                            >
+                                <ArrowLeft size={16} /> ย้อนกลับ
+                            </button>
+                            <span className="step-indicator">
+                                ขั้นตอน {activeStep + 1} / {steps.length}
+                            </span>
+                            <button
+                                type="button"
+                                className="step-nav-btn primary"
+                                onClick={() => selectStep(Math.min(steps.length - 1, activeStep + 1))}
+                                disabled={activeStep === steps.length - 1}
+                            >
+                                ถัดไป <ArrowRight size={16} />
+                            </button>
                         </div>
                     </div>
-                ))
+                </div>
             ) : (
                 <div className="step-empty">
                     <Info size={24} style={{ opacity: 0.6 }} />

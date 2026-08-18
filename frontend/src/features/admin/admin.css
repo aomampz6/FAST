@@ -407,6 +407,86 @@
     margin: 16px 0;
 }
 
+/* Step 1 of the add/edit wizard: pick an existing group or type a new one,
+   before any of the Scom detail fields render. */
+.admin-page .admin-group-picker {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.admin-page .admin-group-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 13.5px;
+    text-align: left;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.admin-page .admin-group-option:hover {
+    background-color: var(--nt-yellow);
+    border-color: var(--nt-yellow);
+    color: var(--nt-dark);
+}
+
+.admin-page .admin-group-new {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.admin-page .admin-group-new input {
+    flex: 1 1 220px;
+}
+
+/* Step 2 header: shows the group chosen in step 1 with a way back to it. */
+.admin-page .admin-selected-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    border-radius: var(--radius-sm);
+    background-color: var(--nt-yellow-light, rgba(255, 209, 0, 0.15));
+    color: var(--text-primary);
+    font-size: 13.5px;
+}
+
+.admin-page .admin-selected-group span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-page .admin-selected-group button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-surface);
+    color: var(--text-secondary);
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.admin-page .admin-selected-group button:hover {
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+}
+
 .admin-page .form-grid label,
 .admin-page .admin-form > label {
     display: flex;
@@ -548,6 +628,48 @@
     border-color: var(--danger);
 }
 
+.admin-page button.muted {
+    color: var(--text-secondary);
+    border-color: var(--border-color);
+    background-color: var(--bg-surface);
+}
+
+.admin-page button.muted:hover {
+    background-color: var(--text-secondary);
+    color: #fff;
+    border-color: var(--text-secondary);
+}
+
+.admin-page button.success {
+    color: var(--success, #16a34a);
+    border-color: rgba(22, 163, 74, 0.35);
+    background-color: rgba(22, 163, 74, 0.06);
+}
+
+.admin-page button.success:hover {
+    background-color: var(--success, #16a34a);
+    color: #fff;
+    border-color: var(--success, #16a34a);
+}
+
+/* Hidden Scoms: dimmed row + inline badge so admins can still see and edit
+   them normally, just visually flagged as excluded from the user-facing list. */
+.admin-page .data-table tr.row-hidden {
+    opacity: 0.55;
+}
+
+.admin-page .hidden-badge {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    background: rgba(148, 163, 184, 0.18);
+    white-space: nowrap;
+}
+
 /* image thumbnail delete "x" button — crisp, no bounce (destructive) */
 .admin-page .image-thumb button.danger {
     padding: 2px 8px;
@@ -557,6 +679,26 @@
     top: 4px;
     right: 4px;
     line-height: 1;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Scoms list filters (group select + search)                            */
+/* ---------------------------------------------------------------------- */
+.admin-page .admin-scoms-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.admin-page .admin-group-filter {
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -622,6 +764,49 @@
     .admin-page .data-table {
         min-width: 640px;
     }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Pagination                                                              */
+/* ---------------------------------------------------------------------- */
+.admin-page .admin-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.admin-page .admin-pagination button {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-surface);
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 13.5px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.admin-page .admin-pagination button:hover:not(:disabled) {
+    background-color: var(--nt-yellow);
+    border-color: var(--nt-yellow);
+    color: var(--nt-dark);
+}
+
+.admin-page .admin-pagination button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.admin-page .admin-pagination-indicator {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-secondary);
 }
 
 /* ---------------------------------------------------------------------- */

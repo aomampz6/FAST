@@ -2,7 +2,7 @@ const scomsService = require('./scoms.service');
 
 async function getAll(req, res, next) {
     try {
-        const scoms = await scomsService.getAll();
+        const scoms = await scomsService.getAll(req.user.role);
         res.json(scoms);
     } catch (err) {
         next(err);

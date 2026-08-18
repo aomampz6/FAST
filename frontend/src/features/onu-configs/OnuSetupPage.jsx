@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, MessageCircle, Send, Settings, X } from 'lucide-react';
+import { ArrowLeft, Info, MessageCircle, Send, Settings, X } from 'lucide-react';
 import { useOnuConfigs } from './useOnuConfigs';
 import { getOnuImageUrl } from './onuConfigsService';
 import { OnuBrandIcon } from './onuBrandIcons';
@@ -190,140 +190,153 @@ export default function OnuSetupPage() {
                         </button>
                     </div>
 
-                    <div className="card">
-                        <h3 className="mb-4 flex-between">
-                            <span>ตั้งค่า {selectedBrand} ONU</span>
-                            <span className="badge warning" style={{ fontSize: 14 }}>
-                                โหมดการใช้งาน
-                            </span>
-                        </h3>
-                        {modesForBrand.length > 0 ? (
-                            <>
-                                <p className="mb-4">เลือกโหมดที่ต้องการดูรายละเอียด:</p>
-                                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                                    {modesForBrand.map((c) => (
-                                        <button
-                                            type="button"
-                                            key={c._id}
-                                            className="btn-secondary"
-                                            onClick={() => pickMode(c)}
-                                        >
-                                            {c.Mode}
-                                        </button>
-                                    ))}
-                                </div>
-                            </>
-                        ) : (
-                            <p style={{ color: 'var(--text-secondary)' }}>ยังไม่มีข้อมูลการตั้งค่าสำหรับยี่ห้อนี้</p>
-                        )}
-                    </div>
+                    <h3 className="mb-4">ตั้งค่า {selectedBrand} ONU</h3>
 
-                    {selectedMode && (
-                        <div className="card" style={{ borderTop: '4px solid var(--brand-primary)' }}>
-                            <h4 className="mb-4 flex-between">
-                                <span>
-                                    <Settings size={18} style={{ marginRight: 8, verticalAlign: 'middle' }} />
-                                    {selectedMode.Brand} — {selectedMode.Mode}
-                                </span>
-                                {!feedbackRequired && (
-                                    <button type="button" className="icon-btn" onClick={closeDetail} aria-label="ปิด">
-                                        <X size={18} />
+                    {modesForBrand.length > 0 ? (
+                        <div className="step-flow">
+                            <nav className="step-sidebar" aria-label="เลือกโหมดการใช้งาน">
+                                {modesForBrand.map((c, i) => (
+                                    <button
+                                        type="button"
+                                        key={c._id}
+                                        className={`step-sidebar-btn${selectedMode?._id === c._id ? ' active' : ''}`}
+                                        onClick={() => pickMode(c)}
+                                    >
+                                        <span className="step-sidebar-badge">{i + 1}</span>
+                                        <span className="step-sidebar-label">{c.Mode}</span>
                                     </button>
-                                )}
-                            </h4>
+                                ))}
+                            </nav>
 
-                            {guideContent && (
-                                <div
-                                    style={{
-                                        marginBottom: 16,
-                                        borderRadius: 'var(--radius-md)',
-                                        overflow: 'hidden',
-                                        border: '1px solid var(--border-color)',
-                                        boxShadow: 'var(--shadow-sm)',
-                                    }}
-                                >
-                                    <iframe
-                                        title="คู่มือการตั้งค่า"
-                                        srcDoc={guideContent}
-                                        style={{
-                                            width: '100%',
-                                            height: 'clamp(480px, 85vh, 720px)',
-                                            border: 'none',
-                                            display: 'block',
-                                        }}
-                                        loading="lazy"
-                                    />
-                                </div>
-                            )}
-
-                            <div
-                                style={{
-                                    background: 'var(--bg-main)',
-                                    padding: 16,
-                                    borderRadius: 'var(--radius-md)',
-                                    marginBottom: 16,
-                                }}
-                            >
-                                <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
-                                    {selectedMode.Details}
-                                </p>
-                            </div>
-
-                            {selectedMode.Images?.length > 0 && (
-                                <div className="onu-detail-images">
-                                    {selectedMode.Images.map((img) => (
-                                        <img
-                                            key={img._id || img.key}
-                                            src={getOnuImageUrl(img.key)}
-                                            alt={`${selectedMode.Brand} ${selectedMode.Mode}`}
-                                            onClick={() => setLightboxSrc(getOnuImageUrl(img.key))}
-                                        />
-                                    ))}
-                                </div>
-                            )}
-
-                            <div style={{ marginTop: 20, background: '#11142b', borderRadius: 16, padding: 20 }}>
-                                <div className="feedback-section">
-                                    <div className="feedback-label">
-                                        <MessageCircle size={16} /> คำแนะนำเพิ่มเติมจากผู้ใช้งาน{' '}
-                                        {feedbackRequired ? (
-                                            <span className="feedback-required-label">* จำเป็นสำหรับการใช้งานครั้งแรก</span>
-                                        ) : (
-                                            <span className="feedback-optional-label">(ไม่บังคับ)</span>
+                            {selectedMode ? (
+                                <div className="step-panel">
+                                    <div className="step-panel-header">
+                                        <span className="step-panel-badge">
+                                            <Settings size={16} />
+                                        </span>
+                                        <h4 className="step-panel-title">
+                                            {selectedMode.Brand} — {selectedMode.Mode}
+                                        </h4>
+                                        {!feedbackRequired && (
+                                            <button
+                                                type="button"
+                                                className="icon-btn"
+                                                style={{ marginLeft: 'auto' }}
+                                                onClick={closeDetail}
+                                                aria-label="ปิด"
+                                            >
+                                                <X size={18} />
+                                            </button>
                                         )}
                                     </div>
-                                    <form onSubmit={handleFeedback}>
-                                        <label style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#94a3b8', fontSize: 13, marginBottom: 10 }}>
-                                            ให้คะแนนความช่วยเหลือ
-                                            <select value={rating} onChange={(e) => setRating(e.target.value)}>
-                                                {[1, 2, 3, 4, 5].map((n) => (
-                                                    <option key={n} value={n}>
-                                                        {n}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </label>
-                                        <textarea
-                                            className={`feedback-textarea${gateShake ? ' gate-shake' : ''}`}
-                                            required={feedbackRequired}
-                                            value={comment}
-                                            onChange={(e) => setComment(e.target.value)}
-                                            placeholder="ระบุคำแนะนำ ข้อเสนอแนะ หรือรายละเอียดเพิ่มเติม เช่น ทำตามขั้นตอนแล้วอาการยังไม่ดีขึ้น พบว่าไฟกระพริบที่ช่อง WAN..."
-                                        />
-                                        <button type="submit" className="feedback-submit-btn" disabled={feedbackSubmitted && !feedbackRequired}>
-                                            {feedbackSubmitted ? (
-                                                <span>บันทึกข้อมูลแล้ว</span>
-                                            ) : (
-                                                <>
-                                                    <span>ส่งคำแนะนำ / บันทึกข้อมูล</span> <Send size={18} />
-                                                </>
-                                            )}
-                                        </button>
-                                        {feedbackStatus && <p className="feedback-status">{feedbackStatus}</p>}
-                                    </form>
+
+                                    {guideContent && (
+                                        <div
+                                            style={{
+                                                marginBottom: 16,
+                                                borderRadius: 'var(--radius-md)',
+                                                overflow: 'hidden',
+                                                border: '1px solid var(--border-color)',
+                                                boxShadow: 'var(--shadow-sm)',
+                                            }}
+                                        >
+                                            <iframe
+                                                title="คู่มือการตั้งค่า"
+                                                srcDoc={guideContent}
+                                                style={{
+                                                    width: '100%',
+                                                    height: 'clamp(480px, 85vh, 720px)',
+                                                    border: 'none',
+                                                    display: 'block',
+                                                }}
+                                                loading="lazy"
+                                            />
+                                        </div>
+                                    )}
+
+                                    <p className="step-panel-desc" style={{ whiteSpace: 'pre-wrap' }}>
+                                        {selectedMode.Details}
+                                    </p>
+
+                                    {selectedMode.Images?.length > 0 && (
+                                        <div className="onu-detail-images">
+                                            {selectedMode.Images.map((img) => (
+                                                <img
+                                                    key={img._id || img.key}
+                                                    src={getOnuImageUrl(img.key)}
+                                                    alt={`${selectedMode.Brand} ${selectedMode.Mode}`}
+                                                    onClick={() => setLightboxSrc(getOnuImageUrl(img.key))}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    <div className="feedback-panel" style={{ marginTop: 20 }}>
+                                        <div className="feedback-section">
+                                            <div className="feedback-label">
+                                                <MessageCircle size={16} /> คำแนะนำเพิ่มเติมจากผู้ใช้งาน{' '}
+                                                {feedbackRequired ? (
+                                                    <span className="feedback-required-label">
+                                                        * จำเป็นสำหรับการใช้งานครั้งแรก
+                                                    </span>
+                                                ) : (
+                                                    <span className="feedback-optional-label">(ไม่บังคับ)</span>
+                                                )}
+                                            </div>
+                                            <form onSubmit={handleFeedback}>
+                                                <label
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: 8,
+                                                        color: 'var(--text-secondary)',
+                                                        fontSize: 13,
+                                                        marginBottom: 10,
+                                                    }}
+                                                >
+                                                    ให้คะแนนความช่วยเหลือ
+                                                    <select value={rating} onChange={(e) => setRating(e.target.value)}>
+                                                        {[1, 2, 3, 4, 5].map((n) => (
+                                                            <option key={n} value={n}>
+                                                                {n}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </label>
+                                                <textarea
+                                                    className={`feedback-textarea${gateShake ? ' gate-shake' : ''}`}
+                                                    required={feedbackRequired}
+                                                    value={comment}
+                                                    onChange={(e) => setComment(e.target.value)}
+                                                    placeholder="ระบุคำแนะนำ ข้อเสนอแนะ หรือรายละเอียดเพิ่มเติม เช่น ทำตามขั้นตอนแล้วอาการยังไม่ดีขึ้น พบว่าไฟกระพริบที่ช่อง WAN..."
+                                                />
+                                                <button
+                                                    type="submit"
+                                                    className="feedback-submit-btn"
+                                                    disabled={feedbackSubmitted && !feedbackRequired}
+                                                >
+                                                    {feedbackSubmitted ? (
+                                                        <span>บันทึกข้อมูลแล้ว</span>
+                                                    ) : (
+                                                        <>
+                                                            <span>ส่งคำแนะนำ / บันทึกข้อมูล</span> <Send size={18} />
+                                                        </>
+                                                    )}
+                                                </button>
+                                                {feedbackStatus && <p className="feedback-status">{feedbackStatus}</p>}
+                                            </form>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
+                            ) : (
+                                <div className="step-panel step-empty">
+                                    <Info size={24} style={{ opacity: 0.6 }} />
+                                    <span>เลือกโหมดด้านซ้ายเพื่อดูรายละเอียดการตั้งค่า</span>
+                                </div>
+                            )}
                         </div>
+                    ) : (
+                        <p style={{ color: 'var(--text-secondary)' }}>ยังไม่มีข้อมูลการตั้งค่าสำหรับยี่ห้อนี้</p>
                     )}
                 </>
             )}
