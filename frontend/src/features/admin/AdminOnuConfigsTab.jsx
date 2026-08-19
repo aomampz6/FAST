@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useOnuConfigs } from '../onu-configs/useOnuConfigs';
-import { getOnuImageUrl } from '../onu-configs/onuConfigsService';
+import { addOnuConfigImages as uploadOnuConfigImages, getOnuImageUrl } from '../onu-configs/onuConfigsService';
+import RichTextEditor from './RichTextEditor';
 
 const emptyForm = { Brand: '', Mode: '', Details: '', Hidden: false, DeviceType: 'ONU' };
 
@@ -9,6 +10,7 @@ export default function AdminOnuConfigsTab() {
         configs,
         loading,
         error,
+        refresh,
         createOnuConfig,
         updateOnuConfig,
         deleteOnuConfig,
@@ -49,6 +51,10 @@ export default function AdminOnuConfigsTab() {
     async function handleSubmit(e) {
         e.preventDefault();
         setFormError(null);
+        if (!form.Details.replace(/<[^>]*>/g, '').trim()) {
+            setFormError('กรุณากรอกรายละเอียดขั้นตอน');
+            return;
+        }
         try {
             if (editingId) {
                 await updateOnuConfig(editingId, form);
@@ -59,6 +65,19 @@ export default function AdminOnuConfigsTab() {
         } catch (err) {
             setFormError(err.response?.data?.message || 'บันทึกไม่สำเร็จ');
         }
+    }
+
+    // Used by the Details rich text editor's image button/paste/drop — goes
+    // straight to the service function (not the useOnuConfigs wrapper) so it
+    // can read back the newly attached image's key and hand the editor a URL
+    // to insert, then refreshes the list separately to keep the gallery below
+    // in sync.
+    async function handleInlineImageUpload(file) {
+        if (!editingId) throw new Error('บันทึกข้อมูลก่อน แล้วจึงแทรกรูปภาพได้');
+        const updated = await uploadOnuConfigImages(editingId, [file]);
+        refresh();
+        const last = updated.Images[updated.Images.length - 1];
+        return getOnuImageUrl(last.key);
     }
 
     async function handleUpload(id) {
@@ -91,7 +110,7 @@ export default function AdminOnuConfigsTab() {
             <form className="admin-form" onSubmit={handleSubmit}>
                 <h3>{editingId ? `แก้ไขการตั้งค่า ${form.DeviceType}` : 'เพิ่มการตั้งค่าอุปกรณ์ใหม่'}</h3>
                 {formError && <div className="error-banner">{formError}</div>}
-                <div className="form-grid">
+                <div className="form-grid form-grid-3col">
                     <label>
                         ประเภทอุปกรณ์ (Device Type)
                         <select
@@ -110,9 +129,16 @@ export default function AdminOnuConfigsTab() {
                         Mode (โหมด)
                         <input value={form.Mode} onChange={(e) => setForm({ ...form, Mode: e.target.value })} required />
                     </label>
+                </div>
+
+                <div className="form-grid">
                     <label>
                         Details (รายละเอียดขั้นตอน)
-                        <textarea value={form.Details} onChange={(e) => setForm({ ...form, Details: e.target.value })} required />
+                        <RichTextEditor
+                            value={form.Details}
+                            onChange={(html) => setForm({ ...form, Details: html })}
+                            onUploadImage={editingId ? handleInlineImageUpload : null}
+                        />
                     </label>
                     <label className="checkbox-label">
                         <input

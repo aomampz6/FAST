@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import DOMPurify from 'dompurify';
 import { ArrowLeft, Info, MessageCircle, Send, Settings, X } from 'lucide-react';
 import { useOnuConfigs } from './useOnuConfigs';
 import { getOnuImageUrl } from './onuConfigsService';
@@ -8,6 +9,7 @@ import { useGuides } from '../guides/useGuides';
 import { readGuide } from '../guides/guidesService';
 import { submitFeedback } from '../feedback/feedbackService';
 import { useFirstFeedbackGate } from '../../shared/hooks/useFirstFeedbackGate';
+import '../admin/richTextEditor.css';
 
 function slug(value) {
     return String(value || '')
@@ -261,9 +263,11 @@ export default function OnuSetupPage({ deviceType = 'ONU' }) {
                                         </div>
                                     )}
 
-                                    <p className="step-panel-desc" style={{ whiteSpace: 'pre-wrap' }}>
-                                        {selectedMode.Details}
-                                    </p>
+                                    <div
+                                        className="step-panel-desc rich-text-content"
+                                        style={{ whiteSpace: 'pre-wrap' }}
+                                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedMode.Details || '') }}
+                                    />
 
                                     {selectedMode.Images?.length > 0 && (
                                         <div className="onu-detail-images">

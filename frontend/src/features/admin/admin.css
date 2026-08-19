@@ -407,6 +407,19 @@
     margin: 16px 0;
 }
 
+/* Device Type / Brand / Mode row of the ONU config form — always exactly
+   3 columns on wide screens (rather than auto-fit's "as many as fit"), so
+   the Details editor below reliably reads as its own full-width row. */
+.admin-page .form-grid.form-grid-3col {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 720px) {
+    .admin-page .form-grid.form-grid-3col {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* Step 1 of the add/edit wizard: pick an existing group or type a new one,
    before any of the Scom detail fields render. */
 .admin-page .admin-group-picker {

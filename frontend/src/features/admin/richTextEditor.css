@@ -1,0 +1,135 @@
+/* Rich text editor (Tiptap) used for the ONU config "Details" field.
+   Scoped under .admin-page via the .rte wrapper, reusing the same theme
+   tokens as the rest of the admin form so it matches light/dark mode
+   automatically. */
+
+.admin-page .rte {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background-color: var(--bg-main);
+    overflow: hidden;
+}
+
+.admin-page .rte:focus-within {
+    border-color: var(--nt-yellow);
+    box-shadow: 0 0 0 3px rgba(255, 209, 0, 0.25);
+}
+
+.admin-page .rte-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--bg-surface);
+}
+
+.admin-page .rte-toolbar button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-secondary);
+}
+
+.admin-page .rte-toolbar button:hover:not(:disabled) {
+    background-color: var(--bg-surface-hover);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+.admin-page .rte-toolbar button.active {
+    background-color: var(--nt-yellow-light, rgba(255, 209, 0, 0.15));
+    color: #a17400;
+    border-color: var(--nt-yellow);
+}
+
+[data-theme='dark'] .admin-page .rte-toolbar button.active {
+    color: var(--nt-yellow);
+}
+
+.admin-page .rte-toolbar button:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.admin-page .rte-toolbar-sep {
+    width: 1px;
+    align-self: stretch;
+    margin: 4px 4px;
+    background-color: var(--border-color);
+}
+
+.admin-page .rte-content {
+    padding: 12px 14px;
+}
+
+.admin-page .rte-content .ProseMirror {
+    min-height: 160px;
+    outline: none;
+    color: var(--text-primary);
+    font-size: 14.5px;
+    line-height: 1.7;
+}
+
+.admin-page .rte-content .ProseMirror p {
+    margin: 0 0 10px;
+}
+
+.admin-page .rte-content .ProseMirror ul,
+.admin-page .rte-content .ProseMirror ol {
+    padding-left: 22px;
+    margin: 0 0 10px;
+}
+
+.admin-page .rte-content .ProseMirror img.rte-image {
+    max-width: 100%;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    margin: 8px 0;
+    display: block;
+}
+
+.admin-page .rte-content .ProseMirror p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    color: var(--text-tertiary);
+    pointer-events: none;
+}
+
+.admin-page .rte-hint {
+    margin: 0;
+    padding: 8px 14px;
+    font-size: 12px;
+    color: var(--text-tertiary);
+    border-top: 1px solid var(--border-color);
+    background-color: var(--bg-surface);
+}
+
+/* Read-only rendering of the same HTML on the technician-facing setup page
+   (OnuSetupPage) — kept close to the editor's own styling so what the admin
+   sees while writing matches what technicians see. */
+.rich-text-content img {
+    max-width: 100%;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    margin: 8px 0;
+    display: block;
+}
+
+.rich-text-content ul,
+.rich-text-content ol {
+    padding-left: 22px;
+    margin: 0 0 10px;
+}
+
+.rich-text-content p {
+    margin: 0 0 10px;
+}
