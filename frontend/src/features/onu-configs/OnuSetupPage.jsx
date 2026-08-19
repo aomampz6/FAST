@@ -17,7 +17,10 @@ function slug(value) {
         .replace(/(^-|-$)/g, '');
 }
 
-export default function OnuSetupPage() {
+// Shared by both the ONU and the ATA setup routes — same config collection,
+// same admin CRUD, just scoped by `DeviceType` so the two device families
+// don't show up mixed together in either page's brand/mode picker.
+export default function OnuSetupPage({ deviceType = 'ONU' }) {
     const navigate = useNavigate();
     const { configs, loading, error } = useOnuConfigs();
     const { guides } = useGuides();
@@ -38,8 +41,12 @@ export default function OnuSetupPage() {
     // The backend `/onu-configs` list endpoint returns every record regardless
     // of role (see onuConfigs.controller.js `list`), so — same as
     // archive/app.js's `loadOnuConfigsFromAPI` — admin-hidden records are
-    // filtered out here on the client for the end-user flow.
-    const visibleConfigs = useMemo(() => configs.filter((c) => !c.Hidden), [configs]);
+    // filtered out here on the client for the end-user flow. Records without
+    // a DeviceType predate the field and default to ONU.
+    const visibleConfigs = useMemo(
+        () => configs.filter((c) => !c.Hidden && (c.DeviceType || 'ONU') === deviceType),
+        [configs, deviceType]
+    );
 
     const brands = useMemo(() => {
         const set = new Set(visibleConfigs.map((c) => c.Brand).filter(Boolean));
@@ -112,7 +119,7 @@ export default function OnuSetupPage() {
 
         try {
             await submitFeedback({
-                scope: 'onu-setup',
+                scope: `${deviceType.toLowerCase()}-setup`,
                 refId: selectedMode._id,
                 rating: Number(rating),
                 comment,
@@ -161,7 +168,7 @@ export default function OnuSetupPage() {
                     <div className="options-grid">
                         {brands.length === 0 ? (
                             <p style={{ color: 'var(--text-secondary)', gridColumn: '1 / -1' }}>
-                                ยังไม่มีข้อมูลการตั้งค่า ONU ในระบบ
+                                ยังไม่มีข้อมูลการตั้งค่า {deviceType} ในระบบ
                             </p>
                         ) : (
                             brands.map((brand) => (
@@ -190,7 +197,7 @@ export default function OnuSetupPage() {
                         </button>
                     </div>
 
-                    <h3 className="mb-4">ตั้งค่า {selectedBrand} ONU</h3>
+                    <h3 className="mb-4">ตั้งค่า {selectedBrand} {deviceType}</h3>
 
                     {modesForBrand.length > 0 ? (
                         <div className="step-flow">

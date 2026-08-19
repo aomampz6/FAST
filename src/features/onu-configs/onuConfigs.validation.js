@@ -4,7 +4,8 @@ const createSchema = z.object({
     Brand: z.string().min(1),
     Mode: z.string().min(1),
     Details: z.string().min(1),
-    Hidden: z.boolean().optional()
+    Hidden: z.boolean().optional(),
+    DeviceType: z.enum(['ONU', 'ATA']).optional()
 });
 
 const updateSchema = createSchema.partial();

@@ -26,7 +26,8 @@ export default function App() {
                 >
                     <Route index element={<DashboardPage />} />
                     <Route path="troubleshoot" element={<TroubleshootPage />} />
-                    <Route path="onu-setup" element={<OnuSetupPage />} />
+                    <Route path="onu-setup" element={<OnuSetupPage deviceType="ONU" />} />
+                    <Route path="ata-setup" element={<OnuSetupPage deviceType="ATA" />} />
                     <Route path="phonebook" element={<PhonebookPage />} />
                     <Route path="profile" element={<ProfilePage />} />
                 </Route>

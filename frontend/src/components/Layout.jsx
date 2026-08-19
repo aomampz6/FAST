@@ -30,6 +30,7 @@ function useTheme() {
 const PAGE_TITLES = [
     { path: '/troubleshoot', title: 'ตรวจสอบและแก้ไขงานเสีย' },
     { path: '/onu-setup', title: 'การตั้งค่าอุปกรณ์ FTTx (ONU)' },
+    { path: '/ata-setup', title: 'การตั้งค่าอุปกรณ์ ATA' },
     { path: '/phonebook', title: 'ข้อมูล สมุดโทรศัพท์' },
     { path: '/profile', title: 'ข้อมูลส่วนตัว' },
     { path: '/admin', title: 'ผู้ดูแลระบบ' },

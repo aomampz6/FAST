@@ -1198,8 +1198,10 @@ html[data-theme='dark'] .stat-icon.yellow {
 }
 
 @media (max-width: 768px) {
+    /* auto-fit instead of a fixed 2-column grid so a 3rd (or nth) button
+       wraps evenly instead of leaving a lone item stranded on its own row. */
     .quick-actions.grid {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
         gap: 12px;
     }
 

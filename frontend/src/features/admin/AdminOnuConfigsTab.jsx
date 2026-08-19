@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useOnuConfigs } from '../onu-configs/useOnuConfigs';
 import { getOnuImageUrl } from '../onu-configs/onuConfigsService';
 
-const emptyForm = { Brand: '', Mode: '', Details: '', Hidden: false };
+const emptyForm = { Brand: '', Mode: '', Details: '', Hidden: false, DeviceType: 'ONU' };
 
 export default function AdminOnuConfigsTab() {
     const {
@@ -19,10 +19,25 @@ export default function AdminOnuConfigsTab() {
     const [editingId, setEditingId] = useState(null);
     const [formError, setFormError] = useState(null);
     const [imageFiles, setImageFiles] = useState({});
+    const [deviceTypeFilter, setDeviceTypeFilter] = useState('all');
+
+    const filteredConfigs = useMemo(
+        () =>
+            deviceTypeFilter === 'all'
+                ? configs
+                : configs.filter((c) => (c.DeviceType || 'ONU') === deviceTypeFilter),
+        [configs, deviceTypeFilter]
+    );
 
     function startEdit(item) {
         setEditingId(item._id);
-        setForm({ Brand: item.Brand || '', Mode: item.Mode || '', Details: item.Details || '', Hidden: !!item.Hidden });
+        setForm({
+            Brand: item.Brand || '',
+            Mode: item.Mode || '',
+            Details: item.Details || '',
+            Hidden: !!item.Hidden,
+            DeviceType: item.DeviceType || 'ONU',
+        });
     }
 
     function resetForm() {
@@ -74,9 +89,19 @@ export default function AdminOnuConfigsTab() {
     return (
         <div className="admin-section">
             <form className="admin-form" onSubmit={handleSubmit}>
-                <h3>{editingId ? 'แก้ไขการตั้งค่า ONU' : 'เพิ่มการตั้งค่า ONU ใหม่'}</h3>
+                <h3>{editingId ? `แก้ไขการตั้งค่า ${form.DeviceType}` : 'เพิ่มการตั้งค่าอุปกรณ์ใหม่'}</h3>
                 {formError && <div className="error-banner">{formError}</div>}
                 <div className="form-grid">
+                    <label>
+                        ประเภทอุปกรณ์ (Device Type)
+                        <select
+                            value={form.DeviceType}
+                            onChange={(e) => setForm({ ...form, DeviceType: e.target.value })}
+                        >
+                            <option value="ONU">ONU</option>
+                            <option value="ATA">ATA</option>
+                        </select>
+                    </label>
                     <label>
                         Brand (ยี่ห้อ)
                         <input value={form.Brand} onChange={(e) => setForm({ ...form, Brand: e.target.value })} required />
@@ -108,9 +133,23 @@ export default function AdminOnuConfigsTab() {
                 </div>
             </form>
 
+            <div className="admin-scoms-filters" style={{ marginBottom: 12 }}>
+                <select
+                    className="admin-group-filter"
+                    value={deviceTypeFilter}
+                    onChange={(e) => setDeviceTypeFilter(e.target.value)}
+                    aria-label="กรองตามประเภทอุปกรณ์"
+                >
+                    <option value="all">ทุกประเภทอุปกรณ์</option>
+                    <option value="ONU">ONU เท่านั้น</option>
+                    <option value="ATA">ATA เท่านั้น</option>
+                </select>
+            </div>
+
             <table className="data-table">
                 <thead>
                     <tr>
+                        <th>ประเภท</th>
                         <th>Brand</th>
                         <th>Mode</th>
                         <th>การแสดงผล</th>
@@ -119,8 +158,9 @@ export default function AdminOnuConfigsTab() {
                     </tr>
                 </thead>
                 <tbody>
-                    {configs.map((item) => (
+                    {filteredConfigs.map((item) => (
                         <tr key={item._id} className={item.Hidden ? 'admin-row-hidden' : undefined}>
+                            <td>{item.DeviceType || 'ONU'}</td>
                             <td>{item.Brand}</td>
                             <td>{item.Mode}</td>
                             <td>
@@ -158,9 +198,9 @@ export default function AdminOnuConfigsTab() {
                             </td>
                         </tr>
                     ))}
-                    {configs.length === 0 && (
+                    {filteredConfigs.length === 0 && (
                         <tr>
-                            <td colSpan={5}>ไม่มีข้อมูล</td>
+                            <td colSpan={6}>ไม่มีข้อมูล</td>
                         </tr>
                     )}
                 </tbody>

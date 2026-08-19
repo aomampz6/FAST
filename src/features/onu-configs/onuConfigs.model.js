@@ -12,6 +12,7 @@ const onuConfigSchema = new mongoose.Schema({
     Mode: { type: String, required: true },
     Details: { type: String, required: true },
     Hidden: { type: Boolean, default: false },
+    DeviceType: { type: String, enum: ['ONU', 'ATA'], default: 'ONU' },
     Images: { type: [onuConfigImageSchema], default: [] }
 }, {
     timestamps: true

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Activity, BarChart2, BookOpen, Calendar, Search, Settings } from 'lucide-react';
+import { Activity, BarChart2, BookOpen, Calendar, PhoneCall, Search, Settings } from 'lucide-react';
 import { useParameters } from '../features/parameters/useParameters';
 
 const LEVEL_BADGE_CLASS = { danger: 'badge danger', warning: 'badge warning', info: 'badge info', none: '' };
@@ -179,6 +179,10 @@ export default function DashboardPage() {
                     <button type="button" className="quick-action-btn" onClick={() => navigate('/onu-setup')}>
                         <Settings style={{ color: 'var(--nt-gray)' }} />
                         ตั้งค่า ONU รุ่นต่างๆ
+                    </button>
+                    <button type="button" className="quick-action-btn" onClick={() => navigate('/ata-setup')}>
+                        <PhoneCall style={{ color: 'var(--info)' }} />
+                        การตั้งค่า ATA
                     </button>
                 </div>
             </div>
