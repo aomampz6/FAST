@@ -7,6 +7,7 @@ import LoginPage from './features/auth/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
 import TroubleshootPage from './features/scoms/TroubleshootPage';
+import SymptomGuidePage from './features/scoms/SymptomGuidePage';
 import OnuSetupPage from './features/onu-configs/OnuSetupPage';
 import PhonebookPage from './features/phonebook/PhonebookPage';
 import AdminPage from './features/admin/AdminPage';
@@ -26,6 +27,7 @@ export default function App() {
                 >
                     <Route index element={<DashboardPage />} />
                     <Route path="troubleshoot" element={<TroubleshootPage />} />
+                    <Route path="symptom-guide" element={<SymptomGuidePage />} />
                     <Route path="onu-setup" element={<OnuSetupPage deviceType="ONU" />} />
                     <Route path="ata-setup" element={<OnuSetupPage deviceType="ATA" />} />
                     <Route path="phonebook" element={<PhonebookPage />} />

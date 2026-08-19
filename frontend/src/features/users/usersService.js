@@ -1,7 +1,19 @@
 import httpClient from '../../shared/api/httpClient';
 
-export async function getUsers() {
-    const { data } = await httpClient.get('/users');
+/**
+ * Fetches one page of the user roster. The endpoint is paginated and searchable
+ * server-side — with ~2,400 technician accounts, fetching them all and
+ * filtering in the browser is not an option.
+ *
+ * Returns `{ items, total, page, limit, totalPages }`.
+ */
+export async function getUsers({ search = '', page = 1, limit = 25, role, isActive } = {}) {
+    const params = { page, limit };
+    if (search) params.search = search;
+    if (role) params.role = role;
+    if (typeof isActive === 'boolean') params.isActive = isActive;
+
+    const { data } = await httpClient.get('/users', { params });
     return data;
 }
 

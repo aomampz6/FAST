@@ -9,6 +9,7 @@
     "dev:backend": "node src/server.js",
     "dev:frontend": "npm --prefix frontend run dev",
     "seed:admin": "node src/scripts/seed-admin.js",
+    "import:users": "node src/scripts/import-users.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "license": "ISC",

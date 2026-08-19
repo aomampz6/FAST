@@ -16,6 +16,14 @@ const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
+// In production the app sits behind Coolify's Traefik proxy, which is the only
+// hop in front of it. Without this, req.ip is Traefik's address on the Docker
+// network — identical for every visitor — so anything keyed on the client IP
+// (rate limiting, logging) treats the whole organisation as one client. `1`
+// trusts exactly one proxy hop, so a client cannot spoof its own address by
+// sending an X-Forwarded-For header.
+app.set('trust proxy', 1);
+
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {

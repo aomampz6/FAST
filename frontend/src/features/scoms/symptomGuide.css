@@ -1,0 +1,585 @@
+/* ==========================================================================
+   Symptom guide — split-pane (sidebar + detail panel) layout for the
+   sub-symptoms of a single troubleshoot group. Desktop shows both panes side
+   by side; below 900px the sidebar collapses into an off-canvas drawer opened
+   from a sticky selector bar, so the detail panel gets the full viewport.
+   ========================================================================== */
+
+/* The drawer is portaled to <body>, outside .sg-page, so it needs its own
+   copy of the accent tokens rather than inheriting them. */
+.sg-page,
+.sg-drawer {
+    --sg-accent: #10b981;
+    --sg-accent-soft: rgba(16, 185, 129, 0.12);
+    --sg-accent-ring: rgba(16, 185, 129, 0.28);
+}
+
+:root[data-theme='dark'] .sg-page,
+html[data-theme='dark'] .sg-page,
+:root[data-theme='dark'] .sg-drawer,
+html[data-theme='dark'] .sg-drawer {
+    --sg-accent: #34d399;
+    --sg-accent-soft: rgba(52, 211, 153, 0.14);
+    --sg-accent-ring: rgba(52, 211, 153, 0.3);
+}
+
+.sg-page {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding-bottom: 40px;
+}
+
+/* --- Top bar / hero ----------------------------------------------------- */
+
+.sg-topbar {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 18px;
+}
+
+.sg-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.sg-hero {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.sg-hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: var(--sg-accent-soft);
+    color: var(--sg-accent);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    margin-bottom: 12px;
+}
+
+.sg-hero-title {
+    margin: 0 0 10px;
+    font-size: clamp(24px, 5vw, 36px);
+    font-weight: 800;
+    line-height: 1.25;
+    color: var(--text-primary);
+}
+
+.sg-hero-subtitle {
+    margin: 0 auto;
+    max-width: 640px;
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: var(--text-secondary);
+}
+
+/* --- Split pane --------------------------------------------------------- */
+
+.sg-split {
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+}
+
+/* --- Sidebar ------------------------------------------------------------ */
+
+.sg-sidebar {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 16px 14px;
+    box-shadow: var(--shadow-sm);
+    position: sticky;
+    /* Clears the app's sticky .top-header (70px) while scrolling. */
+    top: 94px;
+}
+
+:root[data-theme='dark'] .sg-sidebar,
+html[data-theme='dark'] .sg-sidebar {
+    box-shadow: none;
+}
+
+.sg-sidebar-title {
+    margin: 0 0 12px;
+    padding: 0 6px;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.sg-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sg-nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 11px 12px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    background: transparent;
+    box-shadow: none;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 600;
+    text-align: left;
+    line-height: 1.4;
+    transition: background-color var(--duration-base) ease, color var(--duration-base) ease,
+        border-color var(--duration-base) ease;
+}
+
+.sg-nav-btn:hover {
+    background: var(--bg-main);
+    border-color: transparent;
+}
+
+.sg-nav-btn.active {
+    background: var(--sg-accent-soft);
+    border-color: var(--sg-accent-ring);
+    color: var(--sg-accent);
+}
+
+.sg-nav-badge {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-main);
+    color: var(--text-secondary);
+    font-size: 12.5px;
+    font-weight: 700;
+    transition: background-color var(--duration-base) ease, color var(--duration-base) ease;
+}
+
+:root[data-theme='dark'] .sg-nav-badge,
+html[data-theme='dark'] .sg-nav-badge {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.sg-nav-btn.active .sg-nav-badge {
+    background: var(--sg-accent);
+    color: #ffffff;
+}
+
+.sg-nav-label {
+    flex: 1;
+    min-width: 0;
+}
+
+/* --- Detail panel ------------------------------------------------------- */
+
+.sg-panel {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 26px;
+    box-shadow: var(--shadow-sm);
+    scroll-margin-top: 80px;
+    animation: sgFadeIn var(--duration-slow) var(--ease-out);
+}
+
+:root[data-theme='dark'] .sg-panel,
+html[data-theme='dark'] .sg-panel {
+    box-shadow: none;
+}
+
+@keyframes sgFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sg-panel {
+        animation: none;
+    }
+}
+
+.sg-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-bottom: 18px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.sg-panel-badge {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--sg-accent-soft);
+    color: var(--sg-accent);
+    font-size: 15px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sg-panel-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.35;
+    color: var(--text-primary);
+}
+
+.sg-visual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 220px;
+    padding: 32px 20px;
+    border-radius: var(--radius-md);
+    background: var(--sg-accent);
+    color: #ffffff;
+    text-align: center;
+    margin-bottom: 22px;
+}
+
+.sg-visual-text {
+    font-size: clamp(28px, 6vw, 52px);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+}
+
+.sg-lead {
+    margin: 0 0 18px;
+    font-size: 15px;
+    line-height: 1.75;
+    color: var(--text-primary);
+}
+
+.sg-section-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 12px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+}
+
+.sg-list {
+    margin: 0 0 22px;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sg-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--bg-main);
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--text-primary);
+}
+
+:root[data-theme='dark'] .sg-list li,
+html[data-theme='dark'] .sg-list li {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.sg-list-icon {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: var(--sg-accent);
+}
+
+.sg-callout {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--sg-accent-ring);
+    background: var(--sg-accent-soft);
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: var(--text-primary);
+    margin-bottom: 22px;
+}
+
+.sg-callout-icon {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: var(--sg-accent);
+}
+
+/* --- Prev / next -------------------------------------------------------- */
+
+.sg-panel-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border-color);
+}
+
+.sg-panel-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    font-size: 13.5px;
+    font-weight: 600;
+}
+
+.sg-panel-nav-btn.primary {
+    background: var(--sg-accent);
+    border-color: var(--sg-accent);
+    color: #ffffff;
+}
+
+.sg-panel-nav-btn:disabled {
+    opacity: 0.4;
+}
+
+.sg-panel-indicator {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+/* --- Mobile selector bar + drawer (hidden on desktop) ------------------- */
+
+.sg-mobile-bar,
+.sg-drawer-overlay,
+.sg-drawer {
+    display: none;
+}
+
+@media (max-width: 900px) {
+    .sg-split {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0;
+    }
+
+    .sg-sidebar {
+        display: none;
+    }
+
+    .sg-panel {
+        padding: 20px 16px;
+        /* Clears the app's sticky top header (70px) plus the selector bar
+           below it, so scrolling a newly picked symptom into view doesn't
+           tuck its heading underneath them. */
+        scroll-margin-top: 150px;
+    }
+
+    .sg-panel-title {
+        font-size: 17px;
+    }
+
+    .sg-visual {
+        min-height: 150px;
+        padding: 24px 16px;
+    }
+
+    /* Sticky bar standing in for the sidebar: shows where you are and opens
+       the drawer holding the full symptom list. */
+    .sg-mobile-bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        position: sticky;
+        /* Sits just under the app's sticky .top-header (70px tall, z-index 40). */
+        top: 78px;
+        z-index: 20;
+        margin-bottom: 14px;
+        padding: 11px 14px;
+        border-radius: 14px;
+        border: 1px solid var(--border-color);
+        background: var(--bg-surface);
+        box-shadow: var(--shadow-sm);
+        text-align: left;
+    }
+
+    .sg-mobile-bar-badge {
+        flex-shrink: 0;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--sg-accent);
+        color: #ffffff;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .sg-mobile-bar-text {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .sg-mobile-bar-kicker {
+        display: block;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-secondary);
+    }
+
+    .sg-mobile-bar-title {
+        display: block;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text-primary);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .sg-drawer-overlay {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: 90;
+        background: rgba(0, 0, 0, 0.45);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity var(--duration-base) ease;
+    }
+
+    .sg-drawer-overlay.open {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .sg-drawer {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 91;
+        max-height: 80vh;
+        padding: 10px 16px calc(20px + env(safe-area-inset-bottom));
+        border-radius: 22px 22px 0 0;
+        background: var(--bg-surface);
+        box-shadow: var(--shadow-lg);
+        transform: translateY(100%);
+        transition: transform var(--duration-slow) var(--ease-out);
+    }
+
+    .sg-drawer.open {
+        transform: translateY(0);
+    }
+
+    .sg-drawer-handle {
+        width: 40px;
+        height: 4px;
+        border-radius: 2px;
+        background: var(--border-color);
+        margin: 0 auto 12px;
+    }
+
+    .sg-drawer-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+
+    .sg-drawer-header h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .sg-drawer-close {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        border-radius: 50%;
+        border: 1px solid var(--border-color);
+        background: var(--bg-main);
+        color: var(--text-secondary);
+        box-shadow: none;
+    }
+
+    .sg-drawer .sg-nav {
+        overflow-y: auto;
+        gap: 6px;
+        padding-bottom: 4px;
+    }
+
+    .sg-drawer .sg-nav-btn {
+        padding: 14px 12px;
+        font-size: 15px;
+    }
+
+    .sg-panel-nav {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .sg-panel-indicator {
+        order: -1;
+        width: 100%;
+        text-align: center;
+        margin-bottom: 4px;
+    }
+
+    .sg-panel-nav-btn {
+        flex: 1;
+        justify-content: center;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sg-drawer,
+    .sg-drawer-overlay {
+        transition: none;
+    }
+}

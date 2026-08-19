@@ -6,10 +6,22 @@ function toSafeUser(user) {
     return obj;
 }
 
+function parseIsActive(value) {
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    return undefined;
+}
+
 async function list(req, res, next) {
     try {
-        const users = await usersService.list();
-        res.json(users);
+        const result = await usersService.list({
+            search: req.query.search || '',
+            page: req.query.page,
+            limit: req.query.limit,
+            role: req.query.role,
+            isActive: parseIsActive(req.query.isActive)
+        });
+        res.json(result);
     } catch (err) {
         next(err);
     }
