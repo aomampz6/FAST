@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useCallback, useMemo } from 'react';
-import { loginRequest } from '../../features/auth/authService';
+import { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
+import { loginRequest, getMe } from '../../features/auth/authService';
 
 const AuthContext = createContext(null);
 
@@ -9,6 +9,22 @@ const ROLE_KEY = 'fast_role';
 export function AuthProvider({ children }) {
     const [token, setToken] = useState(() => localStorage.getItem(TOKEN_KEY));
     const [role, setRole] = useState(() => localStorage.getItem(ROLE_KEY));
+    const [profile, setProfile] = useState(null);
+
+    // The JWT itself only carries {id, role} — fullName/empId/deptName live
+    // on the User document, so they're fetched once per session (login, or
+    // an existing token on page reload) rather than decoded from the token.
+    // Shared here (rather than fetched per-page) so the header (fullName)
+    // and the profile page (empId/deptName) read from one request.
+    useEffect(() => {
+        if (!token) {
+            setProfile(null);
+            return;
+        }
+        getMe()
+            .then(setProfile)
+            .catch(() => setProfile(null));
+    }, [token]);
 
     const login = useCallback(async (username, password) => {
         const result = await loginRequest(username, password);
@@ -27,8 +43,8 @@ export function AuthProvider({ children }) {
     }, []);
 
     const value = useMemo(
-        () => ({ token, role, isAuthenticated: !!token, login, logout }),
-        [token, role, login, logout]
+        () => ({ token, role, profile, fullName: profile?.fullName || null, isAuthenticated: !!token, login, logout }),
+        [token, role, profile, login, logout]
     );
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -42,7 +42,7 @@ const ROLE_LABEL = {
 };
 
 export default function Layout() {
-    const { role, logout } = useAuth();
+    const { role, logout, fullName } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const [collapsed, setCollapsed] = useState(false);
@@ -163,8 +163,10 @@ export default function Layout() {
                             {theme === 'light' ? <Moon /> : <Sun />}
                         </button>
                         <div className="user-profile">
-                            <span className="user-avatar">{role ? role[0].toUpperCase() : 'U'}</span>
-                            <span>{ROLE_LABEL[role] || role}</span>
+                            <span className="user-avatar">
+                                {(fullName?.trim()?.[0] || role?.[0] || 'U').toUpperCase()}
+                            </span>
+                            <span>{fullName || ROLE_LABEL[role] || role}</span>
                         </div>
                     </div>
                 </header>

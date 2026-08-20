@@ -19,4 +19,13 @@ async function register(req, res, next) {
     }
 }
 
-module.exports = { login, register };
+async function me(req, res, next) {
+    try {
+        const profile = await authService.getProfile(req.user.id);
+        res.json(profile);
+    } catch (err) {
+        next(err);
+    }
+}
+
+module.exports = { login, register, me };

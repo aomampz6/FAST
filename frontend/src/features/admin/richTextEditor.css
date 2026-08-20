@@ -66,6 +66,16 @@
     background-color: var(--border-color);
 }
 
+.admin-page .rte-heading-select {
+    height: 32px;
+    padding: 0 8px;
+    font-size: 13px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+}
+
 .admin-page .rte-content {
     padding: 12px 14px;
 }
@@ -76,6 +86,7 @@
     color: var(--text-primary);
     font-size: 14.5px;
     line-height: 1.7;
+    overflow: auto;
 }
 
 .admin-page .rte-content .ProseMirror p {
@@ -88,12 +99,85 @@
     margin: 0 0 10px;
 }
 
-.admin-page .rte-content .ProseMirror img.rte-image {
+.admin-page .rte-content .ProseMirror h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 4px 0 10px;
+}
+
+.admin-page .rte-content .ProseMirror h3 {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 4px 0 10px;
+}
+
+/* Image node view — wrapper + resize handle + inline align toolbar. Only
+   exists inside the live editor; the serialized HTML (and the read-only
+   render on OnuSetupPage) is just a plain <img>, styled further below. */
+.admin-page .rte-content .ProseMirror .rte-image-wrap {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+}
+
+.admin-page .rte-content .ProseMirror .rte-image-wrap .rte-image {
     max-width: 100%;
     border-radius: var(--radius-sm);
     border: 1px solid var(--border-color);
-    margin: 8px 0;
     display: block;
+}
+
+.admin-page .rte-content .ProseMirror .rte-image-toolbar {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+    border-radius: var(--radius-sm);
+    background: rgba(0, 0, 0, 0.55);
+    opacity: 0;
+    transition: opacity 120ms ease-out;
+}
+
+.admin-page .rte-content .ProseMirror .rte-image-wrap:hover .rte-image-toolbar,
+.admin-page .rte-content .ProseMirror .rte-image-wrap:focus-within .rte-image-toolbar {
+    opacity: 1;
+}
+
+.admin-page .rte-content .ProseMirror .rte-image-align-btn {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: #ffffff;
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.admin-page .rte-content .ProseMirror .rte-image-align-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.admin-page .rte-content .ProseMirror .rte-image-align-btn.active {
+    background: var(--nt-yellow);
+    color: var(--nt-dark);
+}
+
+.admin-page .rte-content .ProseMirror .rte-image-resize-handle {
+    position: absolute;
+    right: -4px;
+    bottom: -4px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    background: var(--nt-yellow);
+    cursor: nwse-resize;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
 .admin-page .rte-content .ProseMirror p.is-editor-empty:first-child::before {
@@ -115,10 +199,11 @@
 
 /* Read-only rendering of the same HTML on the technician-facing setup page
    (OnuSetupPage) — kept close to the editor's own styling so what the admin
-   sees while writing matches what technicians see. */
+   sees while writing matches what technicians see. Unscoped (not under
+   .admin-page) because it also targets pages outside the admin panel. */
 .rich-text-content img {
     max-width: 100%;
-    border-radius: var(--radius-sm);
+    border-radius: 8px;
     border: 1px solid var(--border-color);
     margin: 8px 0;
     display: block;
@@ -132,4 +217,42 @@
 
 .rich-text-content p {
     margin: 0 0 10px;
+}
+
+.rich-text-content h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 4px 0 10px;
+}
+
+.rich-text-content h3 {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 4px 0 10px;
+}
+
+/* Image alignment — shared by the live editor (rendered inside the node
+   view's wrapper) and the read-only technician page (plain <img>). Left/right
+   float so following paragraphs wrap around the image; center sits alone on
+   its own line. */
+.rte-img-center {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.rte-img-left {
+    float: left;
+    margin: 4px 16px 8px 0;
+}
+
+.rte-img-right {
+    float: right;
+    margin: 4px 0 8px 16px;
+}
+
+.rich-text-content::after {
+    content: '';
+    display: block;
+    clear: both;
 }

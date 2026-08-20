@@ -24,6 +24,16 @@ async function login(username, password) {
     return { token, role: user.role };
 }
 
+async function getProfile(userId) {
+    const user = await User.findById(userId).select('username fullName role empId deptName');
+    if (!user) {
+        const err = new Error('User not found');
+        err.status = 404;
+        throw err;
+    }
+    return user;
+}
+
 async function register({ username, password, role, fullName }) {
     const existingUser = await User.findOne({ username });
     if (existingUser) {
@@ -37,4 +47,4 @@ async function register({ username, password, role, fullName }) {
     return user;
 }
 
-module.exports = { login, register };
+module.exports = { login, register, getProfile };

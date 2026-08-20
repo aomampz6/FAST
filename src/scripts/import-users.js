@@ -65,7 +65,7 @@ function readCsv(filePath) {
     return new TextDecoder('windows-874').decode(buffer);
 }
 
-const COLUMN = { empId: 0, first: 2, last: 3, mailName: 6 };
+const COLUMN = { empId: 0, first: 2, last: 3, deptName: 5, mailName: 6 };
 
 function buildAccounts(rows) {
     const accounts = [];
@@ -77,6 +77,7 @@ function buildAccounts(rows) {
         const empId = (row[COLUMN.empId] || '').trim();
         const firstName = (row[COLUMN.first] || '').trim();
         const lastName = (row[COLUMN.last] || '').trim();
+        const deptName = (row[COLUMN.deptName] || '').trim();
         const mailName = (row[COLUMN.mailName] || '').trim();
 
         let username = mailName.toLowerCase().replace(/\s+/g, '');
@@ -102,7 +103,7 @@ function buildAccounts(rows) {
             takenUsernames.set(username, 1);
         }
 
-        accounts.push({ username, password: empId.padStart(PASSWORD_LENGTH, '0'), fullName });
+        accounts.push({ username, password: empId.padStart(PASSWORD_LENGTH, '0'), fullName, empId, deptName });
     });
 
     return { accounts, warnings };
@@ -146,6 +147,8 @@ async function importUsers({ csvPath, dryRun, resetPassword }) {
         const user = await User.findOne({ username: account.username });
         user.password = account.password;
         user.fullName = account.fullName;
+        user.empId = account.empId;
+        user.deptName = account.deptName;
         await user.save();
         updated += 1;
     }

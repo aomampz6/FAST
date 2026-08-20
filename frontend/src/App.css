@@ -2259,6 +2259,90 @@ html[data-theme='dark'] .bottom-sheet {
     flex-shrink: 0;
 }
 
+/* Success confirmation popup (SuccessPopup.jsx) — shown after a feedback
+   submit instead of leaving any inline "saved"/history text on the page. */
+.success-popup-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(2px);
+    z-index: 10100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    animation: successPopupFadeIn 0.2s ease-out;
+}
+
+.success-popup {
+    width: 100%;
+    max-width: 340px;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg, 24px);
+    box-shadow: var(--shadow-lg);
+    padding: 32px 28px 28px;
+    text-align: center;
+    animation: successPopupPop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.success-popup-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    background-color: rgba(16, 185, 129, 0.12);
+    color: var(--success, #10b981);
+}
+
+.success-popup-message {
+    margin: 0 0 22px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.success-popup-btn {
+    width: 100%;
+    padding: 12px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, var(--nt-yellow), #ffa000);
+    color: var(--nt-dark);
+    font-weight: 700;
+    font-size: 15px;
+}
+
+@keyframes successPopupFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes successPopupPop {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .success-popup-overlay,
+    .success-popup {
+        animation: none;
+    }
+}
+
 .sheet-handle {
     width: 40px;
     height: 5px;

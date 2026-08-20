@@ -6,7 +6,12 @@ const userSchema = new mongoose.Schema({
     password: { type: String, required: true },
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
     fullName: { type: String, required: false },
-    isActive: { type: Boolean, default: true }
+    isActive: { type: Boolean, default: true },
+    // HR fields populated by src/scripts/import-users.js from the employee
+    // export CSV — optional because accounts created via POST /auth/register
+    // (admin bootstrap, seed-admin) never set them.
+    empId: { type: String, required: false },
+    deptName: { type: String, required: false }
 }, {
     timestamps: true
 });

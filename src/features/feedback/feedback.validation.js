@@ -1,10 +1,14 @@
 const { z } = require('zod');
 
 const createFeedbackSchema = z.object({
-    scope: z.enum(['troubleshoot', 'onu-setup']),
+    scope: z.enum(['troubleshoot', 'onu-setup', 'ata-setup']),
     refId: z.string().min(1),
     rating: z.number().int().min(1).max(5),
     comment: z.string().optional()
+});
+
+const updateStatusSchema = z.object({
+    status: z.enum(['new', 'resolved'])
 });
 
 function validate(schema) {
@@ -18,4 +22,4 @@ function validate(schema) {
     };
 }
 
-module.exports = { createFeedbackSchema, validate };
+module.exports = { createFeedbackSchema, updateStatusSchema, validate };

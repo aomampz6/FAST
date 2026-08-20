@@ -1,10 +1,19 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import Image from '@tiptap/extension-image';
+import { TextStyle, FontSize } from '@tiptap/extension-text-style';
 import Placeholder from '@tiptap/extension-placeholder';
 import { Bold, Image as ImageIcon, Italic, List, ListOrdered, Redo, Undo } from 'lucide-react';
+import { ResizableImage } from './resizableImage';
 import './richTextEditor.css';
+
+const FONT_SIZES = [
+    { label: 'ปกติ', value: '' },
+    { label: 'เล็ก', value: '13px' },
+    { label: 'กลาง', value: '16px' },
+    { label: 'ใหญ่', value: '20px' },
+    { label: 'ใหญ่มาก', value: '26px' },
+];
 
 /**
  * Rich text editor for the ONU config "Details" field. Renders to/from an
@@ -24,7 +33,9 @@ export default function RichTextEditor({ value, onChange, onUploadImage, placeho
     const editor = useEditor({
         extensions: [
             StarterKit,
-            Image.configure({ inline: false, HTMLAttributes: { class: 'rte-image' } }),
+            ResizableImage.configure({ inline: false }),
+            TextStyle,
+            FontSize,
             Placeholder.configure({ placeholder: placeholder || 'พิมพ์รายละเอียดขั้นตอน...' }),
         ],
         content: value || '',
@@ -86,6 +97,43 @@ export default function RichTextEditor({ value, onChange, onUploadImage, placeho
     return (
         <div className="rte">
             <div className="rte-toolbar">
+                <select
+                    className="rte-heading-select"
+                    aria-label="ขนาดหัวข้อ"
+                    value={
+                        editor.isActive('heading', { level: 2 })
+                            ? '2'
+                            : editor.isActive('heading', { level: 3 })
+                              ? '3'
+                              : '0'
+                    }
+                    onChange={(e) => {
+                        const level = Number(e.target.value);
+                        if (!level) editor.chain().focus().setParagraph().run();
+                        else editor.chain().focus().toggleHeading({ level }).run();
+                    }}
+                >
+                    <option value="0">ข้อความปกติ</option>
+                    <option value="2">หัวข้อใหญ่</option>
+                    <option value="3">หัวข้อย่อย</option>
+                </select>
+                <select
+                    className="rte-heading-select"
+                    aria-label="ขนาดตัวอักษร"
+                    value={editor.getAttributes('textStyle').fontSize || ''}
+                    onChange={(e) => {
+                        const size = e.target.value;
+                        if (!size) editor.chain().focus().unsetFontSize().run();
+                        else editor.chain().focus().setFontSize(size).run();
+                    }}
+                >
+                    {FONT_SIZES.map((s) => (
+                        <option key={s.label} value={s.value}>
+                            {s.label}
+                        </option>
+                    ))}
+                </select>
+                <span className="rte-toolbar-sep" />
                 <button
                     type="button"
                     className={editor.isActive('bold') ? 'active' : undefined}

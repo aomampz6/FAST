@@ -4,7 +4,6 @@ import {
     AlertCircle,
     ArrowLeft,
     ArrowRight,
-    Check,
     CheckCircle2,
     ClipboardList,
     Gauge,
@@ -27,6 +26,7 @@ import { useNavigate } from 'react-router-dom';
 import { useScoms } from './useScoms';
 import { submitFeedback } from '../feedback/feedbackService';
 import { useFirstFeedbackGate } from '../../shared/hooks/useFirstFeedbackGate';
+import SuccessPopup from '../../components/SuccessPopup';
 import './symptomGuide.css';
 
 // Per-group icon/color for the home grid tiles — mirrors archive/app.js
@@ -98,10 +98,10 @@ export default function TroubleshootPage() {
     const feedbackRef = useRef(null);
 
     const [comment, setComment] = useState('');
-    const [feedbackDone, setFeedbackDone] = useState(false);
     const [feedbackError, setFeedbackError] = useState(null);
     const [gateShake, setGateShake] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [successOpen, setSuccessOpen] = useState(false);
 
     const groups = useMemo(() => {
         const map = new Map();
@@ -141,7 +141,7 @@ export default function TroubleshootPage() {
         };
     }, [drawerOpen]);
 
-    const feedbackRequired = isRequired() && !feedbackDone;
+    const feedbackRequired = isRequired();
     const headerMeta = selectedGroup ? getGroupHeaderMeta(selectedGroup) : null;
     const active = symptomsInGroup[activeIndex] || null;
     const checks = active ? buildChecklist(active) : [];
@@ -199,13 +199,8 @@ export default function TroubleshootPage() {
                 comment: text,
             });
             setComment('');
-            if (feedbackRequired) {
-                markDone();
-                setFeedbackDone(true);
-            } else {
-                setFeedbackDone(true);
-                setTimeout(() => setFeedbackDone(false), 2000);
-            }
+            if (feedbackRequired) markDone();
+            setSuccessOpen(true);
         } catch (err) {
             setFeedbackError(err.response?.data?.message || 'ไม่สามารถส่งคำแนะนำได้ กรุณาลองใหม่อีกครั้ง');
         } finally {
@@ -416,17 +411,9 @@ export default function TroubleshootPage() {
                                     type="button"
                                     className="feedback-submit-btn"
                                     onClick={handleFeedbackSubmit}
-                                    disabled={submitting || feedbackDone}
+                                    disabled={submitting}
                                 >
-                                    {feedbackDone ? (
-                                        <>
-                                            <Check size={18} /> <span>บันทึกข้อมูลแล้ว</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <span>ส่งคำแนะนำ / บันทึกข้อมูล</span> <ArrowRight size={18} />
-                                        </>
-                                    )}
+                                    <span>ส่งคำแนะนำ / บันทึกข้อมูล</span> <ArrowRight size={18} />
                                 </button>
                                 {feedbackError && (
                                     <p className="feedback-status" style={{ color: 'var(--danger)' }}>
@@ -468,6 +455,8 @@ export default function TroubleshootPage() {
                 </>,
                 document.body
             )}
+
+            <SuccessPopup open={successOpen} message="ส่งคำแนะนำเรียบร้อยแล้ว" onClose={() => setSuccessOpen(false)} />
         </div>
     );
 }

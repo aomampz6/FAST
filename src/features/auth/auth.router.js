@@ -7,5 +7,6 @@ const { validate, loginSchema, registerSchema } = require('./auth.validation');
 
 router.post('/login', loginLimiter, validate(loginSchema), controller.login);
 router.post('/register', verifyToken, requireRole('admin'), validate(registerSchema), controller.register);
+router.get('/me', verifyToken, controller.me);
 
 module.exports = router;

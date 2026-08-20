@@ -9,6 +9,7 @@ import { useGuides } from '../guides/useGuides';
 import { readGuide } from '../guides/guidesService';
 import { submitFeedback } from '../feedback/feedbackService';
 import { useFirstFeedbackGate } from '../../shared/hooks/useFirstFeedbackGate';
+import SuccessPopup from '../../components/SuccessPopup';
 import '../admin/richTextEditor.css';
 
 function slug(value) {
@@ -36,7 +37,8 @@ export default function OnuSetupPage({ deviceType = 'ONU' }) {
     const [rating, setRating] = useState(5);
     const [comment, setComment] = useState('');
     const [feedbackRequired, setFeedbackRequired] = useState(false);
-    const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [successOpen, setSuccessOpen] = useState(false);
     const [feedbackStatus, setFeedbackStatus] = useState(null);
     const [gateShake, setGateShake] = useState(false);
 
@@ -82,7 +84,6 @@ export default function OnuSetupPage({ deviceType = 'ONU' }) {
     useEffect(() => {
         if (selectedMode) {
             setFeedbackRequired(isRequired());
-            setFeedbackSubmitted(false);
             setFeedbackStatus(null);
             setComment('');
             setRating(5);
@@ -119,6 +120,7 @@ export default function OnuSetupPage({ deviceType = 'ONU' }) {
             return;
         }
 
+        setSubmitting(true);
         try {
             await submitFeedback({
                 scope: `${deviceType.toLowerCase()}-setup`,
@@ -128,18 +130,15 @@ export default function OnuSetupPage({ deviceType = 'ONU' }) {
             });
 
             setComment('');
-            setFeedbackSubmitted(true);
-
             if (feedbackRequired) {
-                // The button label itself switches to "บันทึกข้อมูลแล้ว" below —
-                // no separate status line needed for the gated first-time case.
                 markDone();
                 setFeedbackRequired(false);
-            } else {
-                setFeedbackStatus('ขอบคุณสำหรับคำแนะนำของคุณ');
             }
+            setSuccessOpen(true);
         } catch (err) {
             setFeedbackStatus(err.response?.data?.message || 'ไม่สามารถส่งคำแนะนำได้ กรุณาลองใหม่อีกครั้ง');
+        } finally {
+            setSubmitting(false);
         }
     }
 
@@ -321,18 +320,8 @@ export default function OnuSetupPage({ deviceType = 'ONU' }) {
                                                     onChange={(e) => setComment(e.target.value)}
                                                     placeholder="ระบุคำแนะนำ ข้อเสนอแนะ หรือรายละเอียดเพิ่มเติม เช่น ทำตามขั้นตอนแล้วอาการยังไม่ดีขึ้น พบว่าไฟกระพริบที่ช่อง WAN..."
                                                 />
-                                                <button
-                                                    type="submit"
-                                                    className="feedback-submit-btn"
-                                                    disabled={feedbackSubmitted && !feedbackRequired}
-                                                >
-                                                    {feedbackSubmitted ? (
-                                                        <span>บันทึกข้อมูลแล้ว</span>
-                                                    ) : (
-                                                        <>
-                                                            <span>ส่งคำแนะนำ / บันทึกข้อมูล</span> <Send size={18} />
-                                                        </>
-                                                    )}
+                                                <button type="submit" className="feedback-submit-btn" disabled={submitting}>
+                                                    <span>ส่งคำแนะนำ / บันทึกข้อมูล</span> <Send size={18} />
                                                 </button>
                                                 {feedbackStatus && <p className="feedback-status">{feedbackStatus}</p>}
                                             </form>
@@ -374,6 +363,8 @@ export default function OnuSetupPage({ deviceType = 'ONU' }) {
                     />
                 </div>
             )}
+
+            <SuccessPopup open={successOpen} message="ส่งคำแนะนำเรียบร้อยแล้ว" onClose={() => setSuccessOpen(false)} />
         </div>
     );
 }
