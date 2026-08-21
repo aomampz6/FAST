@@ -3,7 +3,7 @@ const { deleteConfigImages } = require('./onuConfigs.hooks');
 const { uploadImage, deleteImage } = require('../../shared/s3');
 
 async function list() {
-    return OnuConfig.find().sort({ Brand: 1, Mode: 1 });
+    return OnuConfig.find().sort({ Brand: 1, Model: 1, Mode: 1 });
 }
 
 async function create(data) {

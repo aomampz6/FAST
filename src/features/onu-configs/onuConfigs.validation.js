@@ -2,6 +2,7 @@ const { z } = require('zod');
 
 const createSchema = z.object({
     Brand: z.string().min(1),
+    Model: z.string().optional(),
     Mode: z.string().min(1),
     Details: z.string().min(1),
     Hidden: z.boolean().optional(),

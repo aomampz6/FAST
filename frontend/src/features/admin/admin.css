@@ -1172,3 +1172,28 @@
     max-width: 100%;
     cursor: pointer;
 }
+
+/* A picker plus its "add new" escape hatch on one line — used by the ONU/ATA
+   brand and model fields, where the value is normally reused but sometimes
+   has to be typed for the first time. */
+.admin-page .admin-inline-field {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+}
+
+.admin-page .admin-inline-field select,
+.admin-page .admin-inline-field input {
+    flex: 1;
+    min-width: 0;
+}
+
+.admin-page .admin-inline-field button {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    font-size: 13px;
+    white-space: nowrap;
+}
