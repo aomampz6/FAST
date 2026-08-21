@@ -9,6 +9,7 @@ import { useGuides } from '../guides/useGuides';
 import { readGuide } from '../guides/guidesService';
 import { submitFeedback } from '../feedback/feedbackService';
 import { useFirstFeedbackGate } from '../../shared/hooks/useFirstFeedbackGate';
+import { RoleGate } from '../../shared/auth/access';
 import SuccessPopup from '../../components/SuccessPopup';
 import '../admin/richTextEditor.css';
 
@@ -269,16 +270,18 @@ export default function OnuSetupPage({ deviceType = 'ONU' }) {
                                     />
 
                                     {selectedMode.Images?.length > 0 && (
-                                        <div className="onu-detail-images">
-                                            {selectedMode.Images.map((img) => (
-                                                <img
-                                                    key={img._id || img.key}
-                                                    src={getOnuImageUrl(img.key)}
-                                                    alt={`${selectedMode.Brand} ${selectedMode.Mode}`}
-                                                    onClick={() => setLightboxSrc(getOnuImageUrl(img.key))}
-                                                />
-                                            ))}
-                                        </div>
+                                        <RoleGate allow={['admin']}>
+                                            <div className="onu-detail-images">
+                                                {selectedMode.Images.map((img) => (
+                                                    <img
+                                                        key={img._id || img.key}
+                                                        src={getOnuImageUrl(img.key)}
+                                                        alt={`${selectedMode.Brand} ${selectedMode.Mode}`}
+                                                        onClick={() => setLightboxSrc(getOnuImageUrl(img.key))}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </RoleGate>
                                     )}
 
                                     <div className="feedback-panel" style={{ marginTop: 20 }}>

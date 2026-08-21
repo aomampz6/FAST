@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import * as LucideIcons from 'lucide-react';
 import { ArrowLeft, Building2, Phone } from 'lucide-react';
 import { usePhonebook } from './usePhonebook';
-import { useAuth } from '../../shared/auth/AuthContext';
+import { useHasRole } from '../../shared/auth/access';
 
 const emptyGroup = { title: '', icon: '', color: '', bgColor: '' };
 const emptyContact = { title: '', subtitle: '', phone: '', extension: '' };
@@ -30,8 +30,7 @@ function resolveGroupIcon(iconName) {
 export default function PhonebookPage({ embedded = false }) {
     const { groups, loading, error, createGroup, deleteGroup, addContact, updateContact, deleteContact } =
         usePhonebook();
-    const { role } = useAuth();
-    const isAdmin = role === 'admin';
+    const isAdmin = useHasRole(['admin']);
     const navigate = useNavigate();
 
     const [newGroup, setNewGroup] = useState(emptyGroup);

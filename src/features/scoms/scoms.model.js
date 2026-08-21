@@ -1,5 +1,12 @@
 const mongoose = require('mongoose');
 
+const scomImageSchema = new mongoose.Schema({
+    key: { type: String, required: true },
+    originalName: { type: String }
+}, {
+    timestamps: true
+});
+
 const scomSchema = new mongoose.Schema({
     ID: { type: String, required: true },
     Group: { type: String, required: true },
@@ -9,7 +16,10 @@ const scomSchema = new mongoose.Schema({
     Steps: { type: String, required: false },
     NormalValue: { type: String, required: false },
     Equipment: { type: String, required: false },
-    hidden: { type: Boolean, default: false }
+    hidden: { type: Boolean, default: false },
+    // Images embedded inline in the Steps rich text editor (RichTextField),
+    // stored the same way onu-configs stores its screenshots.
+    Images: { type: [scomImageSchema], default: [] }
 }, {
     timestamps: true
 });

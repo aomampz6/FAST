@@ -15,6 +15,7 @@ import {
     Zap,
 } from 'lucide-react';
 import { useAuth } from '../shared/auth/AuthContext';
+import { RoleGate } from '../shared/auth/access';
 
 function useTheme() {
     const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
@@ -121,12 +122,12 @@ export default function Layout() {
                         <span className="nav-icon"><User size={22} /></span>
                         <span>ข้อมูลส่วนตัว</span>
                     </NavLink>
-                    {role === 'admin' && (
+                    <RoleGate allow={['admin']}>
                         <NavLink to="/admin" className="nav-item" data-label="ผู้ดูแลระบบ">
                             <span className="nav-icon"><Settings size={22} /></span>
                             <span>ผู้ดูแลระบบ</span>
                         </NavLink>
-                    )}
+                    </RoleGate>
                 </nav>
 
                 <div className="sidebar-footer-block">

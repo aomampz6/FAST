@@ -3,11 +3,43 @@
    tokens as the rest of the admin form so it matches light/dark mode
    automatically. */
 
+/* Standard box size for every Details/Steps field in the system — full width
+   up to a comfortable reading measure, capped height with its own scrollbar
+   so a long Steps list never pushes the rest of the form down the page.
+   Shared by the editor (.rte) and the non-admin read-only view (.rte-readonly)
+   so both always render at identical dimensions. */
+.admin-page .rte,
+.admin-page .rte-readonly {
+    width: 100%;
+    max-width: 700px;
+    box-sizing: border-box;
+}
+
 .admin-page .rte {
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     background-color: var(--bg-main);
     overflow: hidden;
+}
+
+/* Read-only fallback (RichTextField.jsx) shown to non-admins instead of the
+   editor + its toolbar — same box, no controls. */
+.admin-page .rte-readonly {
+    height: 200px;
+    padding: 12px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-size: 14.5px;
+    line-height: 1.7;
+    overflow-y: auto;
+}
+
+@media (max-width: 480px) {
+    .admin-page .rte-readonly {
+        height: 150px;
+    }
 }
 
 .admin-page .rte:focus-within {
@@ -66,6 +98,39 @@
     background-color: var(--border-color);
 }
 
+/* Text color swatch — a native <input type="color"> dressed up to match the
+   other toolbar buttons, with a small palette icon so it reads as a control
+   rather than a stray colored square. */
+.admin-page .rte-color-swatch {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.admin-page .rte-color-swatch:hover {
+    background-color: var(--bg-surface-hover);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+.admin-page .rte-color-swatch input[type='color'] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: none;
+    opacity: 0;
+    cursor: pointer;
+}
+
 .admin-page .rte-heading-select {
     height: 32px;
     padding: 0 8px;
@@ -81,12 +146,18 @@
 }
 
 .admin-page .rte-content .ProseMirror {
-    min-height: 160px;
+    height: 200px;
     outline: none;
     color: var(--text-primary);
     font-size: 14.5px;
     line-height: 1.7;
-    overflow: auto;
+    overflow-y: auto;
+}
+
+@media (max-width: 480px) {
+    .admin-page .rte-content .ProseMirror {
+        height: 150px;
+    }
 }
 
 .admin-page .rte-content .ProseMirror p {

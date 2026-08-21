@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useOnuConfigs } from '../onu-configs/useOnuConfigs';
 import { addOnuConfigImages as uploadOnuConfigImages, getOnuImageUrl } from '../onu-configs/onuConfigsService';
-import RichTextEditor from './RichTextEditor';
+import RichTextField from './RichTextField';
 
 const emptyForm = { Brand: '', Mode: '', Details: '', Hidden: false, DeviceType: 'ONU' };
 
@@ -134,7 +134,7 @@ export default function AdminOnuConfigsTab() {
                 <div className="form-grid">
                     <label>
                         Details (รายละเอียดขั้นตอน)
-                        <RichTextEditor
+                        <RichTextField
                             value={form.Details}
                             onChange={(html) => setForm({ ...form, Details: html })}
                             onUploadImage={editingId ? handleInlineImageUpload : null}

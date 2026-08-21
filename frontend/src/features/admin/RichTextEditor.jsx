@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { TextStyle, FontSize } from '@tiptap/extension-text-style';
+import { TextStyle, FontSize, Color } from '@tiptap/extension-text-style';
 import Placeholder from '@tiptap/extension-placeholder';
-import { Bold, Image as ImageIcon, Italic, List, ListOrdered, Redo, Undo } from 'lucide-react';
+import { Bold, Image as ImageIcon, Italic, List, ListOrdered, Palette, Redo, Undo, X } from 'lucide-react';
 import { ResizableImage } from './resizableImage';
 import './richTextEditor.css';
 
@@ -26,7 +26,13 @@ const FONT_SIZES = [
  * record that hasn't been saved yet, so there's no id to attach images to)
  * image insertion is simply disabled.
  */
-export default function RichTextEditor({ value, onChange, onUploadImage, placeholder }) {
+export default function RichTextEditor({
+    value,
+    onChange,
+    onUploadImage,
+    placeholder,
+    disabledImageHint = 'บันทึกข้อมูลก่อน แล้วจึงแทรกรูปภาพได้',
+}) {
     const uploadingRef = useRef(false);
     const fileInputRef = useRef(null);
 
@@ -36,6 +42,7 @@ export default function RichTextEditor({ value, onChange, onUploadImage, placeho
             ResizableImage.configure({ inline: false }),
             TextStyle,
             FontSize,
+            Color,
             Placeholder.configure({ placeholder: placeholder || 'พิมพ์รายละเอียดขั้นตอน...' }),
         ],
         content: value || '',
@@ -134,6 +141,25 @@ export default function RichTextEditor({ value, onChange, onUploadImage, placeho
                     ))}
                 </select>
                 <span className="rte-toolbar-sep" />
+                <label className="rte-color-swatch" title="สีตัวอักษร">
+                    <Palette size={14} />
+                    <input
+                        type="color"
+                        aria-label="สีตัวอักษร"
+                        value={editor.getAttributes('textStyle').color || '#ffffff'}
+                        onChange={(e) => editor.chain().focus().setColor(e.target.value).run()}
+                    />
+                </label>
+                <button
+                    type="button"
+                    onClick={() => editor.chain().focus().unsetColor().run()}
+                    disabled={!editor.getAttributes('textStyle').color}
+                    title="ล้างสีตัวอักษร"
+                    aria-label="ล้างสีตัวอักษร"
+                >
+                    <X size={14} />
+                </button>
+                <span className="rte-toolbar-sep" />
                 <button
                     type="button"
                     className={editor.isActive('bold') ? 'active' : undefined}
@@ -171,7 +197,7 @@ export default function RichTextEditor({ value, onChange, onUploadImage, placeho
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={!onUploadImage}
-                    title={onUploadImage ? 'แทรกรูปภาพ' : 'บันทึกข้อมูลก่อน แล้วจึงแทรกรูปภาพได้'}
+                    title={onUploadImage ? 'แทรกรูปภาพ' : disabledImageHint}
                     aria-label="แทรกรูปภาพ"
                 >
                     <ImageIcon size={16} />
@@ -186,7 +212,7 @@ export default function RichTextEditor({ value, onChange, onUploadImage, placeho
             </div>
             <EditorContent editor={editor} className="rte-content" />
             <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={handlePickImage} />
-            {!onUploadImage && <p className="rte-hint">บันทึกข้อมูลก่อน แล้วแก้ไขอีกครั้งเพื่อแทรกรูปภาพระหว่างข้อความได้</p>}
+            {!onUploadImage && <p className="rte-hint">{disabledImageHint}</p>}
         </div>
     );
 }

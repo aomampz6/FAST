@@ -18,6 +18,8 @@ import {
     ArrowLeft,
 } from 'lucide-react';
 import { useScoms } from '../scoms/useScoms';
+import { addScomImages, getScomImageUrl } from '../scoms/scomsService';
+import RichTextField from './RichTextField';
 
 const PAGE_SIZE = 20;
 
@@ -39,9 +41,11 @@ const REQUIRED_FIELDS = ['ID', 'Group', 'Scoms'];
 // "what is this" then "how do you fix it" rather than 8 identical-looking
 // inputs in a row. Group itself is chosen in its own wizard step before
 // these render — see formStep below.
+//
+// ID and Scoms are no longer free text — they are two views of the same saved
+// record and render as linked <select>s above this grid, so only the
+// remaining free-text identity field lives here.
 const PRIMARY_FIELDS = [
-    { key: 'ID', label: 'ID', hint: 'เช่น U0001', span: 1 },
-    { key: 'Scoms', label: 'Scoms (หัวข้อ)', hint: 'หัวข้อสั้นๆ ของ Scom นี้', span: 1 },
     { key: 'Symptom', label: 'Symptom (อาการ)', hint: 'อาการที่ผู้ใช้งานพบเจอ', span: 1 },
 ];
 
@@ -56,7 +60,7 @@ function normalize(str) {
 }
 
 export default function AdminScomsTab() {
-    const { scoms, loading, error, createScom, updateScom, deleteScom } = useScoms();
+    const { scoms, loading, error, refresh, createScom, updateScom, deleteScom } = useScoms();
     const [form, setForm] = useState(emptyForm);
     const [editingId, setEditingId] = useState(null);
     const [formStep, setFormStep] = useState(1);
@@ -76,6 +80,69 @@ export default function AdminScomsTab() {
         });
         return Array.from(seen).sort((a, b) => a.localeCompare(b, 'th'));
     }, [scoms]);
+
+    // Options come only from the Scoms already saved in the database. The list
+    // holds every distinct Group + ID + Scoms combination — the same grouping
+    // the table below shows — because the data repeats each combination once
+    // per saved record, and one ID can carry several titles.
+    const scomPairs = useMemo(() => {
+        const seen = new Map();
+        scoms.forEach((item) => {
+            if (!item?.ID || !item?.Scoms) return;
+            const key = `${item.Group || ''}|${item.ID}|${item.Scoms}`;
+            if (!seen.has(key)) seen.set(key, { ID: item.ID, Group: item.Group || '', Scoms: item.Scoms });
+        });
+        return Array.from(seen.values()).sort(
+            (a, b) => a.ID.localeCompare(b.ID, 'en', { numeric: true }) || a.Scoms.localeCompare(b.Scoms, 'th')
+        );
+    }, [scoms]);
+
+    // Codes narrow to the group chosen in step 1. A brand new group has no
+    // codes yet, so fall back to the full list rather than an empty dropdown.
+    const idOptions = useMemo(() => {
+        const inGroup = scomPairs.filter((p) => p.Group === form.Group);
+        const source = inGroup.length > 0 ? inGroup : scomPairs;
+        return Array.from(new Set(source.map((p) => p.ID)));
+    }, [scomPairs, form.Group]);
+
+    // Once an ID is picked the title list narrows to that code's own titles.
+    // With no ID chosen yet, every title inside the current group is offered
+    // so the admin can start from either box.
+    const scomsOptions = useMemo(() => {
+        if (form.ID) return scomPairs.filter((p) => p.ID === form.ID);
+        const inGroup = scomPairs.filter((p) => p.Group === form.Group);
+        return inGroup.length > 0 ? inGroup : scomPairs;
+    }, [scomPairs, form.ID, form.Group]);
+
+    // Auto-sync, ID side: keep the current title if it belongs to the new
+    // code, otherwise take the code's only title, or clear the box so the
+    // admin picks from the narrowed list. The group follows the code too, so
+    // ID / Group / Scoms always stay one row of the table below.
+    function pickId(id) {
+        const rows = scomPairs.filter((p) => p.ID === id);
+        const titles = rows.map((p) => p.Scoms);
+        setForm((prev) => ({
+            ...prev,
+            ID: id,
+            Group: rows[0]?.Group || prev.Group,
+            Scoms: titles.includes(prev.Scoms) ? prev.Scoms : titles.length === 1 ? titles[0] : '',
+        }));
+    }
+
+    // Auto-sync, title side: a title always resolves to its own code and
+    // group. Search within the selected ID first so a title shared by two
+    // codes does not yank the ID box to the other one.
+    function pickScomsTitle(title) {
+        const match =
+            scomPairs.find((p) => p.Scoms === title && p.ID === form.ID) ||
+            scomPairs.find((p) => p.Scoms === title);
+        setForm((prev) => ({
+            ...prev,
+            Scoms: title,
+            ID: match ? match.ID : prev.ID,
+            Group: match?.Group || prev.Group,
+        }));
+    }
 
     const filteredScoms = useMemo(() => {
         const q = normalize(search.trim());
@@ -154,6 +221,19 @@ export default function AdminScomsTab() {
         } catch (err) {
             setFormError(err.response?.data?.message || 'บันทึกไม่สำเร็จ');
         }
+    }
+
+    // Used by the Steps rich text editor's image button/paste/drop — goes
+    // straight to the service function (not the useScoms wrapper) so it can
+    // read back the newly attached image's key and hand the editor a URL to
+    // insert, then refreshes the list separately (same pattern as
+    // AdminOnuConfigsTab's handleInlineImageUpload).
+    async function handleInlineImageUpload(file) {
+        if (!editingId) throw new Error('บันทึกข้อมูลก่อน แล้วจึงแทรกรูปภาพได้');
+        const updated = await addScomImages(editingId, [file]);
+        refresh();
+        const last = updated.Images[updated.Images.length - 1];
+        return getScomImageUrl(last.key);
     }
 
     async function handleDelete(id) {
@@ -277,6 +357,40 @@ export default function AdminScomsTab() {
                         <fieldset className="admin-fieldset">
                             <legend>ข้อมูลระบุตัวตน</legend>
                             <div className="form-grid">
+                                <label>
+                                    <span className="field-label-row">
+                                        ID<span className="required-mark">*</span>
+                                    </span>
+                                    <select
+                                        value={form.ID}
+                                        onChange={(e) => pickId(e.target.value)}
+                                        required
+                                    >
+                                        <option value="">-- เลือกรหัส --</option>
+                                        {idOptions.map((id) => (
+                                            <option key={id} value={id}>
+                                                {id}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </label>
+                                <label>
+                                    <span className="field-label-row">
+                                        Scoms (หัวข้อ)<span className="required-mark">*</span>
+                                    </span>
+                                    <select
+                                        value={form.Scoms}
+                                        onChange={(e) => pickScomsTitle(e.target.value)}
+                                        required
+                                    >
+                                        <option value="">-- เลือกหัวข้ออาการเสีย --</option>
+                                        {scomsOptions.map((o) => (
+                                            <option key={`${o.ID} ${o.Scoms}`} value={o.Scoms}>
+                                                {o.Scoms}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </label>
                                 {PRIMARY_FIELDS.map(({ key, label, hint }) => (
                                     <label key={key}>
                                         <span className="field-label-row">
@@ -309,13 +423,13 @@ export default function AdminScomsTab() {
                                 ))}
                                 <label style={{ gridColumn: '1 / -1' }}>
                                     <span className="field-label-row">Steps (ขั้นตอนแก้ไข)</span>
-                                    <textarea
+                                    <RichTextField
                                         value={form.Steps}
-                                        onChange={(e) => setForm({ ...form, Steps: e.target.value })}
-                                        placeholder={'ขึ้นบรรทัดใหม่ทุกขั้นตอน เช่น\nตรวจสอบสายไฟเบอร์\nรีสตาร์ทอุปกรณ์'}
-                                        rows={5}
+                                        onChange={(html) => setForm({ ...form, Steps: html })}
+                                        onUploadImage={editingId ? handleInlineImageUpload : null}
+                                        placeholder="ขึ้นบรรทัดใหม่ทุกขั้นตอน เช่น ตรวจสอบสายไฟเบอร์ / รีสตาร์ทอุปกรณ์"
                                     />
-                                    <span className="field-hint">แต่ละบรรทัดจะแสดงเป็นหนึ่งขั้นตอนในระบบ</span>
+                                    <span className="field-hint">แต่ละบรรทัด/ย่อหน้าจะแสดงเป็นหนึ่งขั้นตอนในระบบ</span>
                                 </label>
                             </div>
                         </fieldset>

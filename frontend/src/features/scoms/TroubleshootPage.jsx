@@ -64,21 +64,36 @@ function getGroupHeaderMeta(groupName) {
     return { label: 'อาการที่พบ', Icon: Wrench, color: '#14b8a6' };
 }
 
+// Steps is now edited via RichTextField (see AdminScomsTab), so it's stored
+// as HTML — one <p>/<li> per step — rather than newline-separated plain
+// text. Records saved before that change are still plain text, so fall back
+// to splitting on newlines when the value doesn't look like markup.
+function extractSteps(raw) {
+    const text = String(raw).replace(/"/g, '');
+    if (!/<[a-z][\s\S]*>/i.test(text)) {
+        return text
+            .split(/\n/)
+            .map((line) => line.trim())
+            .filter(Boolean)
+            .map((line) => line.replace(/^[-•]\s*/, ''));
+    }
+    const container = document.createElement('div');
+    container.innerHTML = text;
+    return Array.from(container.querySelectorAll('p, li'))
+        .map((el) => el.textContent.trim())
+        .filter(Boolean);
+}
+
 // Builds the checklist shown in a symptom's detail panel from the raw Scoms
-// record fields (CheckPoint + newline-separated Steps), flattened into one
-// list instead of a paginated wizard.
+// record fields (CheckPoint + Steps), flattened into one list instead of a
+// paginated wizard.
 function buildChecklist(item) {
     const checks = [];
     if (item.CheckPoint) {
         checks.push(String(item.CheckPoint).replace(/"/g, ''));
     }
     if (item.Steps) {
-        String(item.Steps)
-            .replace(/"/g, '')
-            .split(/\n/)
-            .map((line) => line.trim())
-            .filter(Boolean)
-            .forEach((line) => checks.push(line.replace(/^[-•]\s*/, '')));
+        checks.push(...extractSteps(item.Steps));
     }
     return checks;
 }

@@ -1164,3 +1164,11 @@
         transition: none !important;
     }
 }
+
+/* The ID / Scoms pickers replaced text inputs in the Scom form. Long Thai
+   symptom titles would otherwise stretch the select past its grid column. */
+.admin-page .form-grid select {
+    width: 100%;
+    max-width: 100%;
+    cursor: pointer;
+}
