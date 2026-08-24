@@ -22,7 +22,7 @@ import {
     WifiOff,
     X,
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useScoms } from './useScoms';
 import { submitFeedback } from '../feedback/feedbackService';
 import { useFirstFeedbackGate } from '../../shared/hooks/useFirstFeedbackGate';
@@ -103,6 +103,7 @@ const FALLBACK_TIP = 'เคล็ดลับ: บันทึกค่าท�
 export default function TroubleshootPage() {
     const { scoms, loading, error } = useScoms();
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
     const { isRequired, markDone } = useFirstFeedbackGate();
 
     const [selectedGroup, setSelectedGroup] = useState(null);
@@ -155,6 +156,28 @@ export default function TroubleshootPage() {
             window.removeEventListener('keydown', onKeyDown);
         };
     }, [drawerOpen]);
+
+    // `?ref=<scom id>` opens that symptom directly — the admin feedback tab
+    // links here so a suggestion can be read next to the content it is about.
+    // The param is consumed once (and then dropped from the URL) so navigating
+    // around the page afterwards doesn't keep snapping back to it.
+    useEffect(() => {
+        const ref = searchParams.get('ref');
+        if (!ref || scoms.length === 0) return;
+
+        // TroubleshootPage submits `active._id || active.ID`, so a link can
+        // carry either key.
+        const target = scoms.find((s) => String(s._id) === ref || String(s.ID) === ref);
+        if (target?.Group) {
+            setSelectedGroup(target.Group);
+            const siblings = scoms.filter((s) => s.Group === target.Group);
+            setActiveIndex(Math.max(0, siblings.findIndex((s) => s === target)));
+        }
+
+        const next = new URLSearchParams(searchParams);
+        next.delete('ref');
+        setSearchParams(next, { replace: true });
+    }, [scoms, searchParams, setSearchParams]);
 
     const feedbackRequired = isRequired();
     const headerMeta = selectedGroup ? getGroupHeaderMeta(selectedGroup) : null;

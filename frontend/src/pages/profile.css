@@ -1,0 +1,344 @@
+/* ==========================================================================
+   Profile page — identity card, session stats, personal-details rows.
+   Replaces the inline style objects the page used to carry, so the layout
+   lives in one place and reads the same design tokens as the rest of the app.
+   ========================================================================== */
+
+.profile-page .profile-card {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 28px;
+}
+
+.profile-page .profile-card + .profile-card {
+    margin-top: 24px;
+}
+
+/* --- Identity ---------------------------------------------------------- */
+
+.profile-identity {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+}
+
+.profile-avatar {
+    position: relative;
+    flex: none;
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: var(--nt-dark);
+    background: linear-gradient(135deg, var(--nt-yellow), #ffa000);
+    box-shadow: var(--shadow-glow);
+}
+
+/* The online dot sits on the avatar's edge; the ring is drawn in the card's
+   own background colour so the dot reads as cut out of the circle. */
+.profile-avatar-status {
+    position: absolute;
+    right: 4px;
+    bottom: 4px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background-color: var(--success, #10b981);
+    border: 3px solid var(--bg-surface);
+}
+
+.profile-identity-text {
+    min-width: 0;
+}
+
+.profile-name {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--text-primary);
+    word-break: break-word;
+}
+
+.profile-empid {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 6px 0 0;
+    font-size: 14.5px;
+    color: var(--text-secondary);
+}
+
+.profile-empid svg {
+    flex: none;
+    opacity: 0.8;
+}
+
+/* Department chip */
+.profile-chip {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 12px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-main);
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+/* --- Session stats ---------------------------------------------------- */
+
+.profile-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 26px;
+    padding-top: 26px;
+    border-top: 1px solid var(--border-light);
+}
+
+@media (max-width: 640px) {
+    .profile-stats {
+        grid-template-columns: 1fr;
+    }
+}
+
+.profile-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-light);
+    background-color: var(--bg-main);
+}
+
+.profile-stat-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+}
+
+.profile-stat-value {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    flex-wrap: wrap;
+}
+
+.profile-stat-value.accent {
+    color: var(--nt-yellow);
+}
+
+/* Time of day next to the expiry date — secondary, so the date reads first */
+.profile-stat-sub {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.profile-dot {
+    flex: none;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background-color: var(--success, #10b981);
+    box-shadow: 0 0 8px var(--success, #10b981);
+}
+
+/* --- Card headers ----------------------------------------------------- */
+
+.profile-card-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-bottom: 20px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.profile-card-icon {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    color: var(--nt-yellow);
+    background-color: rgba(255, 209, 0, 0.12);
+}
+
+.profile-card-head h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.profile-card-head p {
+    margin: 3px 0 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+/* --- Detail rows ------------------------------------------------------ */
+
+.profile-rows {
+    margin: 0;
+}
+
+.profile-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.profile-row:last-child {
+    border-bottom: none;
+}
+
+.profile-row-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: none;
+    font-size: 14.5px;
+    color: var(--text-secondary);
+}
+
+.profile-row-label svg {
+    flex: none;
+    color: var(--text-tertiary);
+}
+
+.profile-row-value {
+    min-width: 0;
+    text-align: right;
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--text-primary);
+    word-break: break-word;
+}
+
+/* Nothing stored for this field yet — de-emphasise the placeholder so a filled
+   row is what catches the eye. */
+.profile-row-value.empty {
+    font-weight: 500;
+    color: var(--text-tertiary);
+}
+
+/* Password row: mask + reveal button */
+.profile-password {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    min-width: 0;
+}
+
+.profile-password-mask {
+    letter-spacing: 3px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.profile-password-note {
+    font-size: 12.5px;
+    font-weight: 400;
+    line-height: 1.5;
+    text-align: right;
+    color: var(--text-secondary);
+}
+
+.profile-password-toggle {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background-color: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.profile-password-toggle:hover {
+    background-color: var(--bg-surface-hover);
+    color: var(--text-primary);
+}
+
+.profile-foot-note {
+    margin: 20px 0 0;
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--text-tertiary);
+}
+
+/* --- Feedback history ------------------------------------------------- */
+
+.profile-feedback-item {
+    padding: 14px 16px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-light);
+    background-color: var(--bg-main);
+}
+
+.profile-feedback-item + .profile-feedback-item {
+    margin-top: 14px;
+}
+
+.profile-feedback-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.profile-feedback-scope {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.profile-feedback-side {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+}
+
+.profile-feedback-rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.profile-feedback-comment {
+    margin: 8px 0 0;
+    font-size: 14px;
+    color: var(--text-primary);
+    white-space: pre-wrap;
+}
+
+.profile-empty-text {
+    margin: 16px 0 0;
+    color: var(--text-secondary);
+}

@@ -25,7 +25,12 @@ async function login(username, password) {
 }
 
 async function getProfile(userId) {
-    const user = await User.findById(userId).select('username fullName role empId deptName');
+    // Explicit whitelist rather than `-password`: everything listed here is
+    // shown on the profile page, and nothing else about the account leaks to
+    // the browser.
+    const user = await User.findById(userId).select(
+        'username fullName role empId firstName lastName deptName deptFullName email'
+    );
     if (!user) {
         const err = new Error('User not found');
         err.status = 404;

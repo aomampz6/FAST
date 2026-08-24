@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight, Inbox, Search, SearchX, Users } from 'lucide-react';
 import { useUsers, USERS_PAGE_SIZE } from '../users/useUsers';
 import { useAuth } from '../../shared/auth/AuthContext';
+import UserEditModal from './UserEditModal';
+import { toTitleCase } from '../../shared/format/names';
 
 function decodeJwt(token) {
     try {
@@ -42,7 +44,9 @@ export default function AdminUsersTab() {
     const currentUserId = token ? decodeJwt(token)?.id : null;
 
     const [form, setForm] = useState(emptyForm);
-    const [editingId, setEditingId] = useState(null);
+    // Editing happens in a modal (UserEditModal), which loads the account's own
+    // record from the API; the inline form above the table only creates.
+    const [editingUserId, setEditingUserId] = useState(null);
     const [formError, setFormError] = useState(null);
 
     // A new search or filter can leave the requested page past the end of the
@@ -51,13 +55,7 @@ export default function AdminUsersTab() {
         setRequestedPage(1);
     }, [search, roleFilter]);
 
-    function startEdit(user) {
-        setEditingId(user._id);
-        setForm({ username: user.username, password: '', role: user.role, fullName: user.fullName || '' });
-    }
-
     function resetForm() {
-        setEditingId(null);
         setForm(emptyForm);
         setFormError(null);
     }
@@ -66,13 +64,7 @@ export default function AdminUsersTab() {
         e.preventDefault();
         setFormError(null);
         try {
-            if (editingId) {
-                const payload = { username: form.username, role: form.role, fullName: form.fullName };
-                if (form.password) payload.password = form.password;
-                await updateUser(editingId, payload);
-            } else {
-                await createUser(form);
-            }
+            await createUser(form);
             resetForm();
         } catch (err) {
             setFormError(err.response?.data?.message || 'บันทึกไม่สำเร็จ');
@@ -106,7 +98,7 @@ export default function AdminUsersTab() {
     return (
         <div className="admin-section">
             <form className="admin-form" onSubmit={handleSubmit}>
-                <h3>{editingId ? 'แก้ไขผู้ใช้งาน' : 'เพิ่มผู้ใช้งานใหม่'}</h3>
+                <h3>เพิ่มผู้ใช้งานใหม่</h3>
                 {formError && <div className="error-banner">{formError}</div>}
                 <div className="form-grid">
                     <label>
@@ -118,12 +110,12 @@ export default function AdminUsersTab() {
                         />
                     </label>
                     <label>
-                        {editingId ? 'รหัสผ่านใหม่ (เว้นว่างหากไม่ต้องการเปลี่ยน)' : 'รหัสผ่าน'}
+                        รหัสผ่าน
                         <input
                             type="password"
                             value={form.password}
                             onChange={(e) => setForm({ ...form, password: e.target.value })}
-                            required={!editingId}
+                            required
                         />
                     </label>
                     <label>
@@ -139,12 +131,7 @@ export default function AdminUsersTab() {
                     </label>
                 </div>
                 <div className="form-actions">
-                    <button type="submit">{editingId ? 'บันทึก' : 'เพิ่มผู้ใช้งาน'}</button>
-                    {editingId && (
-                        <button type="button" onClick={resetForm}>
-                            ยกเลิก
-                        </button>
-                    )}
+                    <button type="submit">เพิ่มผู้ใช้งาน</button>
                 </div>
             </form>
 
@@ -203,7 +190,7 @@ export default function AdminUsersTab() {
                                 return (
                                     <tr key={user._id}>
                                         <td>{user.username}</td>
-                                        <td>{user.fullName}</td>
+                                        <td>{toTitleCase(user.fullName)}</td>
                                         <td>{ROLE_LABELS[user.role] || user.role}</td>
                                         <td>
                                             <span
@@ -213,7 +200,7 @@ export default function AdminUsersTab() {
                                             </span>
                                         </td>
                                         <td>
-                                            <button onClick={() => startEdit(user)}>แก้ไข</button>
+                                            <button onClick={() => setEditingUserId(user._id)}>แก้ไข</button>
                                             <button
                                                 disabled={isSelf}
                                                 title={isSelf ? 'ไม่สามารถเปลี่ยนสถานะบัญชีตนเองได้' : undefined}
@@ -289,6 +276,16 @@ export default function AdminUsersTab() {
                     </div>
                 )}
             </div>
+
+            {editingUserId && (
+                <UserEditModal
+                    userId={editingUserId}
+                    onClose={() => setEditingUserId(null)}
+                    // The modal surfaces its own save error, so let the rejection
+                    // through instead of swallowing it here.
+                    onSave={(payload) => updateUser(editingUserId, payload)}
+                />
+            )}
         </div>
     );
 }

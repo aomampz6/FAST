@@ -53,7 +53,16 @@ async function list({ search = '', page = 1, limit = DEFAULT_PAGE_SIZE, role, is
     return { items, total, page: safePage, limit: safeLimit, totalPages };
 }
 
-async function create({ username, password, role, fullName }) {
+// The admin edit modal loads a single account straight from the database
+// rather than reusing the row the table already holds, so it always shows the
+// stored HR fields even if the list response predates the last change.
+async function getById(id) {
+    const user = await User.findById(id).select('-password');
+    if (!user) throw notFound();
+    return user;
+}
+
+async function create({ username, password, role, ...rest }) {
     const existingUser = await User.findOne({ username });
     if (existingUser) {
         const err = new Error('Username already exists');
@@ -61,7 +70,10 @@ async function create({ username, password, role, fullName }) {
         throw err;
     }
 
-    const user = new User({ username, password, role: role || 'user', fullName });
+    // `rest` carries only the HR fields the validation schema whitelists
+    // (fullName, empId, firstName, lastName, deptName, deptFullName, email) —
+    // anything else was already stripped before the request got here.
+    const user = new User({ ...rest, username, password, role: role || 'user' });
     await user.save();
     return user;
 }
@@ -70,7 +82,24 @@ async function update(id, data) {
     const user = await User.findById(id);
     if (!user) throw notFound();
 
+    if (data.username && data.username !== user.username) {
+        const taken = await User.findOne({ username: data.username, _id: { $ne: user._id } });
+        if (taken) {
+            const err = new Error('Username already exists');
+            err.status = 400;
+            throw err;
+        }
+    }
+
     Object.assign(user, data);
+
+    // The edit modal shows ชื่อ-อังกฤษ / นามสกุล-อังกฤษ separately but the roster
+    // table and the search filter both read fullName, so keep it derived from
+    // the two parts unless the caller set fullName itself.
+    if ((data.firstName !== undefined || data.lastName !== undefined) && data.fullName === undefined) {
+        user.fullName = `${user.firstName || ''} ${user.lastName || ''}`.replace(/\s+/g, ' ').trim();
+    }
+
     await user.save();
     return user;
 }
@@ -94,4 +123,4 @@ async function setActive(id, isActive, requestingUserId) {
     return user;
 }
 
-module.exports = { list, create, update, remove, setActive, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE };
+module.exports = { list, getById, create, update, remove, setActive, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE };

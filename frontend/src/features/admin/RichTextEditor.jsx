@@ -3,9 +3,32 @@ import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { TextStyle, FontSize, Color } from '@tiptap/extension-text-style';
 import Placeholder from '@tiptap/extension-placeholder';
-import { Bold, Image as ImageIcon, Italic, List, ListOrdered, Palette, Redo, Undo, X } from 'lucide-react';
+import TextAlign from '@tiptap/extension-text-align';
+import {
+    AlignCenter,
+    AlignJustify,
+    AlignLeft,
+    AlignRight,
+    AppWindowMac,
+    Bold,
+    Image as ImageIcon,
+    Italic,
+    List,
+    ListOrdered,
+    Palette,
+    Redo,
+    Undo,
+    X,
+} from 'lucide-react';
 import { ResizableImage } from './resizableImage';
 import './richTextEditor.css';
+
+const TEXT_ALIGNMENTS = [
+    { value: 'left', Icon: AlignLeft, label: 'จัดชิดซ้าย' },
+    { value: 'center', Icon: AlignCenter, label: 'จัดกึ่งกลาง' },
+    { value: 'right', Icon: AlignRight, label: 'จัดชิดขวา' },
+    { value: 'justify', Icon: AlignJustify, label: 'จัดเต็มบรรทัด' },
+];
 
 const FONT_SIZES = [
     { label: 'ปกติ', value: '' },
@@ -43,6 +66,9 @@ export default function RichTextEditor({
             TextStyle,
             FontSize,
             Color,
+            // Paragraphs and headings only — a list item inherits its alignment
+            // from the list, and images carry their own `align` attribute.
+            TextAlign.configure({ types: ['paragraph', 'heading'] }),
             Placeholder.configure({ placeholder: placeholder || 'พิมพ์รายละเอียดขั้นตอน...' }),
         ],
         content: value || '',
@@ -193,6 +219,23 @@ export default function RichTextEditor({
                     <ListOrdered size={16} />
                 </button>
                 <span className="rte-toolbar-sep" />
+                {/* Paragraph alignment. Images are aligned from their own
+                    on-image toolbar instead, because `align` is an attribute of
+                    the image node rather than of the block it sits in. */}
+                {TEXT_ALIGNMENTS.map(({ value, Icon, label }) => (
+                    <button
+                        key={value}
+                        type="button"
+                        className={editor.isActive({ textAlign: value }) ? 'active' : undefined}
+                        onClick={() => editor.chain().focus().setTextAlign(value).run()}
+                        title={label}
+                        aria-label={label}
+                        aria-pressed={editor.isActive({ textAlign: value })}
+                    >
+                        <Icon size={16} />
+                    </button>
+                ))}
+                <span className="rte-toolbar-sep" />
                 <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
@@ -201,6 +244,29 @@ export default function RichTextEditor({
                     aria-label="แทรกรูปภาพ"
                 >
                     <ImageIcon size={16} />
+                </button>
+                {/* Only meaningful with an image selected, so it stays disabled
+                    otherwise rather than silently doing nothing. */}
+                <button
+                    type="button"
+                    className={editor.isActive('image', { frame: true }) ? 'active' : undefined}
+                    disabled={!editor.isActive('image')}
+                    onClick={() =>
+                        editor
+                            .chain()
+                            .focus()
+                            .updateAttributes('image', { frame: !editor.getAttributes('image').frame })
+                            .run()
+                    }
+                    title={
+                        editor.isActive('image')
+                            ? 'ครอบกรอบหน้าต่างเบราว์เซอร์ (macOS)'
+                            : 'เลือกรูปภาพก่อน แล้วจึงครอบกรอบหน้าต่างได้'
+                    }
+                    aria-label="ครอบกรอบหน้าต่างเบราว์เซอร์"
+                    aria-pressed={editor.isActive('image', { frame: true })}
+                >
+                    <AppWindowMac size={16} />
                 </button>
                 <span className="rte-toolbar-sep" />
                 <button type="button" onClick={() => editor.chain().focus().undo().run()} aria-label="ย้อนกลับ">

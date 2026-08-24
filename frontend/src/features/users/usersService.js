@@ -17,6 +17,16 @@ export async function getUsers({ search = '', page = 1, limit = 25, role, isActi
     return data;
 }
 
+/**
+ * One account, straight from the database — the edit modal calls this instead
+ * of reusing the table row so the HR fields it shows are always the stored
+ * ones. Never includes the password: it is bcrypt-hashed and unreadable.
+ */
+export async function getUser(id) {
+    const { data } = await httpClient.get(`/users/${id}`);
+    return data;
+}
+
 export async function createUser(payload) {
     const { data } = await httpClient.post('/users', payload);
     return data;

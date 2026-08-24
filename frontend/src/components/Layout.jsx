@@ -15,6 +15,7 @@ import {
     Zap,
 } from 'lucide-react';
 import { useAuth } from '../shared/auth/AuthContext';
+import { toTitleCase } from '../shared/format/names';
 import { RoleGate } from '../shared/auth/access';
 
 function useTheme() {
@@ -167,7 +168,7 @@ export default function Layout() {
                             <span className="user-avatar">
                                 {(fullName?.trim()?.[0] || role?.[0] || 'U').toUpperCase()}
                             </span>
-                            <span>{fullName || ROLE_LABEL[role] || role}</span>
+                            <span>{toTitleCase(fullName) || ROLE_LABEL[role] || role}</span>
                         </div>
                     </div>
                 </header>

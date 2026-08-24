@@ -1197,3 +1197,307 @@
     font-size: 13px;
     white-space: nowrap;
 }
+
+/* ---------------------------------------------------------------------- */
+/* User edit modal                                                         */
+/* ---------------------------------------------------------------------- */
+/* Rendered through a portal on document.body, not inside `.admin-page`:
+   `.admin-section` animates `transform`, which would make it the containing
+   block for the overlay's `position: fixed` and pin the dialog to the panel
+   instead of the viewport. Everything below is therefore styled standalone
+   rather than inheriting the `.admin-page` form and button rules. */
+.user-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background-color: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(2px);
+    animation: userModalFadeIn 0.18s ease-out;
+}
+
+.user-modal {
+    width: 100%;
+    max-width: 720px;
+    /* The eight fields overflow a short viewport, so the dialog itself caps at
+       the screen height and its body scrolls, keeping header and footer — and
+       therefore the Save button — always reachable. */
+    max-height: calc(100vh - 48px);
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    animation: userModalPop 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+    font-family: inherit;
+}
+
+.user-modal form {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.user-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 24px 28px 16px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.user-modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.user-modal-subtitle {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.user-modal-close {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background-color: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.user-modal-close:hover {
+    background-color: var(--bg-surface-hover);
+    color: var(--text-primary);
+}
+
+.user-modal-loading {
+    margin: 0;
+    padding: 40px 28px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.user-modal-body {
+    padding: 4px 28px 8px;
+    overflow-y: auto;
+}
+
+.user-modal .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin: 16px 0;
+}
+
+.user-modal .form-grid label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.user-modal .field-hint {
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--text-tertiary);
+    margin-top: 2px;
+}
+
+.user-modal input,
+.user-modal select {
+    width: 100%;
+    font-family: inherit;
+    font-size: 14.5px;
+    color: var(--text-primary);
+    background-color: var(--bg-main);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    transition: var(--transition);
+}
+
+.user-modal select {
+    cursor: pointer;
+}
+
+.user-modal input:hover,
+.user-modal select:hover {
+    border-color: var(--text-tertiary);
+}
+
+.user-modal input:focus,
+.user-modal select:focus {
+    outline: none;
+    border-color: var(--nt-yellow);
+    box-shadow: 0 0 0 3px rgba(255, 209, 0, 0.25);
+}
+
+.user-modal-footer {
+    display: flex;
+    gap: 12px;
+    padding: 16px 28px 24px;
+    border-top: 1px solid var(--border-light);
+}
+
+.user-modal-footer button {
+    font-family: inherit;
+    cursor: pointer;
+    border-radius: 30px;
+    border: 2px solid var(--border-color);
+    background-color: transparent;
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 14px;
+    padding: 10px 22px;
+    transition: transform 160ms ease-out, background-color 0.2s ease, color 0.2s ease,
+        border-color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.user-modal-footer button:hover:not(:disabled) {
+    background-color: var(--bg-surface-hover);
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+}
+
+.user-modal-footer button[type='submit'] {
+    background: linear-gradient(135deg, var(--nt-yellow), #FFA000);
+    color: var(--nt-dark);
+    border: none;
+    box-shadow: 0 4px 12px rgba(255, 200, 0, 0.3);
+}
+
+.user-modal-footer button[type='submit']:hover:not(:disabled) {
+    background-color: transparent;
+    color: var(--nt-dark);
+    filter: brightness(1.05);
+    box-shadow: 0 8px 20px rgba(255, 200, 0, 0.4);
+    transform: translateY(-1px);
+}
+
+.user-modal-footer button:active:not(:disabled) {
+    transform: scale(0.97);
+}
+
+.user-modal-footer button:focus-visible {
+    outline: 3px solid var(--nt-yellow);
+    outline-offset: 2px;
+}
+
+.user-modal-footer button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+@keyframes userModalFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes userModalPop {
+    from { opacity: 0; transform: scale(0.96) translateY(8px); }
+    to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .user-modal-overlay,
+    .user-modal {
+        animation: none;
+    }
+
+    .user-modal-footer button {
+        transition: none;
+    }
+}
+
+@media (max-width: 640px) {
+    .user-modal-header,
+    .user-modal-body,
+    .user-modal-footer {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    .user-modal-footer button {
+        flex: 1;
+    }
+}
+
+/* Explains an all-empty edit form: most imported accounts have no employee-
+   register data stored yet, which otherwise reads as a failed load. */
+.user-modal-notice {
+    margin: 16px 0 0;
+    padding: 12px 14px;
+    border: 1px solid var(--border-color);
+    border-left: 3px solid var(--nt-yellow);
+    border-radius: var(--radius-sm);
+    background-color: var(--bg-main);
+    color: var(--text-secondary);
+    font-size: 12.5px;
+    line-height: 1.6;
+}
+
+.user-modal-notice code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+
+/* Feedback "เนื้อหาที่ให้คำแนะนำ" cell — a link to the symptom/config the
+   suggestion was left on, replacing the bare ObjectId that used to sit here. */
+.admin-page .fb-ref-link {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    color: var(--nt-yellow);
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.admin-page .fb-ref-link:hover {
+    border-bottom-color: currentColor;
+}
+
+.admin-page .fb-ref-link svg {
+    flex: none;
+    /* Baseline alignment puts the glyph too low next to Thai text */
+    align-self: center;
+    opacity: 0.75;
+}
+
+/* The referenced record no longer exists: keep the id visible for tracing, but
+   make it clearly not a link. */
+.admin-page .fb-ref-missing {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 2px;
+    color: var(--text-tertiary);
+    font-size: 12.5px;
+    word-break: break-all;
+}
+
+.admin-page .fb-ref-note {
+    color: var(--text-secondary);
+    font-size: 12px;
+    white-space: nowrap;
+}

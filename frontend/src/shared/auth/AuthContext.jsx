@@ -11,11 +11,12 @@ export function AuthProvider({ children }) {
     const [role, setRole] = useState(() => localStorage.getItem(ROLE_KEY));
     const [profile, setProfile] = useState(null);
 
-    // The JWT itself only carries {id, role} — fullName/empId/deptName live
-    // on the User document, so they're fetched once per session (login, or
-    // an existing token on page reload) rather than decoded from the token.
-    // Shared here (rather than fetched per-page) so the header (fullName)
-    // and the profile page (empId/deptName) read from one request.
+    // The JWT itself only carries {id, role} — the account's own details
+    // (username, fullName, empId, name/department columns, e-mail) live on the
+    // User document, so they're fetched once per session (login, or an existing
+    // token on page reload) rather than decoded from the token. Shared here
+    // (rather than fetched per-page) so the header (fullName) and the profile
+    // page (everything else) read from one request.
     useEffect(() => {
         if (!token) {
             setProfile(null);

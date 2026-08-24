@@ -7,6 +7,7 @@ const { validate, createUserSchema, updateUserSchema, statusSchema } = require('
 router.use(verifyToken, requireRole('admin'));
 
 router.get('/', controller.list);
+router.get('/:id', controller.getOne);
 router.post('/', validate(createUserSchema), controller.create);
 router.put('/:id', validate(updateUserSchema), controller.update);
 router.delete('/:id', controller.remove);

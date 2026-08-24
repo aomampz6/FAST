@@ -238,17 +238,65 @@
     color: var(--nt-dark);
 }
 
-.admin-page .rte-content .ProseMirror .rte-image-resize-handle {
+/* Selection chrome: a dashed ring plus corner handles, shown only while the
+   image node is selected (the node view adds .is-selected on selectNode). */
+.admin-page .rte-content .ProseMirror .rte-image-wrap.is-selected {
+    outline: 2px dashed #38bdf8;
+    outline-offset: 5px;
+    border-radius: 3px;
+}
+
+.admin-page .rte-content .ProseMirror .rte-image-handle {
     position: absolute;
-    right: -4px;
-    bottom: -4px;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    border: 2px solid #fff;
-    background: var(--nt-yellow);
-    cursor: nwse-resize;
+    display: none;
+    width: 11px;
+    height: 11px;
+    border-radius: 2px;
+    border: 2px solid #38bdf8;
+    background: #fff;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.admin-page .rte-content .ProseMirror .rte-image-wrap.is-selected .rte-image-handle {
+    display: block;
+}
+
+.admin-page .rte-content .ProseMirror .rte-image-handle-nw { top: -11px; left: -11px; }
+.admin-page .rte-content .ProseMirror .rte-image-handle-ne { top: -11px; right: -11px; }
+.admin-page .rte-content .ProseMirror .rte-image-handle-sw { bottom: -11px; left: -11px; }
+.admin-page .rte-content .ProseMirror .rte-image-handle-se { bottom: -11px; right: -11px; }
+
+.admin-page .rte-content .ProseMirror .rte-image-toolbar-sep {
+    width: 1px;
+    align-self: stretch;
+    margin: 2px 2px;
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.admin-page .rte-content .ProseMirror .rte-image-size-btn,
+.admin-page .rte-content .ProseMirror .rte-image-frame-btn {
+    min-width: 22px;
+    height: 22px;
+    padding: 0 4px;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: #ffffff;
+    font-size: 11.5px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.admin-page .rte-content .ProseMirror .rte-image-size-btn:hover,
+.admin-page .rte-content .ProseMirror .rte-image-frame-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.admin-page .rte-content .ProseMirror .rte-image-size-btn.active,
+.admin-page .rte-content .ProseMirror .rte-image-frame-btn.active {
+    background: var(--nt-yellow);
+    color: var(--nt-dark);
 }
 
 .admin-page .rte-content .ProseMirror p.is-editor-empty:first-child::before {
@@ -327,3 +375,90 @@
     display: block;
     clear: both;
 }
+
+/* ==========================================================================
+   macOS window frame around a screenshot
+   Shared by the editor's node view (.rte-frame.is-framed, toggled live) and the
+   serialized `<figure data-frame="true">` that the read-only render on
+   OnuSetupPage receives — one set of rules so both look identical.
+   ========================================================================== */
+.rte-frame {
+    display: block;
+    max-width: 100%;
+    margin: 0;
+}
+
+/* Unframed: the wrapper is transparent and the image styles itself. */
+.rte-frame:not(.is-framed):not([data-frame='true']) {
+    border: none;
+    background: none;
+    box-shadow: none;
+}
+
+.rte-frame:not(.is-framed):not([data-frame='true']) > .rte-frame-bar {
+    display: none;
+}
+
+.rte-frame.is-framed,
+figure.rte-frame[data-frame='true'] {
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: #ffffff;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+.rte-frame.is-framed > .rte-frame-bar,
+figure.rte-frame[data-frame='true'] > .rte-frame-bar {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 10px;
+    background: linear-gradient(#f3f4f6, #e5e7eb);
+    border-bottom: 1px solid #d4d4d8;
+}
+
+.rte-frame-dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    flex: none;
+}
+
+.rte-frame-dot-r { background-color: #ff5f57; }
+.rte-frame-dot-y { background-color: #febc2e; }
+.rte-frame-dot-g { background-color: #28c840; }
+
+/* Inside a frame the image is the window's content: it fills the width and
+   drops the standalone border/radius the unframed image carries. */
+.rte-frame.is-framed > img,
+figure.rte-frame[data-frame='true'] > img {
+    display: block;
+    width: 100%;
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    max-width: 100%;
+}
+
+/* Alignment of the frame itself, mirroring the plain-image rules above. */
+figure.rte-frame[data-frame='true'].rte-img-center {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+figure.rte-frame[data-frame='true'].rte-img-left {
+    float: left;
+    margin: 4px 16px 12px 0;
+}
+
+figure.rte-frame[data-frame='true'].rte-img-right {
+    float: right;
+    margin: 4px 0 12px 16px;
+}
+
+/* Paragraph alignment produced by the TextAlign extension — the editor applies
+   it inline via style, so this only needs to cover the saved HTML. */
+.rich-text-content [style*='text-align: center'] { text-align: center; }
+.rich-text-content [style*='text-align: right'] { text-align: right; }
+.rich-text-content [style*='text-align: justify'] { text-align: justify; }

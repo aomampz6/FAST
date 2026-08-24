@@ -27,6 +27,15 @@ async function list(req, res, next) {
     }
 }
 
+async function getOne(req, res, next) {
+    try {
+        const user = await usersService.getById(req.params.id);
+        res.json(user);
+    } catch (err) {
+        next(err);
+    }
+}
+
 async function create(req, res, next) {
     try {
         const user = await usersService.create(req.body);
@@ -63,4 +72,4 @@ async function setStatus(req, res, next) {
     }
 }
 
-module.exports = { list, create, update, remove, setStatus };
+module.exports = { list, getOne, create, update, remove, setStatus };

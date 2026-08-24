@@ -1,11 +1,23 @@
 import { useEffect, useMemo, useState } from 'react';
-import { MessageSquareText, Inbox, Check, Sparkles, Trash2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { MessageSquareText, Inbox, Check, ExternalLink, Sparkles, Trash2 } from 'lucide-react';
 import { getFeedback, updateFeedbackStatus, deleteFeedback } from '../feedback/feedbackService';
 import { SCOPE_LABEL } from '../feedback/scopeLabels';
+import { toTitleCase } from '../../shared/format/names';
+import { useScoms } from '../scoms/useScoms';
+import { useOnuConfigs } from '../onu-configs/useOnuConfigs';
 
 function formatDate(value) {
     return new Date(value).toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' });
 }
+
+// Which user-facing page a piece of feedback was left on. The pages read the
+// `?ref=` query themselves and open that record straight away.
+const SCOPE_PATH = {
+    troubleshoot: '/troubleshoot',
+    'onu-setup': '/onu-setup',
+    'ata-setup': '/ata-setup',
+};
 
 // Read-only except for triage (resolve/delete) — admins only view what users
 // submitted here, this data isn't shown anywhere on the user-facing pages
@@ -18,6 +30,11 @@ export default function AdminFeedbackTab() {
     const [scopeFilter, setScopeFilter] = useState('all');
     const [resolvingId, setResolvingId] = useState(null);
     const [deletingId, setDeletingId] = useState(null);
+
+    // Only used to turn `refId` into a readable link label — the table still
+    // renders (with the raw id) if either of these fails to load.
+    const { scoms } = useScoms();
+    const { configs } = useOnuConfigs();
 
     useEffect(() => {
         getFeedback()
@@ -59,10 +76,54 @@ export default function AdminFeedbackTab() {
         return Array.from(seen);
     }, [feedback]);
 
+    // `refId` on its own is a bare ObjectId, which tells an admin nothing about
+    // what the user was actually looking at. Resolve it against the two
+    // collections feedback can point at (see TroubleshootPage / OnuSetupPage
+    // where it is submitted) to get a readable title for the link.
+    const refIndex = useMemo(() => {
+        const map = new Map();
+        // Symptoms are matched on both keys: TroubleshootPage submits
+        // `active._id || active.ID`, so older rows can hold the legacy ID.
+        scoms.forEach((s) => {
+            const label = [s.Group, s.Scoms].filter(Boolean).join(' — ') || s.ID;
+            if (s._id) map.set(String(s._id), label);
+            if (s.ID) map.set(String(s.ID), label);
+        });
+        configs.forEach((c) => {
+            const label = [c.Brand, c.Mode].filter(Boolean).join(' — ') || c._id;
+            map.set(String(c._id), label);
+        });
+        return map;
+    }, [scoms, configs]);
+
     const filteredFeedback = useMemo(
         () => (scopeFilter === 'all' ? feedback : feedback.filter((f) => f.scope === scopeFilter)),
         [feedback, scopeFilter]
     );
+
+    // A record can be deleted after someone left feedback on it, so a missing
+    // title is normal: show the bare id and say so instead of linking to a page
+    // that would open empty.
+    function renderRefCell(f) {
+        const label = refIndex.get(String(f.refId));
+        const path = SCOPE_PATH[f.scope];
+
+        if (!label || !path) {
+            return (
+                <span className="fb-ref-missing" title={f.refId}>
+                    {f.refId}
+                    {!label && <span className="fb-ref-note">(ไม่พบข้อมูลนี้แล้ว)</span>}
+                </span>
+            );
+        }
+
+        return (
+            <Link className="fb-ref-link" to={`${path}?ref=${encodeURIComponent(f.refId)}`} title={f.refId}>
+                {label}
+                <ExternalLink size={13} aria-hidden="true" />
+            </Link>
+        );
+    }
 
     if (loading) {
         return (
@@ -117,7 +178,7 @@ export default function AdminFeedbackTab() {
                                 <th>สถานะ</th>
                                 <th>วันที่</th>
                                 <th>ประเภท</th>
-                                <th>รหัสอ้างอิง</th>
+                                <th>เนื้อหาที่ให้คำแนะนำ</th>
                                 <th>คะแนน</th>
                                 <th>ผู้ใช้งาน</th>
                                 <th>คำแนะนำ</th>
@@ -142,9 +203,9 @@ export default function AdminFeedbackTab() {
                                         </td>
                                         <td style={{ whiteSpace: 'nowrap' }}>{formatDate(f.createdAt)}</td>
                                         <td>{SCOPE_LABEL[f.scope] || f.scope}</td>
-                                        <td>{f.refId}</td>
+                                        <td>{renderRefCell(f)}</td>
                                         <td>{f.rating} / 5</td>
-                                        <td>{f.fullName || f.username || f.userId}</td>
+                                        <td>{toTitleCase(f.fullName) || f.username || f.userId}</td>
                                         <td style={{ maxWidth: 360, whiteSpace: 'pre-wrap' }}>{f.comment || '-'}</td>
                                         <td>
                                             <div className="fb-actions">

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import DOMPurify from 'dompurify';
 import { ArrowLeft, Info, MessageCircle, Send, Settings, X } from 'lucide-react';
 import { useOnuConfigs } from './useOnuConfigs';
@@ -26,6 +26,7 @@ function slug(value) {
 // don't show up mixed together in either page's brand/mode picker.
 export default function OnuSetupPage({ deviceType = 'ONU' }) {
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
     const { configs, loading, error } = useOnuConfigs();
     const { guides } = useGuides();
     const { isRequired, markDone } = useFirstFeedbackGate();
@@ -62,6 +63,25 @@ export default function OnuSetupPage({ deviceType = 'ONU' }) {
         () => visibleConfigs.filter((c) => c.Brand === selectedBrand),
         [visibleConfigs, selectedBrand]
     );
+
+    // `?ref=<config id>` opens that brand + mode directly — the admin feedback
+    // tab links here so a suggestion can be read next to the content it is
+    // about. Consumed once, then dropped from the URL, so moving around the page
+    // afterwards doesn't keep snapping back to it.
+    useEffect(() => {
+        const ref = searchParams.get('ref');
+        if (!ref || visibleConfigs.length === 0) return;
+
+        const target = visibleConfigs.find((c) => String(c._id) === ref);
+        if (target) {
+            setSelectedBrand(target.Brand);
+            setSelectedMode(target);
+        }
+
+        const next = new URLSearchParams(searchParams);
+        next.delete('ref');
+        setSearchParams(next, { replace: true });
+    }, [visibleConfigs, searchParams, setSearchParams]);
 
     const matchedGuide = useMemo(() => {
         if (!selectedMode) return null;

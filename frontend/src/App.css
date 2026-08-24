@@ -187,6 +187,11 @@ h4 {
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     z-index: 50;
+    /* The whole column scrolls when it does not fit (mainly the 100vh mobile
+       drawer), rather than the nav list scrolling inside it. An inner scroller
+       reserved a scrollbar gutter that made the nav items 8px narrower than the
+       logout button directly below them. */
+    overflow-y: auto;
 }
 
 .sidebar.collapsed {
@@ -357,12 +362,16 @@ h4 {
 }
 
 .sidebar-nav {
-    padding: 20px 12px;
+    /* No bottom padding: the logout button below supplies the 4px gap, so it
+       lands one item-gap under the last entry rather than 24px below it. */
+    padding: 20px 12px 0;
     display: flex;
     flex-direction: column;
     gap: 4px;
-    flex: 1;
-    overflow-y: auto;
+    /* Height of its own items, not the whole column: with `flex: 1` the nav
+       filled the sidebar and pushed the logout button to the very bottom, far
+       below the last menu entry. Scrolling is the sidebar's job now. */
+    flex: 0 0 auto;
 }
 
 .nav-item {
@@ -502,8 +511,11 @@ html[data-theme='dark'] .nav-item.active .nav-icon {
     }
 }
 
+/* Sits directly under the last nav item now, so it matches the nav's own
+   horizontal padding and its 4px item gap instead of reading as a separate
+   block pinned to the bottom. */
 .sidebar-footer-block {
-    padding: 12px 16px 20px;
+    padding: 4px 12px 20px;
 }
 
 .logout-btn {
