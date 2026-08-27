@@ -501,7 +501,9 @@
 }
 
 .admin-page .form-grid label,
-.admin-page .admin-form > label {
+.admin-page .admin-form > label,
+.admin-page .form-grid .field-block,
+.admin-page .admin-form > .field-block {
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -1196,6 +1198,71 @@
     padding: 8px 14px;
     font-size: 13px;
     white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Mode topic manager (ONU/ATA config form's "Mode" dropdown source)       */
+/* ---------------------------------------------------------------------- */
+.admin-page .topic-manage-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.admin-page .topic-manage-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background-color: var(--bg-main);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+}
+
+.admin-page .topic-manage-label {
+    flex: 1;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-primary);
+}
+
+.admin-page .topic-manage-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.admin-page .topic-manage-actions button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-size: 12.5px;
+}
+
+.admin-page .topic-manage-reorder {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.admin-page .topic-manage-reorder button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 20px;
+    padding: 0;
+}
+
+.admin-page .topic-manage-empty {
+    padding: 10px 14px;
+    color: var(--text-secondary);
+    font-size: 13.5px;
 }
 
 /* ---------------------------------------------------------------------- */

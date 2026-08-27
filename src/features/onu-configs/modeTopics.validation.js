@@ -1,15 +1,9 @@
 const { z } = require('zod');
 
 const createSchema = z.object({
-    Brand: z.string().min(1),
-    // Required — the ONU/ATA setup page's sidebar groups topics by
-    // Brand -> Model, so every new record needs one (legacy records without
-    // it still work, bucketed under a generic "ทุกรุ่น" label on the client).
-    Model: z.string().min(1),
-    Mode: z.string().min(1),
-    Details: z.string().min(1),
-    Hidden: z.boolean().optional(),
-    DeviceType: z.enum(['ONU', 'ATA']).optional()
+    Label: z.string().min(1),
+    DeviceType: z.enum(['ONU', 'ATA']).optional(),
+    Order: z.number().optional()
 });
 
 const updateSchema = createSchema.partial();

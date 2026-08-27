@@ -10,8 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tiptap/extension-font-family": "^3.30.2",
+    "@tiptap/extension-highlight": "^3.30.2",
     "@tiptap/extension-image": "^3.30.2",
     "@tiptap/extension-placeholder": "^3.30.2",
+    "@tiptap/extension-subscript": "^3.30.2",
+    "@tiptap/extension-superscript": "^3.30.2",
+    "@tiptap/extension-table": "^3.30.2",
     "@tiptap/extension-text-align": "^3.30.2",
     "@tiptap/extension-text-style": "^3.30.2",
     "@tiptap/pm": "^3.30.2",

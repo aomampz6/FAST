@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
-import { Plus, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { useOnuConfigs } from '../onu-configs/useOnuConfigs';
 import { addOnuConfigImages as uploadOnuConfigImages, getOnuImageUrl } from '../onu-configs/onuConfigsService';
+import { useModeTopics } from '../onu-configs/useModeTopics';
 import RichTextField from './RichTextField';
 
 const emptyForm = { Brand: '', Model: '', Mode: '', Details: '', Hidden: false, DeviceType: 'ONU' };
@@ -18,6 +19,14 @@ export default function AdminOnuConfigsTab() {
         addOnuConfigImages,
         removeOnuConfigImage,
     } = useOnuConfigs();
+    const {
+        topics,
+        loading: topicsLoading,
+        error: topicsError,
+        createModeTopic,
+        updateModeTopic,
+        deleteModeTopic,
+    } = useModeTopics();
     const [form, setForm] = useState(emptyForm);
     const [editingId, setEditingId] = useState(null);
     const [formError, setFormError] = useState(null);
@@ -27,6 +36,16 @@ export default function AdminOnuConfigsTab() {
     // matching box back to a text input when the admin adds a new one.
     const [addingBrand, setAddingBrand] = useState(false);
     const [addingModel, setAddingModel] = useState(false);
+    const [addingMode, setAddingMode] = useState(false);
+
+    // Topic (Mode) manager — its own device-type toggle, independent from the
+    // config form above, since an admin may want to curate ATA's topic list
+    // while still adding an ONU config.
+    const [topicDeviceType, setTopicDeviceType] = useState('ONU');
+    const [newTopicLabel, setNewTopicLabel] = useState('');
+    const [topicFormError, setTopicFormError] = useState(null);
+    const [editingTopicId, setEditingTopicId] = useState(null);
+    const [editingTopicLabel, setEditingTopicLabel] = useState('');
 
     // Brands are per device type — an ONU brand list should not offer ATA
     // brands and the other way round.
@@ -53,6 +72,24 @@ export default function AdminOnuConfigsTab() {
         return Array.from(set).sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
     }, [configs, form.DeviceType, form.Brand]);
 
+    // Topics for the currently chosen device type, in the admin-managed order.
+    const topicsForFormDeviceType = useMemo(
+        () => topics.filter((t) => (t.DeviceType || 'ONU') === form.DeviceType),
+        [topics, form.DeviceType]
+    );
+
+    // The Mode dropdown is driven entirely by the managed topic list above —
+    // in its curated order — so it always matches "จัดการหัวข้อการตั้งค่า"
+    // exactly. A record whose Mode isn't (or isn't yet) in that list falls
+    // back to the free-text box instead of silently mismatching an option
+    // (see startEdit below).
+    const modeOptions = useMemo(() => topicsForFormDeviceType.map((t) => t.Label), [topicsForFormDeviceType]);
+
+    const topicsForManagerDeviceType = useMemo(
+        () => topics.filter((t) => (t.DeviceType || 'ONU') === topicDeviceType),
+        [topics, topicDeviceType]
+    );
+
     const filteredConfigs = useMemo(
         () =>
             deviceTypeFilter === 'all'
@@ -73,6 +110,14 @@ export default function AdminOnuConfigsTab() {
         });
         setAddingBrand(false);
         setAddingModel(false);
+        // A Mode saved before the topic manager existed (or since deleted
+        // from it) won't be one of the dropdown's options — show it in the
+        // free-text box instead of leaving the dropdown mismatched.
+        const itemDeviceType = item.DeviceType || 'ONU';
+        const itemManagedLabels = topics
+            .filter((t) => (t.DeviceType || 'ONU') === itemDeviceType)
+            .map((t) => t.Label);
+        setAddingMode(!!item.Mode && !itemManagedLabels.includes(item.Mode));
     }
 
     function resetForm() {
@@ -81,14 +126,17 @@ export default function AdminOnuConfigsTab() {
         setFormError(null);
         setAddingBrand(false);
         setAddingModel(false);
+        setAddingMode(false);
     }
 
-    // Switching device type invalidates the brand (and therefore the model),
-    // so clear both rather than leaving an ONU brand on an ATA record.
+    // Switching device type invalidates the brand (and therefore the model)
+    // and the topic list, so clear all three rather than leaving an ONU
+    // brand/topic on an ATA record.
     function pickDeviceType(deviceType) {
-        setForm((prev) => ({ ...prev, DeviceType: deviceType, Brand: '', Model: '' }));
+        setForm((prev) => ({ ...prev, DeviceType: deviceType, Brand: '', Model: '', Mode: '' }));
         setAddingBrand(false);
         setAddingModel(false);
+        setAddingMode(false);
     }
 
     function pickBrand(brand) {
@@ -149,12 +197,178 @@ export default function AdminOnuConfigsTab() {
         await removeOnuConfigImage(configId, imageId);
     }
 
+    async function handleAddTopic(e) {
+        e.preventDefault();
+        setTopicFormError(null);
+        if (!newTopicLabel.trim()) return;
+        try {
+            await createModeTopic({
+                Label: newTopicLabel.trim(),
+                DeviceType: topicDeviceType,
+                Order: topicsForManagerDeviceType.length,
+            });
+            setNewTopicLabel('');
+        } catch (err) {
+            setTopicFormError(err.response?.data?.message || 'เพิ่มหัวข้อไม่สำเร็จ');
+        }
+    }
+
+    function startEditTopic(topic) {
+        setEditingTopicId(topic._id);
+        setEditingTopicLabel(topic.Label);
+        setTopicFormError(null);
+    }
+
+    function cancelEditTopic() {
+        setEditingTopicId(null);
+        setEditingTopicLabel('');
+    }
+
+    async function saveEditTopic(e) {
+        e.preventDefault();
+        if (!editingTopicLabel.trim()) return;
+        setTopicFormError(null);
+        try {
+            await updateModeTopic(editingTopicId, { Label: editingTopicLabel.trim() });
+            cancelEditTopic();
+        } catch (err) {
+            setTopicFormError(err.response?.data?.message || 'บันทึกหัวข้อไม่สำเร็จ');
+        }
+    }
+
+    async function handleDeleteTopic(topic) {
+        if (!window.confirm(`ต้องการลบหัวข้อ "${topic.Label}" ใช่หรือไม่? (การตั้งค่าที่ใช้หัวข้อนี้อยู่แล้วจะไม่ถูกลบ)`)) return;
+        try {
+            await deleteModeTopic(topic._id);
+        } catch (err) {
+            setTopicFormError(err.response?.data?.message || 'ลบหัวข้อไม่สำเร็จ');
+        }
+    }
+
+    // Manual reorder — swaps this topic with its neighbor, then renumbers the
+    // whole list 0..n-1 so `Order` stays a clean sequence regardless of what
+    // it held before (older topics predate this feature and default to 0).
+    // This is what the setup page's Mode list actually sorts by.
+    async function moveTopic(topic, direction) {
+        const list = topicsForManagerDeviceType;
+        const index = list.findIndex((t) => t._id === topic._id);
+        const swapIndex = index + direction;
+        if (index === -1 || swapIndex < 0 || swapIndex >= list.length) return;
+
+        const reordered = [...list];
+        [reordered[index], reordered[swapIndex]] = [reordered[swapIndex], reordered[index]];
+
+        setTopicFormError(null);
+        try {
+            await Promise.all(reordered.map((t, i) => updateModeTopic(t._id, { Order: i })));
+        } catch (err) {
+            setTopicFormError(err.response?.data?.message || 'จัดเรียงลำดับไม่สำเร็จ');
+        }
+    }
+
     // See AdminScomsTab for why this doesn't gate on every refetch.
     if (loading && configs.length === 0) return <p>กำลังโหลด...</p>;
     if (error) return <div className="error-banner">{error}</div>;
 
     return (
         <div className="admin-section">
+            <div className="admin-form">
+                <h3>จัดการหัวข้อการตั้งค่า (Mode)</h3>
+                <p className="hint">
+                    หัวข้อเหล่านี้เป็นตัวเลือกกลางที่ใช้ร่วมกันทุกยี่ห้อ/รุ่นของประเภทอุปกรณ์ที่เลือก —
+                    เพิ่ม/แก้ไข/ลบที่นี่แล้วจะไปปรากฏในช่อง Mode ของฟอร์มด้านล่างและในเมนูของหน้าตั้งค่าอุปกรณ์ทันที
+                </p>
+                {topicsError && <div className="error-banner">{topicsError}</div>}
+                {topicFormError && <div className="error-banner">{topicFormError}</div>}
+
+                <div className="admin-scoms-filters" style={{ marginBottom: 16 }}>
+                    <select
+                        className="admin-group-filter"
+                        value={topicDeviceType}
+                        onChange={(e) => {
+                            setTopicDeviceType(e.target.value);
+                            cancelEditTopic();
+                            setTopicFormError(null);
+                        }}
+                        aria-label="ประเภทอุปกรณ์ของหัวข้อที่จัดการ"
+                    >
+                        <option value="ONU">ONU</option>
+                        <option value="ATA">ATA</option>
+                    </select>
+                </div>
+
+                {topicsLoading && topics.length === 0 ? (
+                    <p>กำลังโหลด...</p>
+                ) : (
+                    <ul className="topic-manage-list">
+                        {topicsForManagerDeviceType.map((topic, index) => (
+                            <li key={topic._id} className="topic-manage-item">
+                                {editingTopicId === topic._id ? (
+                                    <form className="admin-inline-field" onSubmit={saveEditTopic} style={{ flex: 1 }}>
+                                        <input
+                                            value={editingTopicLabel}
+                                            onChange={(e) => setEditingTopicLabel(e.target.value)}
+                                            autoFocus
+                                            required
+                                        />
+                                        <button type="submit">บันทึก</button>
+                                        <button type="button" className="btn-secondary" onClick={cancelEditTopic}>
+                                            <X size={14} /> ยกเลิก
+                                        </button>
+                                    </form>
+                                ) : (
+                                    <>
+                                        <div className="topic-manage-reorder">
+                                            <button
+                                                type="button"
+                                                onClick={() => moveTopic(topic, -1)}
+                                                disabled={index === 0}
+                                                title="เลื่อนขึ้น"
+                                                aria-label="เลื่อนขึ้น"
+                                            >
+                                                <ArrowUp size={14} />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => moveTopic(topic, 1)}
+                                                disabled={index === topicsForManagerDeviceType.length - 1}
+                                                title="เลื่อนลง"
+                                                aria-label="เลื่อนลง"
+                                            >
+                                                <ArrowDown size={14} />
+                                            </button>
+                                        </div>
+                                        <span className="topic-manage-label">{topic.Label}</span>
+                                        <div className="topic-manage-actions">
+                                            <button type="button" onClick={() => startEditTopic(topic)}>
+                                                <Pencil size={14} /> แก้ไข
+                                            </button>
+                                            <button type="button" className="danger" onClick={() => handleDeleteTopic(topic)}>
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
+                            </li>
+                        ))}
+                        {topicsForManagerDeviceType.length === 0 && (
+                            <li className="topic-manage-empty">ยังไม่มีหัวข้อสำหรับ {topicDeviceType}</li>
+                        )}
+                    </ul>
+                )}
+
+                <form className="admin-inline-field" onSubmit={handleAddTopic} style={{ marginTop: 12 }}>
+                    <input
+                        value={newTopicLabel}
+                        onChange={(e) => setNewTopicLabel(e.target.value)}
+                        placeholder={`เพิ่มหัวข้อใหม่สำหรับ ${topicDeviceType} เช่น ตั้งค่า Voice / SIP`}
+                    />
+                    <button type="submit">
+                        <Plus size={14} /> เพิ่มหัวข้อ
+                    </button>
+                </form>
+            </div>
+
             <form className="admin-form" onSubmit={handleSubmit}>
                 <h3>{editingId ? `แก้ไขการตั้งค่า ${form.DeviceType}` : 'เพิ่มการตั้งค่าอุปกรณ์ใหม่'}</h3>
                 {formError && <div className="error-banner">{formError}</div>}
@@ -214,13 +428,14 @@ export default function AdminOnuConfigsTab() {
                         )}
                     </label>
                     <label>
-                        Model (รุ่น)
+                        Model (รุ่น) — จำเป็น เมนูด้านซ้ายของหน้าตั้งค่าจัดกลุ่มตามรุ่นนี้
                         {addingModel || modelOptions.length === 0 ? (
                             <div className="admin-inline-field">
                                 <input
                                     value={form.Model}
                                     onChange={(e) => setForm({ ...form, Model: e.target.value })}
                                     placeholder={form.DeviceType === 'ATA' ? 'เช่น HT812' : 'เช่น HG8145V5'}
+                                    required
                                     autoFocus={addingModel}
                                 />
                                 {modelOptions.length > 0 && (
@@ -241,6 +456,7 @@ export default function AdminOnuConfigsTab() {
                                 <select
                                     value={form.Model}
                                     onChange={(e) => setForm({ ...form, Model: e.target.value })}
+                                    required
                                 >
                                     <option value="">-- เลือกรุ่น --</option>
                                     {modelOptions.map((m) => (
@@ -263,20 +479,73 @@ export default function AdminOnuConfigsTab() {
                         )}
                     </label>
                     <label>
-                        Mode (โหมด)
-                        <input value={form.Mode} onChange={(e) => setForm({ ...form, Mode: e.target.value })} required />
+                        Mode (หัวข้อการตั้งค่า)
+                        {addingMode ? (
+                            <div className="admin-inline-field">
+                                <input
+                                    value={form.Mode}
+                                    onChange={(e) => setForm({ ...form, Mode: e.target.value })}
+                                    placeholder="เช่น ตั้งค่า Voice / SIP"
+                                    required
+                                    autoFocus
+                                />
+                                <button
+                                    type="button"
+                                    className="btn-secondary"
+                                    onClick={() => {
+                                        setAddingMode(false);
+                                        setForm({ ...form, Mode: '' });
+                                    }}
+                                >
+                                    <X size={14} /> ยกเลิก
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="admin-inline-field">
+                                <select
+                                    value={form.Mode}
+                                    onChange={(e) => setForm({ ...form, Mode: e.target.value })}
+                                    required
+                                >
+                                    <option value="">-- เลือกหัวข้อการตั้งค่า --</option>
+                                    {modeOptions.map((m) => (
+                                        <option key={m} value={m}>
+                                            {m}
+                                        </option>
+                                    ))}
+                                </select>
+                                <button
+                                    type="button"
+                                    className="btn-secondary"
+                                    onClick={() => {
+                                        setAddingMode(true);
+                                        setForm({ ...form, Mode: '' });
+                                    }}
+                                >
+                                    <Plus size={14} /> เพิ่มหัวข้อใหม่
+                                </button>
+                            </div>
+                        )}
                     </label>
                 </div>
 
                 <div className="form-grid">
-                    <label>
-                        Details (รายละเอียดขั้นตอน)
+                    {/* A plain <div>, not <label> — wrapping the editor in a bare
+                        <label> makes the browser forward any click inside it to
+                        the first *labelable* descendant, which is the toolbar's
+                        <select> (a contentEditable div doesn't count as one).
+                        That stole focus from the actual typing area, so a single
+                        click never placed a cursor there — only a click-drag
+                        (a text-selection gesture, which bypasses that forwarding)
+                        did. */}
+                    <div className="field-block">
+                        <span>Details (รายละเอียดขั้นตอน)</span>
                         <RichTextField
                             value={form.Details}
                             onChange={(html) => setForm({ ...form, Details: html })}
                             onUploadImage={editingId ? handleInlineImageUpload : null}
                         />
-                    </label>
+                    </div>
                     <label className="checkbox-label">
                         <input
                             type="checkbox"

@@ -421,7 +421,11 @@ export default function AdminScomsTab() {
                                         />
                                     </label>
                                 ))}
-                                <label style={{ gridColumn: '1 / -1' }}>
+                                {/* A plain <div>, not <label> — see AdminOnuConfigsTab's Details
+                                    field for why: a bare <label> forwards clicks to its first
+                                    labelable descendant (the toolbar's <select>), stealing focus
+                                    from the editor's contentEditable area. */}
+                                <div className="field-block" style={{ gridColumn: '1 / -1' }}>
                                     <span className="field-label-row">Steps (ขั้นตอนแก้ไข)</span>
                                     <RichTextField
                                         value={form.Steps}
@@ -430,7 +434,7 @@ export default function AdminScomsTab() {
                                         placeholder="ขึ้นบรรทัดใหม่ทุกขั้นตอน เช่น ตรวจสอบสายไฟเบอร์ / รีสตาร์ทอุปกรณ์"
                                     />
                                     <span className="field-hint">แต่ละบรรทัด/ย่อหน้าจะแสดงเป็นหนึ่งขั้นตอนในระบบ</span>
-                                </label>
+                                </div>
                             </div>
                         </fieldset>
 

@@ -1909,6 +1909,310 @@ html[data-theme='dark'] .badge.warning {
 }
 
 /* ==========================================================================
+   ONU/ATA setup guide — persistent sidebar (accordion of brands, each
+   expanding into its Mode list) + main content pane. Ported from the
+   attached reference doc layout, restyled onto the app's own design tokens.
+   ========================================================================== */
+
+.guide-shell {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+}
+
+.guide-sidebar {
+    flex: 0 0 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: 12px;
+    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: 96px;
+}
+
+:root[data-theme='dark'] .guide-sidebar {
+    background: linear-gradient(160deg, rgba(24, 24, 27, 0.8) 0%, rgba(9, 9, 11, 0.95) 100%);
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+.guide-accordion-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.guide-accordion {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.guide-accordion-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 12px;
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 600;
+    text-align: left;
+    box-shadow: none;
+}
+
+.guide-accordion-header:hover {
+    background: var(--bg-surface-hover);
+    border-color: transparent;
+}
+
+.guide-accordion.active > .guide-accordion-header {
+    background: var(--bg-main);
+}
+
+:root[data-theme='dark'] .guide-accordion.active > .guide-accordion-header {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.guide-accordion-icon {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.guide-accordion-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.guide-accordion-title {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.guide-accordion-chevron {
+    flex-shrink: 0;
+    color: var(--text-secondary);
+    transition: transform var(--duration-base) ease;
+}
+
+.guide-accordion.active .guide-accordion-chevron {
+    transform: rotate(180deg);
+}
+
+.guide-accordion-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 4px 4px 8px 8px;
+    animation: stepFadeIn 0.2s ease;
+}
+
+.guide-sub-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 9px 12px 9px 30px;
+    border: none;
+    border-left: 2px solid var(--border-color);
+    border-radius: 0 10px 10px 0;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 13.5px;
+    font-weight: 500;
+    text-align: left;
+    box-shadow: none;
+}
+
+.guide-sub-link:hover {
+    background: var(--bg-surface-hover);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+.guide-sub-link.active {
+    background: rgba(255, 209, 0, 0.12);
+    color: var(--nt-dark);
+    border-left-color: var(--nt-yellow);
+    font-weight: 700;
+}
+
+:root[data-theme='dark'] .guide-sub-link.active {
+    color: var(--nt-yellow);
+}
+
+.guide-empty-note {
+    padding: 8px 12px;
+    margin: 0;
+    color: var(--text-tertiary);
+    font-size: 13px;
+}
+
+.guide-main {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Home cards — one per brand, horizontal icon + title/description/model
+   badges layout (matches the reference doc's card format), restyled onto
+   the app's own surface/border/shadow tokens so it still reads as this
+   theme in both light and dark. */
+.brand-guide-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 32px;
+}
+
+.brand-guide-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+    padding: 24px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    text-align: left;
+    box-shadow: var(--shadow-sm);
+}
+
+:root[data-theme='dark'] .brand-guide-card {
+    background: linear-gradient(160deg, rgba(24, 24, 27, 0.8) 0%, rgba(9, 9, 11, 0.95) 100%);
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+.brand-guide-icon {
+    flex-shrink: 0;
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-main);
+}
+
+:root[data-theme='dark'] .brand-guide-icon {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.brand-guide-info {
+    min-width: 0;
+}
+
+.brand-guide-title {
+    margin: 0 0 4px;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.brand-guide-desc {
+    margin: 0 0 12px;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+.brand-guide-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+/* Now a clickable pill (picking a Model), not a static label — border/hover
+   affordance added so it reads as a button. */
+.brand-guide-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    background: var(--bg-main);
+    color: var(--text-secondary);
+    font-size: 12.5px;
+    font-weight: 600;
+    box-shadow: none;
+}
+
+:root[data-theme='dark'] .brand-guide-badge {
+    background: rgba(255, 255, 255, 0.08);
+    color: #cbd5e1;
+}
+
+.brand-guide-badge:hover {
+    border-color: var(--nt-yellow);
+    background: var(--nt-yellow-light);
+    color: #1a1a1a;
+    transform: translateY(-1px);
+}
+
+:root[data-theme='dark'] .brand-guide-badge:hover {
+    background: rgba(255, 209, 0, 0.14);
+    color: var(--nt-yellow);
+}
+
+@media (max-width: 700px) {
+    .brand-guide-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .brand-guide-card {
+        padding: 18px;
+    }
+}
+
+/* Detail page (Step 2) sidebar labels — the plain-text caption above the
+   brand box, and the "Mode (หัวข้อการตั้งค่า)" caption above the topic list. */
+.guide-sidebar-label,
+.guide-sidebar-sublabel {
+    margin: 0 0 8px;
+    padding: 0 4px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.guide-sidebar-sublabel {
+    margin-top: 4px;
+}
+
+/* Non-interactive variant of .guide-accordion-header for Step 3, where the
+   box always represents exactly one (already-chosen) brand — no toggle. */
+.guide-accordion-header-static {
+    cursor: default;
+}
+
+.guide-accordion-header-static:hover {
+    background: transparent;
+}
+
+@media (max-width: 900px) {
+    .guide-shell {
+        flex-direction: column;
+    }
+
+    .guide-sidebar {
+        flex: 1 1 auto;
+        width: 100%;
+        position: static;
+    }
+}
+
+/* ==========================================================================
    Troubleshoot flow — archive/style.css `.flow-container`, `.manual-*`,
    symptom cards, LED status visuals, and the bottom-sheet step detail view.
    ========================================================================== */

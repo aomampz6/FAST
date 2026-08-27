@@ -46,6 +46,16 @@ const BRAND_ICONS = {
     ),
 };
 
+// Case-insensitive lookup — admin-entered Brand values aren't guaranteed to
+// match this map's casing exactly (e.g. "HUAWEI" vs "Huawei"), and falling
+// back to the generic Monitor icon for a real match just because the case
+// differs is confusing next to the same brand's badge on the home card.
+const BRAND_ICON_KEYS = Object.keys(BRAND_ICONS).reduce((map, key) => {
+    map[key.toLowerCase()] = key;
+    return map;
+}, {});
+
 export function OnuBrandIcon({ brand }) {
-    return BRAND_ICONS[brand] || <Monitor />;
+    const key = BRAND_ICON_KEYS[String(brand || '').toLowerCase().trim()];
+    return (key && BRAND_ICONS[key]) || <Monitor />;
 }
