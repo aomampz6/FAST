@@ -349,6 +349,31 @@
     font-weight: 500;
 }
 
+/* Title + a small colored count badge on the same line (Scoms table header) */
+.admin-page .admin-card-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.admin-page .admin-card-title-row h3 {
+    margin: 0;
+}
+
+.admin-page .admin-count-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 12px;
+    border-radius: 999px;
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--success);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
 /* ---------------------------------------------------------------------- */
 /* Forms                                                                   */
 /* ---------------------------------------------------------------------- */
@@ -697,6 +722,171 @@
 }
 
 /* ---------------------------------------------------------------------- */
+/* Scoms table cell styling — colored Group pill, link-styled ID, bold      */
+/* Scoms title, and a compact icon-only action cluster (replaces the old    */
+/* full-width text+icon pill buttons).                                     */
+/* ---------------------------------------------------------------------- */
+.admin-page .scom-id-cell {
+    font-weight: 700;
+    color: var(--info);
+}
+
+.admin-page .scom-title-cell {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.admin-page .group-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 700;
+    white-space: nowrap;
+    border: 1px solid transparent;
+}
+
+.admin-page .group-badge-0 {
+    background: rgba(239, 68, 68, 0.12);
+    color: #dc2626;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.admin-page .group-badge-1 {
+    background: rgba(245, 158, 11, 0.12);
+    color: #d97706;
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+.admin-page .group-badge-2 {
+    background: rgba(59, 130, 246, 0.12);
+    color: var(--info);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.admin-page .group-badge-3 {
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--success);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.admin-page .group-badge-4 {
+    background: rgba(168, 85, 247, 0.12);
+    color: #9333ea;
+    border-color: rgba(168, 85, 247, 0.3);
+}
+
+.admin-page .group-badge-5 {
+    background: rgba(236, 72, 153, 0.12);
+    color: #db2777;
+    border-color: rgba(236, 72, 153, 0.3);
+}
+
+[data-theme='dark'] .admin-page .group-badge-0 { color: #f87171; }
+[data-theme='dark'] .admin-page .group-badge-1 { color: var(--warning); }
+[data-theme='dark'] .admin-page .group-badge-4 { color: #c084fc; }
+[data-theme='dark'] .admin-page .group-badge-5 { color: #f472b6; }
+
+.admin-page .data-table .row-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Reusable table cell helpers — device type badge, a two-line             */
+/* primary/secondary cell (e.g. Brand / Model), status dot, image overflow */
+/* chip and a bare-text link-style button. Shared across admin tables.     */
+/* ---------------------------------------------------------------------- */
+.admin-page .device-type-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 700;
+    background: rgba(59, 130, 246, 0.12);
+    color: var(--info);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.admin-page .cell-primary {
+    display: block;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.admin-page .cell-secondary {
+    display: block;
+    margin-top: 2px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.admin-page .status-dot-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13.5px;
+    color: var(--text-primary);
+}
+
+.admin-page .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: var(--text-tertiary);
+}
+
+.admin-page .status-dot.is-active {
+    background: var(--success);
+}
+
+.admin-page .image-extra-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-main);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.admin-page .link-button {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--info);
+    font-weight: 600;
+    font-size: 12.5px;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.admin-page .link-button:hover {
+    background: none;
+    color: var(--info);
+}
+
+.admin-page .data-table .icon-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    margin-right: 0;
+    border-radius: 10px;
+}
+
+/* ---------------------------------------------------------------------- */
 /* Scoms list filters (group select + search)                            */
 /* ---------------------------------------------------------------------- */
 .admin-page .admin-scoms-filters {
@@ -822,6 +1012,66 @@
     font-size: 13.5px;
     font-weight: 600;
     color: var(--text-secondary);
+}
+
+/* Numbered pagination (Scoms table) — range label + prev/next/page buttons,
+   wraps to two lines on narrow cards instead of squeezing. */
+.admin-page .admin-pagination {
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.admin-page .admin-pagination-range {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.admin-page .admin-pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.admin-page .admin-page-nav,
+.admin-page .admin-page-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-surface);
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.admin-page .admin-page-nav:hover:not(:disabled),
+.admin-page .admin-page-number:hover:not(.active) {
+    background-color: var(--bg-surface-hover);
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+}
+
+.admin-page .admin-page-nav:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.admin-page .admin-page-number.active {
+    background: var(--nt-yellow);
+    border-color: var(--nt-yellow);
+    color: var(--nt-dark);
+}
+
+.admin-page .admin-pagination-ellipsis {
+    color: var(--text-tertiary);
+    font-size: 13px;
+    padding: 0 2px;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -1200,16 +1450,37 @@
     white-space: nowrap;
 }
 
+/* Compact square icon button for the Brand/Model/Mode "add new" escape
+   hatch next to their pickers — replaces the old full text pill so the row
+   reads as one tight control instead of two competing buttons. */
+.admin-page .admin-inline-field .icon-btn {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+}
+
+/* Right-aligned single-button footer (ONU config "add new" form) instead of
+   the default left-aligned row used where Cancel sits beside Save. */
+.admin-page .form-actions-end {
+    justify-content: flex-end;
+}
+
 /* ---------------------------------------------------------------------- */
 /* Mode topic manager (ONU/ATA config form's "Mode" dropdown source)       */
 /* ---------------------------------------------------------------------- */
 .admin-page .topic-manage-list {
     list-style: none;
     margin: 0;
-    padding: 0;
+    padding: 0 4px 0 0;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    /* Scrollable instead of growing the card indefinitely as topics pile up —
+       roughly 4-5 rows before it scrolls. */
+    max-height: 300px;
+    overflow-y: auto;
 }
 
 .admin-page .topic-manage-item {
@@ -1504,6 +1775,98 @@
 
     .user-modal-footer button {
         flex: 1;
+    }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Scom edit modal — same portal-to-body pattern as .user-modal above, but   */
+/* the overlay also carries the `admin-page` class so the form's existing   */
+/* .admin-page-scoped styles (fieldsets, group picker, rich text editor,    */
+/* buttons) apply unchanged inside the portal without duplicating them.     */
+/* ---------------------------------------------------------------------- */
+.admin-page.scom-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    min-height: 0;
+    background-color: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(2px);
+    overflow-y: auto;
+    animation: userModalFadeIn 0.18s ease-out;
+}
+
+.scom-modal {
+    width: 100%;
+    max-width: 900px;
+    max-height: calc(100vh - 48px);
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    animation: userModalPop 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+    font-family: inherit;
+    color: var(--text-primary);
+}
+
+.scom-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 24px 28px 0;
+    flex-shrink: 0;
+}
+
+.admin-page .scom-modal-close {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background-color: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.admin-page .scom-modal-close:hover {
+    background-color: var(--bg-surface-hover);
+    color: var(--text-primary);
+}
+
+.scom-modal-form {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.scom-modal-body {
+    padding: 20px 28px 28px;
+    overflow-y: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .scom-modal-overlay,
+    .scom-modal {
+        animation: none;
+    }
+}
+
+@media (max-width: 640px) {
+    .scom-modal-header,
+    .scom-modal-body {
+        padding-left: 20px;
+        padding-right: 20px;
     }
 }
 

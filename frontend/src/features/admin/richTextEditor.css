@@ -3,15 +3,15 @@
    tokens as the rest of the admin form so it matches light/dark mode
    automatically. */
 
-/* Standard box size for every Details/Steps field in the system — full width
-   up to a comfortable reading measure, capped height with its own scrollbar
+/* Standard box size for every Details/Steps field in the system — fills
+   whatever width its container allows (scales with the screen instead of
+   capping at a fixed reading measure), capped height with its own scrollbar
    so a long Steps list never pushes the rest of the form down the page.
    Shared by the editor (.rte) and the non-admin read-only view (.rte-readonly)
    so both always render at identical dimensions. */
 .admin-page .rte,
 .admin-page .rte-readonly {
     width: 100%;
-    max-width: 700px;
     box-sizing: border-box;
 }
 
@@ -139,6 +139,18 @@
     border: 1px solid var(--border-color);
     background-color: var(--bg-main);
     color: var(--text-primary);
+}
+
+/* `.admin-page .form-grid select` (admin.css) force-stretches every <select>
+   nested anywhere inside a .form-grid to width:100% — meant for the Scoms
+   ID/Model pickers, but the Details/Steps editor's toolbar selects also live
+   inside a .form-grid wherever this editor is used, so without this override
+   each one stretched to the full form width and stacked as its own row
+   instead of sitting inline in the toolbar. Higher specificity (3 classes)
+   than that rule so it wins regardless of stylesheet order. */
+.admin-page .rte .rte-toolbar select {
+    width: auto;
+    max-width: none;
 }
 
 .admin-page .rte-content {
