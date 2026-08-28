@@ -187,11 +187,9 @@ h4 {
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     z-index: 50;
-    /* The whole column scrolls when it does not fit (mainly the 100vh mobile
-       drawer), rather than the nav list scrolling inside it. An inner scroller
-       reserved a scrollbar gutter that made the nav items 8px narrower than the
-       logout button directly below them. */
-    overflow-y: auto;
+    /* The desktop collapse control and collapsed-nav tooltips intentionally
+       extend beyond the sidebar edge, so the docked sidebar must not clip them. */
+    overflow: visible;
 }
 
 .sidebar.collapsed {
@@ -3483,6 +3481,8 @@ html[data-theme='dark'] .feedback-textarea::placeholder {
         transform: translateX(-100%);
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         box-shadow: var(--shadow-lg);
+        overflow-x: hidden;
+        overflow-y: auto;
     }
 
     .sidebar.mobile-open {
