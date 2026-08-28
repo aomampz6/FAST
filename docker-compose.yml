@@ -6,7 +6,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: ${PORT:-10300}
-      TRUST_PROXY: ${TRUST_PROXY:-1}
+      TRUST_PROXY: ${TRUST_PROXY:-0}
       MONGODB_URI: ${MONGODB_URI:?MongoDB SRV connection string is required}
       JWT_SECRET: ${JWT_SECRET:?JWT secret is required}
       ADMIN_USER: ${ADMIN_USER:?Admin username is required}
@@ -18,8 +18,8 @@ services:
       S3_FORCE_PATH_STYLE: ${S3_FORCE_PATH_STYLE:-false}
       S3_BUCKET: ${S3_BUCKET:-}
       SERVICE_FQDN_FAST_10300: ${SERVICE_FQDN_FAST_10300:-}
-    expose:
-      - "${PORT:-10300}"
+    ports:
+      - "${PORT:-10300}:${PORT:-10300}"
     healthcheck:
       test:
         - CMD

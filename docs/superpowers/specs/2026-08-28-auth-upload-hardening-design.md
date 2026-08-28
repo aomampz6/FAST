@@ -10,7 +10,7 @@ Address three confirmed security findings without changing unrelated application
 
 ## Trusted proxy boundary
 
-The application will not trust forwarded headers by default. A new explicit environment setting will enable one trusted proxy hop only for the Coolify/Traefik deployment. The production container will expose port 10300 to the container network without publishing it directly on the host, so application traffic reaches Express through the trusted reverse proxy. Local `npm run dev` traffic remains direct and ignores caller-supplied forwarded headers.
+The application will not trust forwarded headers by default. A new explicit environment setting can enable one trusted proxy hop for a deployment that is reachable exclusively through Coolify/Traefik. The default Docker Compose mapping continues to publish port 10300 so the application remains reachable through a configured host IP/domain; deployments that exclusively use an internal reverse proxy can remove that mapping and opt into `TRUST_PROXY=1`. Local `npm run dev` traffic remains direct and ignores caller-supplied forwarded headers.
 
 Tests will prove that direct requests cannot change the rate-limit identity with `X-Forwarded-For`, while the explicitly enabled one-hop proxy mode still reads the proxy-provided client address.
 
