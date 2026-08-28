@@ -14,16 +14,14 @@ const phonebookRouter = require('./features/phonebook/phonebook.router');
 const feedbackRouter = require('./features/feedback/feedback.router');
 const usersRouter = require('./features/users/users.router');
 const errorHandler = require('./middleware/errorHandler');
+const { trustProxy } = require('./config/env');
 
 const app = express();
 
-// In production the app sits behind Coolify's Traefik proxy, which is the only
-// hop in front of it. Without this, req.ip is Traefik's address on the Docker
-// network — identical for every visitor — so anything keyed on the client IP
-// (rate limiting, logging) treats the whole organisation as one client. `1`
-// trusts exactly one proxy hop, so a client cannot spoof its own address by
-// sending an X-Forwarded-For header.
-app.set('trust proxy', 1);
+// Forwarded client addresses are trusted only when deployment explicitly says
+// Traefik is the sole hop. Direct/local traffic ignores caller-supplied
+// X-Forwarded-For, preventing login-rate-limit identity spoofing.
+app.set('trust proxy', trustProxy);
 
 app.use(helmet({
     contentSecurityPolicy: {
