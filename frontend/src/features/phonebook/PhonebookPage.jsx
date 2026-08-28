@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as LucideIcons from 'lucide-react';
-import { ArrowLeft, Building2, Phone } from 'lucide-react';
+import { ArrowLeft, Building2, Pencil, Phone, Trash2 } from 'lucide-react';
 import { usePhonebook } from './usePhonebook';
 import { useHasRole } from '../../shared/auth/access';
 
@@ -110,10 +110,10 @@ export default function PhonebookPage({ embedded = false }) {
                                 className="pb-group-icon"
                                 style={{ background: group.bgColor, color: group.color }}
                             >
-                                <GroupIcon size={20} />
+                                <GroupIcon size={18} />
                             </div>
                             <h2 className="pb-group-title" style={{ color: group.color }}>
-                                {group.title}
+                                ส่วนงาน: {group.title}
                             </h2>
                             {isAdmin && (
                                 <button type="button" className="danger" onClick={() => deleteGroup(group._id)}>
@@ -122,128 +122,111 @@ export default function PhonebookPage({ embedded = false }) {
                             )}
                         </div>
 
-                        <div className="pb-list-container">
+                        <div className="pb-card-grid">
                             {group.contacts.length === 0 && (
-                                <div className="pb-list-item">
-                                    <p className="pb-item-title" style={{ color: 'var(--text-secondary)' }}>
+                                <div className="pb-card pb-card-empty">
+                                    <p style={{ color: 'var(--text-secondary)', margin: 0 }}>
                                         ไม่มีข้อมูลเบอร์โทรศัพท์
                                     </p>
                                 </div>
                             )}
 
-                            {group.contacts.map((contact) => (
-                                <div className="pb-list-item" key={contact._id}>
-                                    {editingContact?.groupId === group._id &&
-                                    editingContact?.contactId === contact._id ? (
-                                        <form
-                                            className="inline-form"
-                                            style={{ width: '100%' }}
-                                            onSubmit={(e) => handleUpdateContact(e, group._id, contact._id)}
-                                        >
-                                            <input
-                                                value={editingContact.data.title}
-                                                onChange={(e) =>
-                                                    setEditingContact((prev) => ({
-                                                        ...prev,
-                                                        data: { ...prev.data, title: e.target.value },
-                                                    }))
-                                                }
-                                            />
-                                            <input
-                                                value={editingContact.data.subtitle || ''}
-                                                onChange={(e) =>
-                                                    setEditingContact((prev) => ({
-                                                        ...prev,
-                                                        data: { ...prev.data, subtitle: e.target.value },
-                                                    }))
-                                                }
-                                            />
-                                            <input
-                                                value={editingContact.data.phone}
-                                                onChange={(e) =>
-                                                    setEditingContact((prev) => ({
-                                                        ...prev,
-                                                        data: { ...prev.data, phone: e.target.value },
-                                                    }))
-                                                }
-                                            />
-                                            <input
-                                                value={editingContact.data.extension || ''}
-                                                onChange={(e) =>
-                                                    setEditingContact((prev) => ({
-                                                        ...prev,
-                                                        data: { ...prev.data, extension: e.target.value },
-                                                    }))
-                                                }
-                                            />
-                                            <button type="submit">บันทึก</button>
-                                            <button type="button" onClick={() => setEditingContact(null)}>
-                                                ยกเลิก
-                                            </button>
-                                        </form>
-                                    ) : (
-                                        <>
-                                            <div>
-                                                <p className="pb-item-title">{contact.title}</p>
-                                                {contact.subtitle && (
-                                                    <p className="pb-item-subtitle">{contact.subtitle}</p>
-                                                )}
-                                            </div>
-                                            <div
-                                                style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: 8,
-                                                    flexWrap: 'wrap',
-                                                }}
+                            {group.contacts.map((contact) =>
+                                editingContact?.groupId === group._id &&
+                                editingContact?.contactId === contact._id ? (
+                                    <form
+                                        className="pb-card pb-card-edit inline-form"
+                                        key={contact._id}
+                                        onSubmit={(e) => handleUpdateContact(e, group._id, contact._id)}
+                                    >
+                                        <input
+                                            value={editingContact.data.title}
+                                            onChange={(e) =>
+                                                setEditingContact((prev) => ({
+                                                    ...prev,
+                                                    data: { ...prev.data, title: e.target.value },
+                                                }))
+                                            }
+                                        />
+                                        <input
+                                            value={editingContact.data.subtitle || ''}
+                                            onChange={(e) =>
+                                                setEditingContact((prev) => ({
+                                                    ...prev,
+                                                    data: { ...prev.data, subtitle: e.target.value },
+                                                }))
+                                            }
+                                        />
+                                        <input
+                                            value={editingContact.data.phone}
+                                            onChange={(e) =>
+                                                setEditingContact((prev) => ({
+                                                    ...prev,
+                                                    data: { ...prev.data, phone: e.target.value },
+                                                }))
+                                            }
+                                        />
+                                        <input
+                                            value={editingContact.data.extension || ''}
+                                            onChange={(e) =>
+                                                setEditingContact((prev) => ({
+                                                    ...prev,
+                                                    data: { ...prev.data, extension: e.target.value },
+                                                }))
+                                            }
+                                        />
+                                        <button type="submit">บันทึก</button>
+                                        <button type="button" onClick={() => setEditingContact(null)}>
+                                            ยกเลิก
+                                        </button>
+                                    </form>
+                                ) : (
+                                    <div className="pb-card" key={contact._id}>
+                                        <p className="pb-card-title">{contact.title}</p>
+                                        {contact.subtitle && <p className="pb-card-desc">{contact.subtitle}</p>}
+                                        <div className="pb-card-footer">
+                                            <a
+                                                href={`tel:${contact.phone}`}
+                                                className="pb-card-phone"
+                                                style={{ color: group.color }}
                                             >
-                                                <a
-                                                    href={`tel:${contact.phone}`}
-                                                    className="pb-phone-btn"
-                                                    style={{ background: group.bgColor, color: group.color }}
-                                                >
-                                                    <Phone size={16} /> {contact.phone}{' '}
-                                                    {contact.extension && (
-                                                        <span
-                                                            style={{
-                                                                fontSize: 13,
-                                                                fontWeight: 'normal',
-                                                                marginLeft: 4,
-                                                                opacity: 0.8,
-                                                            }}
-                                                        >
-                                                            {contact.extension}
-                                                        </span>
-                                                    )}
-                                                </a>
-                                                {isAdmin && (
-                                                    <>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() =>
-                                                                setEditingContact({
-                                                                    groupId: group._id,
-                                                                    contactId: contact._id,
-                                                                    data: { ...contact },
-                                                                })
-                                                            }
-                                                        >
-                                                            แก้ไข
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            className="danger"
-                                                            onClick={() => deleteContact(group._id, contact._id)}
-                                                        >
-                                                            ลบ
-                                                        </button>
-                                                    </>
+                                                <Phone size={15} /> {contact.phone}
+                                                {contact.extension && (
+                                                    <span className="pb-card-ext">{contact.extension}</span>
                                                 )}
-                                            </div>
-                                        </>
-                                    )}
-                                </div>
-                            ))}
+                                            </a>
+                                            {isAdmin && (
+                                                <div className="pb-card-actions">
+                                                    <button
+                                                        type="button"
+                                                        className="pb-card-action-btn"
+                                                        title="แก้ไข"
+                                                        aria-label={`แก้ไข ${contact.title}`}
+                                                        onClick={() =>
+                                                            setEditingContact({
+                                                                groupId: group._id,
+                                                                contactId: contact._id,
+                                                                data: { ...contact },
+                                                            })
+                                                        }
+                                                    >
+                                                        <Pencil size={14} />
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="pb-card-action-btn danger"
+                                                        title="ลบ"
+                                                        aria-label={`ลบ ${contact.title}`}
+                                                        onClick={() => deleteContact(group._id, contact._id)}
+                                                    >
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )
+                            )}
                         </div>
 
                         {isAdmin && (

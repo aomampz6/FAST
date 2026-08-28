@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import DOMPurify from 'dompurify';
 import {
     AlertCircle,
     ArrowLeft,
@@ -27,6 +28,7 @@ import { useScoms } from './useScoms';
 import { submitFeedback } from '../feedback/feedbackService';
 import { useFirstFeedbackGate } from '../../shared/hooks/useFirstFeedbackGate';
 import SuccessPopup from '../../components/SuccessPopup';
+import ImageZoomModal from '../../components/ImageZoomModal';
 import './symptomGuide.css';
 
 // Per-group icon/color for the home grid tiles — mirrors archive/app.js
@@ -85,15 +87,25 @@ function extractSteps(raw) {
 }
 
 // Builds the checklist shown in a symptom's detail panel from the raw Scoms
-// record fields (CheckPoint + Steps), flattened into one list instead of a
-// paginated wizard.
+// record fields (CheckPoint + StepItems/Steps), flattened into one list
+// instead of a paginated wizard.
+//
+// Each entry is `{ title, text }`. `title` is only set for a StepItems entry
+// (the new title+description format) — the stepper renders those as a bold
+// title + rich HTML description. CheckPoint and the legacy flat Steps blob
+// have no title, so `text` there is plain text, rendered as-is.
 function buildChecklist(item) {
     const checks = [];
     if (item.CheckPoint) {
-        checks.push(String(item.CheckPoint).replace(/"/g, ''));
+        checks.push({ title: null, text: String(item.CheckPoint).replace(/"/g, '') });
     }
-    if (item.Steps) {
-        checks.push(...extractSteps(item.Steps));
+    if (item.StepItems?.length > 0) {
+        item.StepItems.forEach((step) => {
+            const hasContent = step.StepTitle?.trim() || step.Description?.replace(/<[^>]*>/g, '').trim();
+            if (hasContent) checks.push({ title: step.StepTitle || null, text: step.Description || '' });
+        });
+    } else if (item.Steps) {
+        extractSteps(item.Steps).forEach((text) => checks.push({ title: null, text }));
     }
     return checks;
 }
@@ -110,6 +122,7 @@ export default function TroubleshootPage() {
     const [search, setSearch] = useState('');
     const [activeIndex, setActiveIndex] = useState(0);
     const [drawerOpen, setDrawerOpen] = useState(false);
+    const [lightboxSrc, setLightboxSrc] = useState(null);
     const panelRef = useRef(null);
     const feedbackRef = useRef(null);
 
@@ -322,7 +335,10 @@ export default function TroubleshootPage() {
                     onClick={() => selectSymptom(i)}
                 >
                     <span className="sg-nav-badge">{i + 1}</span>
-                    <span className="sg-nav-label">{item.Symptom || 'ไม่ระบุอาการ'}</span>
+                    <span className="sg-nav-label">
+                        <span className="sg-nav-label-main">{item.Symptom || 'ไม่ระบุอาการ'}</span>
+                        {item.Scoms && <span className="sg-nav-label-sub">{item.Scoms}</span>}
+                    </span>
                 </button>
             ))}
         </div>
@@ -385,17 +401,40 @@ export default function TroubleshootPage() {
                             <p className="sg-lead">{active.Scoms || 'รายละเอียดอาการนี้ยังไม่มีคำอธิบายเพิ่มเติมในระบบ'}</p>
 
                             <h3 className="sg-section-label">
-                                <ClipboardList size={16} /> สิ่งที่ต้องตรวจสอบ
+                                <ClipboardList size={16} /> ขั้นตอนการตรวจสอบ (CHECKLIST)
                             </h3>
                             {checks.length > 0 ? (
-                                <ul className="sg-list">
+                                <ol className="sg-steps">
                                     {checks.map((check, i) => (
-                                        <li key={i}>
-                                            <CheckCircle2 size={18} className="sg-list-icon" />
-                                            <span>{check}</span>
+                                        <li className="sg-step" key={i}>
+                                            <span className="sg-step-node">{i + 1}</span>
+                                            <span className="sg-step-text">
+                                                {check.title ? (
+                                                    <>
+                                                        <strong className="sg-step-title">{check.title}</strong>
+                                                        <span
+                                                            className="sg-step-description rich-text-content"
+                                                            dangerouslySetInnerHTML={{
+                                                                __html: DOMPurify.sanitize(check.text),
+                                                            }}
+                                                            onClick={(e) => {
+                                                                if (e.target.tagName === 'IMG') setLightboxSrc(e.target.src);
+                                                            }}
+                                                        />
+                                                    </>
+                                                ) : (
+                                                    check.text
+                                                )}
+                                            </span>
                                         </li>
                                     ))}
-                                </ul>
+                                    <li className="sg-step sg-step-end">
+                                        <span className="sg-step-node sg-step-node-end">
+                                            <CheckCircle2 size={16} />
+                                        </span>
+                                        <span className="sg-step-text sg-step-end-text">สิ้นสุดขั้นตอนการตรวจสอบ</span>
+                                    </li>
+                                </ol>
                             ) : (
                                 <div className="step-empty">
                                     <Info size={24} style={{ opacity: 0.6 }} />
@@ -495,6 +534,7 @@ export default function TroubleshootPage() {
             )}
 
             <SuccessPopup open={successOpen} message="ส่งคำแนะนำเรียบร้อยแล้ว" onClose={() => setSuccessOpen(false)} />
+            <ImageZoomModal src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
         </div>
     );
 }

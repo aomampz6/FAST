@@ -18,6 +18,22 @@ import ScomFormBody from './ScomFormBody';
  * `.admin-page`-scoped form styles (fieldsets, the rich text editor, group
  * picker, buttons) apply unchanged inside the portal.
  */
+// Records saved before the step-title/description split still hold the
+// whole thing as one legacy `Steps` HTML blob. Rather than splitting that
+// blob into guessed-at steps (lossy — inline formatting/images per line
+// would be hard to preserve), it's shown as a single step with an empty
+// title so nothing is lost; the admin can split it into more steps by hand
+// if they want to. A record already using the new format just uses it as-is.
+function initialStepItems(item) {
+    if (item.StepItems?.length > 0) {
+        return item.StepItems.map((s) => ({ StepTitle: s.StepTitle || '', Description: s.Description || '' }));
+    }
+    if (item.Steps) {
+        return [{ StepTitle: '', Description: item.Steps }];
+    }
+    return [{ StepTitle: '', Description: '' }];
+}
+
 export default function ScomEditModal({ item, groupOptions, scomPairs, onClose, onSave, onImagesChanged }) {
     const [form, setForm] = useState({
         ID: item.ID || '',
@@ -25,7 +41,7 @@ export default function ScomEditModal({ item, groupOptions, scomPairs, onClose, 
         Scoms: item.Scoms || '',
         Symptom: item.Symptom || '',
         CheckPoint: item.CheckPoint || '',
-        Steps: item.Steps || '',
+        StepItems: initialStepItems(item),
         NormalValue: item.NormalValue || '',
         Equipment: item.Equipment || '',
     });

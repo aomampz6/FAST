@@ -89,6 +89,21 @@
     --transition: background-color 180ms ease-out, border-color 180ms ease-out, color 180ms ease-out, box-shadow 180ms ease-out;
     min-height: 100vh;
     font-family: 'Prompt', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--bg-main, #f5f5f7);
+    transition: background-color 180ms ease-out;
+}
+
+/* Without this, .admin-shell's own hardcoded light values above would shadow
+   the global :root[data-theme='dark'] tokens for every element inside it
+   (the topbar sits outside .admin-page, which has its own dark override) —
+   toggling to dark would leave the topbar stuck light. */
+[data-theme='dark'] .admin-shell {
+    --bg-surface: #121212;
+    --text-primary: #F8FAFC;
+    --text-secondary: #A1A1AA;
+    --border-color: #27272A;
+    --border-light: rgba(39, 39, 42, 0.5);
+    --bg-main: #000000;
 }
 
 .admin-topbar {
@@ -107,6 +122,8 @@
 }
 
 .admin-back-link {
+    flex-shrink: 0;
+    white-space: nowrap;
     color: var(--text-primary);
     text-decoration: none;
     font-weight: 600;
@@ -121,14 +138,32 @@
     color: var(--nt-dark);
 }
 
+/* The flexible piece of the topbar — truncates with an ellipsis on narrow
+   screens instead of squeezing the back link / theme toggle / logout button
+   below their own content size (which used to wrap their text and, combined
+   with border-radius: 999px, rendered as a misshapen blob). */
 .admin-topbar-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     font-weight: 700;
     font-size: 16px;
     color: var(--text-primary);
     letter-spacing: -0.2px;
 }
 
+.admin-topbar-actions {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 14px;
+}
+
 .admin-logout-btn {
+    flex-shrink: 0;
+    white-space: nowrap;
     background: rgba(239, 68, 68, 0.1);
     color: var(--danger);
     border: 1px solid rgba(239, 68, 68, 0.2);
@@ -799,18 +834,6 @@
 /* primary/secondary cell (e.g. Brand / Model), status dot, image overflow */
 /* chip and a bare-text link-style button. Shared across admin tables.     */
 /* ---------------------------------------------------------------------- */
-.admin-page .device-type-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 12px;
-    border-radius: 999px;
-    font-size: 12.5px;
-    font-weight: 700;
-    background: rgba(59, 130, 246, 0.12);
-    color: var(--info);
-    border: 1px solid rgba(59, 130, 246, 0.3);
-}
-
 .admin-page .cell-primary {
     display: block;
     font-weight: 700;
@@ -874,7 +897,10 @@
     color: var(--info);
 }
 
-.admin-page .data-table .icon-action-btn {
+/* Generic compact square icon button — originally table row actions only,
+   also reused outside tables (e.g. the per-step delete button in the Scoms
+   Steps editor below). */
+.admin-page .icon-action-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1465,6 +1491,40 @@
    the default left-aligned row used where Cancel sits beside Save. */
 .admin-page .form-actions-end {
     justify-content: flex-end;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Scom Steps editor — repeatable step-title + description cards           */
+/* ---------------------------------------------------------------------- */
+.admin-page .scom-steps-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.admin-page .scom-step-item {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--bg-main);
+}
+
+.admin-page .scom-step-item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.admin-page .scom-step-item-index {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
 }
 
 /* ---------------------------------------------------------------------- */

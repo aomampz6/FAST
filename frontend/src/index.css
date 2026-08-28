@@ -54,6 +54,20 @@ body {
     border-radius: 4px;
 }
 
+/* Global safety net for every lucide-react icon (every one of them renders
+   with the `lucide` class — see the library's createLucideIcon/Icon source).
+   Forces the icon to actually take up space and stay visible no matter what
+   inherited/overridden `color`, `opacity`, or `display` it might otherwise
+   pick up from an ancestor — icons across the app were rendering as empty
+   boxes with no visible cause in any component-level CSS. */
+svg.lucide {
+    display: inline-block !important;
+    flex-shrink: 0;
+    stroke: currentColor !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,

@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
-import { ChevronRight, ArrowLeft, FolderTree, Plus, Save, X } from 'lucide-react';
+import { ChevronRight, ArrowLeft, FolderTree, Plus, Save, Trash2, X } from 'lucide-react';
 import RichTextField from './RichTextField';
+
+const EMPTY_STEP = { StepTitle: '', Description: '' };
 
 // Primary fields identify the record; detail fields describe the fix. Split
 // into two visual groups instead of one flat grid so the form reads as
@@ -106,6 +108,21 @@ export default function ScomFormBody({
     function changeGroup() {
         setNewGroupInput('');
         setFormStep(1);
+    }
+
+    function addStep() {
+        setForm((prev) => ({ ...prev, StepItems: [...prev.StepItems, { ...EMPTY_STEP }] }));
+    }
+
+    function removeStep(index) {
+        setForm((prev) => ({ ...prev, StepItems: prev.StepItems.filter((_, i) => i !== index) }));
+    }
+
+    function updateStep(index, patch) {
+        setForm((prev) => ({
+            ...prev,
+            StepItems: prev.StepItems.map((step, i) => (i === index ? { ...step, ...patch } : step)),
+        }));
     }
 
     if (formStep === 1) {
@@ -220,14 +237,48 @@ export default function ScomFormBody({
                         labelable descendant (the toolbar's <select>), stealing focus
                         from the editor's contentEditable area. */}
                     <div className="field-block" style={{ gridColumn: '1 / -1' }}>
-                        <span className="field-label-row">Steps (ขั้นตอนแก้ไข)</span>
-                        <RichTextField
-                            value={form.Steps}
-                            onChange={(html) => setForm({ ...form, Steps: html })}
-                            onUploadImage={onUploadImage}
-                            placeholder="ขึ้นบรรทัดใหม่ทุกขั้นตอน เช่น ตรวจสอบสายไฟเบอร์ / รีสตาร์ทอุปกรณ์"
-                        />
-                        <span className="field-hint">แต่ละบรรทัด/ย่อหน้าจะแสดงเป็นหนึ่งขั้นตอนในระบบ</span>
+                        <span className="field-label-row">ขั้นตอนแก้ไข (Steps)</span>
+                        <div className="scom-steps-editor">
+                            {form.StepItems.map((step, index) => (
+                                <div className="scom-step-item" key={index}>
+                                    <div className="scom-step-item-header">
+                                        <span className="scom-step-item-index">ขั้นตอนที่ {index + 1}</span>
+                                        <button
+                                            type="button"
+                                            className="icon-action-btn danger"
+                                            onClick={() => removeStep(index)}
+                                            title="ลบขั้นตอนนี้"
+                                            aria-label={`ลบขั้นตอนที่ ${index + 1}`}
+                                        >
+                                            <Trash2 size={14} />
+                                        </button>
+                                    </div>
+                                    <label>
+                                        <span className="field-label-row">หัวข้อขั้นตอน (Step Title)</span>
+                                        <input
+                                            value={step.StepTitle}
+                                            onChange={(e) => updateStep(index, { StepTitle: e.target.value })}
+                                            placeholder="เช่น ตรวจสอบ PPPoE Account"
+                                        />
+                                    </label>
+                                    <div className="field-block">
+                                        <span className="field-label-row">คำอธิบาย (Description)</span>
+                                        <RichTextField
+                                            value={step.Description}
+                                            onChange={(html) => updateStep(index, { Description: html })}
+                                            onUploadImage={onUploadImage}
+                                            placeholder="อธิบายรายละเอียดของขั้นตอนนี้..."
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                            {form.StepItems.length === 0 && (
+                                <p className="field-hint">ยังไม่มีขั้นตอน — กด "เพิ่มขั้นตอน" ด้านล่างเพื่อเริ่มต้น</p>
+                            )}
+                        </div>
+                        <button type="button" className="btn-secondary" onClick={addStep}>
+                            <Plus size={14} /> เพิ่มขั้นตอน
+                        </button>
                     </div>
                 </div>
             </fieldset>

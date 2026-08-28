@@ -24,7 +24,7 @@ const emptyForm = {
     Scoms: '',
     Symptom: '',
     CheckPoint: '',
-    Steps: '',
+    StepItems: [{ StepTitle: '', Description: '' }],
     NormalValue: '',
     Equipment: '',
 };

@@ -184,6 +184,21 @@ html[data-theme='dark'] .sg-nav-badge {
 .sg-nav-label {
     flex: 1;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.sg-nav-label-sub {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    white-space: normal;
+}
+
+.sg-nav-btn.active .sg-nav-label-sub {
+    color: inherit;
+    opacity: 0.8;
 }
 
 /* --- Detail panel ------------------------------------------------------- */
@@ -319,6 +334,88 @@ html[data-theme='dark'] .sg-list li {
 .sg-list-icon {
     flex-shrink: 0;
     margin-top: 2px;
+    color: var(--sg-accent);
+}
+
+/* Checklist as a connected vertical stepper (numbered nodes joined by a
+   line, ending in a distinct "end of checklist" node) instead of a flat list
+   of check-marked rows — TroubleshootPage only; SymptomGuidePage still uses
+   the plain .sg-list above. */
+.sg-steps {
+    --sg-step-node-size: 30px;
+    margin: 0 0 22px;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+}
+
+.sg-step {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding-bottom: 22px;
+}
+
+.sg-step:last-child {
+    padding-bottom: 0;
+}
+
+.sg-step:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    top: var(--sg-step-node-size);
+    bottom: 0;
+    left: calc(var(--sg-step-node-size) / 2 - 1px);
+    width: 2px;
+    background: var(--sg-accent-ring);
+}
+
+.sg-step-node {
+    flex-shrink: 0;
+    width: var(--sg-step-node-size);
+    height: var(--sg-step-node-size);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--sg-accent-soft);
+    color: var(--sg-accent);
+    font-size: 13px;
+    font-weight: 700;
+    position: relative;
+    z-index: 1;
+}
+
+.sg-step-node-end {
+    background: var(--sg-accent);
+    color: #ffffff;
+}
+
+.sg-step-text {
+    padding-top: 5px;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--text-primary);
+}
+
+.sg-step-title {
+    display: block;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.sg-step-description {
+    display: block;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.sg-step-end-text {
+    padding-top: 6px;
+    font-weight: 700;
     color: var(--sg-accent);
 }
 

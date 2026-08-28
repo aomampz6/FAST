@@ -1,7 +1,38 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Activity, BarChart2, BookOpen, Calendar, PhoneCall, Search, Settings } from 'lucide-react';
+import { BarChart2, BookOpen, Calendar, Heart, PhoneCall, Search, Settings } from 'lucide-react';
 import { useParameters } from '../features/parameters/useParameters';
+
+// Homepage shortcut cards — same 3 destinations the sidebar already links to
+// (Troubleshoot / ONU setup / ATA setup), just given a title + one-line
+// description and a themed icon color so they read as a proper entry point
+// instead of a plain icon-over-label button.
+const DASH_ACTIONS = [
+    {
+        title: 'ตรวจสอบอาการเสีย',
+        desc: 'แนวทางการแก้ไขเมื่อไฟแดง LOS หรือต่อเน็ตไม่ได้',
+        Icon: Search,
+        color: 'var(--danger)',
+        bg: 'rgba(239, 68, 68, 0.12)',
+        path: '/troubleshoot',
+    },
+    {
+        title: 'คู่มือตั้งค่า ONU',
+        desc: 'วิธีการตั้งค่า Bridge, Route และปิดใช้งาน TR069',
+        Icon: Settings,
+        color: 'var(--info)',
+        bg: 'rgba(59, 130, 246, 0.12)',
+        path: '/onu-setup',
+    },
+    {
+        title: 'การตั้งค่า ATA',
+        desc: 'วิธีตั้งค่าอุปกรณ์ ATA สำหรับใช้งานโทรศัพท์ IP',
+        Icon: PhoneCall,
+        color: 'var(--success)',
+        bg: 'rgba(16, 185, 129, 0.12)',
+        path: '/ata-setup',
+    },
+];
 
 const LEVEL_BADGE_CLASS = { danger: 'badge danger', warning: 'badge warning', info: 'badge info', none: '' };
 
@@ -130,16 +161,30 @@ export default function DashboardPage() {
                 <div className="hero-icon-wrapper">
                     <BookOpen className="hero-icon" />
                 </div>
-                <h4 className="hero-subtitle">Field Assistant System For Technician (FAST)</h4>
-                <h3 className="hero-title">คู่มือการตรวจสอบและแก้ไขปัญหา</h3>
-                <p className="hero-desc">เลือกระบบคู่มือที่คุณต้องการใช้งานด้านล่าง</p>
+                <h4 className="hero-subtitle">คู่มือการตรวจสอบและแก้ไขปัญหา</h4>
+                <h3 className="hero-title">Field Assistant System For Technician (FAST)</h3>
+                <p className="hero-desc">ศูนย์รวมข้อมูลช่วยเหลือช่างพื้นที่ NT เบื้องต้น</p>
+            </div>
+
+            <div className="dash-action-grid" style={{ marginTop: 24 }}>
+                {DASH_ACTIONS.map(({ title, desc, Icon, color, bg, path }) => (
+                    <button type="button" key={path} className="dash-action-card" onClick={() => navigate(path)}>
+                        <span className="dash-action-icon" style={{ background: bg, color }}>
+                            <Icon />
+                        </span>
+                        <span>
+                            <span className="dash-action-title">{title}</span>
+                            <span className="dash-action-desc">{desc}</span>
+                        </span>
+                    </button>
+                ))}
             </div>
 
             {/* Parameters Table */}
             <div className="card" style={{ marginTop: 24, marginBottom: 24 }}>
                 <h3 className="mb-2" style={{ fontSize: 18, display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Activity style={{ color: 'var(--nt-yellow)' }} />
-                    ข้อมูลพารามิเตอร์อ้างอิง
+                    <Heart style={{ color: 'var(--nt-yellow)' }} />
+                    ค่าพารามิเตอร์อ้างอิงพื้นฐาน (Reference)
                 </h3>
                 {error && <div className="error-banner">{error}</div>}
                 {loading ? (
@@ -165,26 +210,6 @@ export default function DashboardPage() {
                         </table>
                     </div>
                 )}
-            </div>
-
-            <div className="card">
-                <h3 className="mb-4" style={{ fontSize: 18 }}>
-                    เมนูลัด (Quick Actions)
-                </h3>
-                <div className="quick-actions grid" style={{ marginTop: 16 }}>
-                    <button type="button" className="quick-action-btn" onClick={() => navigate('/troubleshoot')}>
-                        <Search style={{ color: 'var(--brand-primary)' }} />
-                        ตรวจสอบอาการเสีย
-                    </button>
-                    <button type="button" className="quick-action-btn" onClick={() => navigate('/onu-setup')}>
-                        <Settings style={{ color: 'var(--nt-gray)' }} />
-                        ตั้งค่า ONU รุ่นต่างๆ
-                    </button>
-                    <button type="button" className="quick-action-btn" onClick={() => navigate('/ata-setup')}>
-                        <PhoneCall style={{ color: 'var(--info)' }} />
-                        การตั้งค่า ATA
-                    </button>
-                </div>
             </div>
 
             <div className="card" style={{ marginTop: 24 }}>

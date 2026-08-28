@@ -24,6 +24,7 @@ import { submitFeedback } from '../feedback/feedbackService';
 import { useFirstFeedbackGate } from '../../shared/hooks/useFirstFeedbackGate';
 import { RoleGate } from '../../shared/auth/access';
 import SuccessPopup from '../../components/SuccessPopup';
+import ImageZoomModal from '../../components/ImageZoomModal';
 import '../admin/richTextEditor.css';
 
 function slug(value) {
@@ -426,6 +427,9 @@ export default function OnuSetupPage({ deviceType = 'ONU' }) {
                                     className="step-panel-desc rich-text-content"
                                     style={{ whiteSpace: 'pre-wrap' }}
                                     dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedMode.Details || '') }}
+                                    onClick={(e) => {
+                                        if (e.target.tagName === 'IMG') setLightboxSrc(e.target.src);
+                                    }}
                                 />
 
                                 {selectedMode.Images?.length > 0 && (
@@ -495,28 +499,7 @@ export default function OnuSetupPage({ deviceType = 'ONU' }) {
                 </div>
             )}
 
-            {lightboxSrc && (
-                <div
-                    onClick={() => setLightboxSrc(null)}
-                    style={{
-                        position: 'fixed',
-                        inset: 0,
-                        background: 'rgba(0,0,0,0.85)',
-                        zIndex: 10000,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: 24,
-                        cursor: 'zoom-out',
-                    }}
-                >
-                    <img
-                        src={lightboxSrc}
-                        alt=""
-                        style={{ maxWidth: '100%', maxHeight: '100%', borderRadius: 8, boxShadow: '0 10px 40px rgba(0,0,0,0.5)' }}
-                    />
-                </div>
-            )}
+            <ImageZoomModal src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
 
             <SuccessPopup open={successOpen} message="ส่งคำแนะนำเรียบร้อยแล้ว" onClose={() => setSuccessOpen(false)} />
         </div>

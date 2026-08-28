@@ -17,17 +17,7 @@ import {
 import { useAuth } from '../shared/auth/AuthContext';
 import { toTitleCase } from '../shared/format/names';
 import { RoleGate } from '../shared/auth/access';
-
-function useTheme() {
-    const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
-
-    useEffect(() => {
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
-    }, [theme]);
-
-    return [theme, () => setTheme((prev) => (prev === 'light' ? 'dark' : 'light'))];
-}
+import { useTheme } from '../shared/hooks/useTheme';
 
 const PAGE_TITLES = [
     { path: '/troubleshoot', title: 'ตรวจสอบและแก้ไขงานเสีย' },
@@ -168,7 +158,10 @@ export default function Layout() {
                             <span className="user-avatar">
                                 {(fullName?.trim()?.[0] || role?.[0] || 'U').toUpperCase()}
                             </span>
-                            <span>{toTitleCase(fullName) || ROLE_LABEL[role] || role}</span>
+                            <div className="user-profile-text">
+                                <span className="user-profile-name">{toTitleCase(fullName) || ROLE_LABEL[role] || role}</span>
+                                <span className={`role-badge role-badge-${role}`}>{ROLE_LABEL[role] || role}</span>
+                            </div>
                         </div>
                     </div>
                 </header>

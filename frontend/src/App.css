@@ -477,7 +477,7 @@ html[data-theme='dark'] .nav-item::before {
 }
 
 .nav-item.active {
-    background: var(--nt-yellow-light);
+    background: color-mix(in srgb, var(--nt-yellow) 35%, var(--nt-yellow-light));
     color: var(--nt-dark);
     font-weight: 700;
 }
@@ -546,8 +546,12 @@ html[data-theme='dark'] .nav-item.active .nav-icon {
     min-height: 100vh;
     min-width: 0;
     position: relative;
+    /* Layered back-to-front: brand glow decoration, then a subtle dot-grid
+       texture (same border token used everywhere else, so it stays faint in
+       both themes with no separate color to maintain), then the solid base. */
     background:
         radial-gradient(circle at 15% -10%, rgba(255, 209, 0, 0.06) 0%, transparent 55%),
+        radial-gradient(circle, var(--border-color) 1px, transparent 1px) 0 0 / 22px 22px,
         var(--bg-main);
 }
 
@@ -697,6 +701,48 @@ html[data-theme='dark'] .nav-item.active .nav-icon {
     font-weight: 700;
     font-size: 13px;
     text-transform: uppercase;
+}
+
+/* Name + role badge stacked under it, in the header's user chip. */
+.user-profile-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+}
+
+.user-profile-name {
+    line-height: 1.2;
+}
+
+/* Role badge under the name in the header's user chip — admin gets the
+   brand yellow (an elevated role), everyone else a neutral blue. */
+.role-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+}
+
+.role-badge-admin {
+    background: rgba(255, 209, 0, 0.18);
+    color: #a17400;
+    border: 1px solid rgba(255, 209, 0, 0.4);
+}
+
+:root[data-theme='dark'] .role-badge-admin,
+html[data-theme='dark'] .role-badge-admin {
+    color: var(--nt-yellow);
+}
+
+.role-badge-user {
+    background: rgba(59, 130, 246, 0.12);
+    color: var(--info);
+    border: 1px solid rgba(59, 130, 246, 0.3);
 }
 
 .content {
@@ -1025,7 +1071,10 @@ html[data-theme='dark'] .card {
 
 .hero-banner {
     border-top: 5px solid var(--brand-primary);
-    background: linear-gradient(180deg, rgba(255, 200, 0, 0.05) 0%, var(--bg-surface) 100%);
+    /* Opaque throughout (color-mix, not alpha) — the old rgba(...,0.05) top
+       stop was mostly see-through, letting .main-content's dot-grid texture
+       bleed through the card instead of just tinting it. */
+    background: linear-gradient(180deg, color-mix(in srgb, var(--nt-yellow) 8%, var(--bg-surface)) 0%, var(--bg-surface) 100%);
     padding: 40px 20px;
     text-align: center;
     margin-bottom: 24px;
@@ -1173,60 +1222,69 @@ html[data-theme='dark'] .stat-icon.yellow {
     line-height: 1.2;
 }
 
-.quick-action-btn {
-    width: 100%;
-    padding: 24px;
+/* Dashboard shortcut cards — icon + title + one-line description, replacing
+   the old centered icon-over-label .quick-action-btn. */
+.dash-action-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.dash-action-card {
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     gap: 16px;
+    width: 100%;
+    padding: 22px;
     background-color: var(--bg-surface);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border-light);
     border-radius: var(--radius-lg);
     color: var(--text-primary);
-    font-weight: 600;
-    font-size: 16px;
+    text-align: left;
     box-shadow: var(--shadow-sm);
+    transition: transform var(--duration-base) ease, box-shadow var(--duration-base) ease;
 }
 
-.quick-action-btn svg {
-    width: 32px;
-    height: 32px;
+.dash-action-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--border-color);
+}
+
+.dash-action-icon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dash-action-icon svg {
+    width: 22px;
+    height: 22px;
+}
+
+.dash-action-title {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.dash-action-desc {
+    display: block;
+    font-size: 13px;
+    line-height: 1.55;
+    font-weight: 400;
     color: var(--text-secondary);
-    transition: transform var(--duration-base) ease, color var(--duration-base) ease;
-}
-
-.quick-action-btn:hover {
-    background: linear-gradient(135deg, var(--nt-yellow), #ffa000);
-    color: var(--nt-dark);
-    border-color: transparent;
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-glow);
-}
-
-.quick-action-btn:hover svg {
-    color: var(--nt-dark);
-    transform: scale(1.1);
 }
 
 @media (max-width: 768px) {
-    /* auto-fit instead of a fixed 2-column grid so a 3rd (or nth) button
-       wraps evenly instead of leaving a lone item stranded on its own row. */
-    .quick-actions.grid {
-        grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-        gap: 12px;
-    }
-
-    .quick-action-btn {
-        padding: 16px 8px;
-        font-size: 13px;
-        gap: 8px;
-        text-align: center;
-    }
-
-    .quick-action-btn svg {
-        width: 24px;
-        height: 24px;
+    .dash-action-grid {
+        grid-template-columns: 1fr;
     }
 
     .stat-card {
@@ -1475,82 +1533,127 @@ html[data-theme='dark'] .badge.warning {
 .pb-group-header {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 12px;
+    gap: 10px;
+    margin-bottom: 14px;
     flex-wrap: wrap;
 }
 
 .pb-group-icon {
     padding: 8px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     display: flex;
 }
 
 .pb-group-title {
-    font-size: 20px;
-    font-weight: bold;
+    font-size: 18px;
+    font-weight: 700;
     margin: 0;
     flex-grow: 1;
 }
 
-.pb-list-container {
-    background: var(--bg-surface);
-    border: 1px solid var(--border-color);
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: var(--shadow-sm);
+.pb-card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
     margin-bottom: 32px;
 }
 
-.pb-list-item {
-    padding: 16px;
+.pb-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 18px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.pb-card-title {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.pb-card-desc {
+    margin: -4px 0 0;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--text-secondary);
+}
+
+.pb-card-footer {
+    margin-top: auto;
+    padding-top: 6px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
-}
-
-.pb-list-item:not(:last-child) {
-    border-bottom: 1px solid var(--border-color);
-}
-
-.pb-item-title {
-    font-weight: 500;
-    color: var(--text-primary);
-    margin: 0;
-}
-
-.pb-item-subtitle {
-    font-size: 12px;
-    color: var(--text-secondary);
-    margin: 4px 0 0 0;
-}
-
-.pb-phone-btn {
-    display: flex;
-    align-items: center;
+    flex-wrap: wrap;
     gap: 8px;
-    padding: 8px 16px;
-    border-radius: 12px;
-    font-weight: bold;
-    transition: var(--transition);
-    text-decoration: none;
-    flex-shrink: 0;
-    cursor: pointer;
 }
 
-.pb-phone-btn:hover {
-    opacity: 0.8;
+.pb-card-phone {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: opacity var(--duration-base) ease;
+}
+
+.pb-card-phone:hover {
+    opacity: 0.75;
+}
+
+.pb-card-ext {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-left: 2px;
+}
+
+.pb-card-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.pb-card-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border-radius: var(--radius-sm);
+}
+
+.pb-card-empty {
+    grid-column: 1 / -1;
+    align-items: center;
+    text-align: center;
+}
+
+.pb-card-edit {
+    grid-column: 1 / -1;
+    flex-direction: row;
+}
+
+@media (max-width: 900px) {
+    .pb-card-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 @media (max-width: 600px) {
-    .pb-list-item {
-        flex-direction: column;
-        align-items: flex-start;
+    .pb-card-grid {
+        grid-template-columns: 1fr;
     }
-    .pb-phone-btn {
-        width: 100%;
-        justify-content: center;
+
+    .pb-card-edit {
+        flex-direction: column;
+        align-items: stretch;
     }
 }
 
@@ -2859,8 +2962,8 @@ html[data-theme='dark'] .step-sidebar-badge {
 }
 :root[data-theme='dark'] .step-panel,
 html[data-theme='dark'] .step-panel {
-    background: #1a1f36;
-    border-color: rgba(255, 255, 255, 0.05);
+    background: var(--bg-main);
+    border-color: var(--border-color);
     box-shadow: none;
 }
 @keyframes stepFadeIn {
@@ -2905,7 +3008,7 @@ html[data-theme='dark'] .step-panel-header {
     margin: 0;
 }
 .step-panel-desc {
-    color: var(--text-secondary);
+    color: var(--text-primary);
     font-size: 13px;
     line-height: 1.6;
     background: var(--bg-main);
@@ -3221,6 +3324,88 @@ html[data-theme='dark'] .feedback-textarea::placeholder {
 .hint {
     color: var(--text-secondary);
     font-size: 14px;
+}
+
+/* ==========================================================================
+   Image zoom viewer (ImageZoomModal) — full-screen, zoom/pan a setup-step
+   screenshot. Portaled to document.body, so unscoped like the other portal
+   overlays in this file.
+   ========================================================================== */
+.image-zoom-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.9);
+    overflow: hidden;
+    touch-action: none;
+}
+
+.image-zoom-toolbar {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 999px;
+}
+
+.image-zoom-toolbar button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: #ffffff;
+    box-shadow: none;
+    cursor: pointer;
+}
+
+.image-zoom-toolbar button:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.image-zoom-toolbar button:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.image-zoom-level {
+    min-width: 40px;
+    text-align: center;
+    color: #ffffff;
+    font-size: 12.5px;
+    font-weight: 600;
+}
+
+.image-zoom-img {
+    max-width: 90vw;
+    max-height: 90vh;
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    touch-action: none;
+    user-select: none;
+}
+
+/* Rich-text content images (Details/Steps screenshots) get a hover/press
+   affordance so it's clear they're clickable to zoom. */
+.rich-text-content img {
+    cursor: zoom-in;
+    transition: opacity 120ms ease-out;
+}
+
+.rich-text-content img:hover {
+    opacity: 0.92;
 }
 
 /* ==========================================================================
