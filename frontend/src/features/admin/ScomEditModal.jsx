@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Wrench, X } from 'lucide-react';
 import { addScomImages, getScomImageUrl } from '../scoms/scomsService';
@@ -52,15 +52,6 @@ export default function ScomEditModal({ item, groupOptions, scomPairs, onClose, 
     const [formError, setFormError] = useState(null);
     const [saving, setSaving] = useState(false);
 
-    // Escape closes the dialog, matching the Cancel button.
-    useEffect(() => {
-        function onKeyDown(e) {
-            if (e.key === 'Escape') onClose();
-        }
-        window.addEventListener('keydown', onKeyDown);
-        return () => window.removeEventListener('keydown', onKeyDown);
-    }, [onClose]);
-
     async function handleSubmit(e) {
         e.preventDefault();
         setFormError(null);
@@ -85,14 +76,17 @@ export default function ScomEditModal({ item, groupOptions, scomPairs, onClose, 
         return getScomImageUrl(last.key);
     }
 
+    // Closing only ever happens via the X button, the form's own Cancel
+    // button, or a successful save (see handleSubmit) — no backdrop click or
+    // Escape key, so an admin can't lose in-progress edits by missing the
+    // popup with the mouse.
     return createPortal(
-        <div className="admin-page scom-modal-overlay" onClick={onClose}>
+        <div className="admin-page scom-modal-overlay">
             <div
                 className="scom-modal"
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="scom-modal-title"
-                onClick={(e) => e.stopPropagation()}
             >
                 <div className="scom-modal-header">
                     <div className="admin-card-header" style={{ marginBottom: 0 }}>
