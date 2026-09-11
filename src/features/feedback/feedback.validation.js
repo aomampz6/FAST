@@ -1,7 +1,7 @@
 const { z } = require('zod');
 
 const createFeedbackSchema = z.object({
-    scope: z.enum(['troubleshoot', 'onu-setup', 'ata-setup']),
+    scope: z.enum(['troubleshoot', 'onu-setup', 'ata-setup', 'ap-setup']),
     refId: z.string().min(1),
     rating: z.number().int().min(1).max(5),
     comment: z.string().optional()

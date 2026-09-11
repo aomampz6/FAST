@@ -2,7 +2,7 @@ const { z } = require('zod');
 
 const createSchema = z.object({
     Label: z.string().min(1),
-    DeviceType: z.enum(['ONU', 'ATA']).optional(),
+    DeviceType: z.enum(['ONU', 'ATA', 'AP']).optional(),
     Order: z.number().optional()
 });
 

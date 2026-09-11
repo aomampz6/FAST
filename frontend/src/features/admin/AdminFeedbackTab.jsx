@@ -17,6 +17,7 @@ const SCOPE_PATH = {
     troubleshoot: '/troubleshoot',
     'onu-setup': '/onu-setup',
     'ata-setup': '/ata-setup',
+    'ap-setup': '/ap-setup',
 };
 
 // Read-only except for triage (resolve/delete) — admins only view what users

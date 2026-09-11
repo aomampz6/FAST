@@ -3,6 +3,7 @@ import AdminScomsTab from './AdminScomsTab';
 import AdminParametersTab from './AdminParametersTab';
 import AdminOnuConfigsTab from './AdminOnuConfigsTab';
 import AdminAtaConfigsTab from './AdminAtaConfigsTab';
+import AdminApConfigsTab from './AdminApConfigsTab';
 import AdminGuidesTab from './AdminGuidesTab';
 import AdminPhonebookTab from './AdminPhonebookTab';
 import AdminUsersTab from './AdminUsersTab';
@@ -32,6 +33,9 @@ export default function AdminPage() {
                 <NavLink to="/admin/ata-configs" className={({ isActive }) => (isActive ? 'active' : undefined)}>
                     ข้อมูลการตั้งค่า ATA
                 </NavLink>
+                <NavLink to="/admin/ap-configs" className={({ isActive }) => (isActive ? 'active' : undefined)}>
+                    ข้อมูลการตั้งค่า Access Point
+                </NavLink>
                 <NavLink to="/admin/guides" className={({ isActive }) => (isActive ? 'active' : undefined)}>
                     คู่มือ Interactive
                 </NavLink>
@@ -52,6 +56,7 @@ export default function AdminPage() {
                     <Route path="parameters" element={<AdminParametersTab />} />
                     <Route path="onu-configs" element={<AdminOnuConfigsTab />} />
                     <Route path="ata-configs" element={<AdminAtaConfigsTab />} />
+                    <Route path="ap-configs" element={<AdminApConfigsTab />} />
                     <Route path="guides" element={<AdminGuidesTab />} />
                     <Route path="phonebook" element={<AdminPhonebookTab />} />
                     <Route path="users" element={<AdminUsersTab />} />

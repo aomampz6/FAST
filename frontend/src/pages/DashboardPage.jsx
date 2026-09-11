@@ -1,38 +1,6 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { BarChart2, BookOpen, Calendar, Heart, PhoneCall, Search, Settings } from 'lucide-react';
+import { BarChart2, BookOpen, Calendar, Heart } from 'lucide-react';
 import { useParameters } from '../features/parameters/useParameters';
-
-// Homepage shortcut cards — same 3 destinations the sidebar already links to
-// (Troubleshoot / ONU setup / ATA setup), just given a title + one-line
-// description and a themed icon color so they read as a proper entry point
-// instead of a plain icon-over-label button.
-const DASH_ACTIONS = [
-    {
-        title: 'ตรวจสอบอาการเสีย',
-        desc: 'แนวทางการแก้ไขเมื่อไฟแดง LOS หรือต่อเน็ตไม่ได้',
-        Icon: Search,
-        color: 'var(--danger)',
-        bg: 'rgba(239, 68, 68, 0.12)',
-        path: '/troubleshoot',
-    },
-    {
-        title: 'คู่มือตั้งค่า ONU',
-        desc: 'วิธีการตั้งค่า Bridge, Route และปิดใช้งาน TR069',
-        Icon: Settings,
-        color: 'var(--info)',
-        bg: 'rgba(59, 130, 246, 0.12)',
-        path: '/onu-setup',
-    },
-    {
-        title: 'การตั้งค่า ATA',
-        desc: 'วิธีตั้งค่าอุปกรณ์ ATA สำหรับใช้งานโทรศัพท์ IP',
-        Icon: PhoneCall,
-        color: 'var(--success)',
-        bg: 'rgba(16, 185, 129, 0.12)',
-        path: '/ata-setup',
-    },
-];
 
 const LEVEL_BADGE_CLASS = { danger: 'badge danger', warning: 'badge warning', info: 'badge info', none: '' };
 
@@ -153,7 +121,6 @@ function AccordionRow({ row }) {
 
 export default function DashboardPage() {
     const { parameters, loading, error } = useParameters();
-    const navigate = useNavigate();
 
     return (
         <div className="page">
@@ -164,20 +131,6 @@ export default function DashboardPage() {
                 <h4 className="hero-subtitle">คู่มือการตรวจสอบและแก้ไขปัญหา</h4>
                 <h3 className="hero-title">Field Assistant System For Technician (FAST)</h3>
                 <p className="hero-desc">ศูนย์รวมข้อมูลช่วยเหลือช่างพื้นที่ NT เบื้องต้น</p>
-            </div>
-
-            <div className="dash-action-grid" style={{ marginTop: 24 }}>
-                {DASH_ACTIONS.map(({ title, desc, Icon, color, bg, path }) => (
-                    <button type="button" key={path} className="dash-action-card" onClick={() => navigate(path)}>
-                        <span className="dash-action-icon" style={{ background: bg, color }}>
-                            <Icon />
-                        </span>
-                        <span>
-                            <span className="dash-action-title">{title}</span>
-                            <span className="dash-action-desc">{desc}</span>
-                        </span>
-                    </button>
-                ))}
             </div>
 
             {/* Parameters Table */}

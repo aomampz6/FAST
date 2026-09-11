@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 // hardcoded in the frontend.
 const modeTopicSchema = new mongoose.Schema({
     Label: { type: String, required: true, trim: true },
-    DeviceType: { type: String, enum: ['ONU', 'ATA'], default: 'ONU' },
+    DeviceType: { type: String, enum: ['ONU', 'ATA', 'AP'], default: 'ONU' },
     // Manual sort position — lower first — so admins can order the dropdown
     // to match the setup flow (Login prep, then Bridge, then Route, ...).
     Order: { type: Number, default: 0 }

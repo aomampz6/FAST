@@ -30,6 +30,7 @@ export default function App() {
                     <Route path="symptom-guide" element={<SymptomGuidePage />} />
                     <Route path="onu-setup" element={<OnuSetupPage deviceType="ONU" />} />
                     <Route path="ata-setup" element={<OnuSetupPage deviceType="ATA" />} />
+                    <Route path="ap-setup" element={<OnuSetupPage deviceType="AP" />} />
                     <Route path="phonebook" element={<PhonebookPage />} />
                     <Route path="profile" element={<ProfilePage />} />
                 </Route>

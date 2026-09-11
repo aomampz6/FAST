@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
+    ChevronDown,
     LayoutDashboard,
     LogOut,
     Menu,
@@ -10,6 +11,7 @@ import {
     Settings,
     Sun,
     User,
+    Wifi,
     Wrench,
     X,
     Zap,
@@ -23,9 +25,17 @@ const PAGE_TITLES = [
     { path: '/troubleshoot', title: 'ตรวจสอบและแก้ไขงานเสีย' },
     { path: '/onu-setup', title: 'การตั้งค่าอุปกรณ์ FTTx (ONU)' },
     { path: '/ata-setup', title: 'การตั้งค่าอุปกรณ์ ATA' },
+    { path: '/ap-setup', title: 'การตั้งค่าอุปกรณ์ Access Point' },
     { path: '/phonebook', title: 'ข้อมูล สมุดโทรศัพท์' },
     { path: '/profile', title: 'ข้อมูลส่วนตัว' },
     { path: '/admin', title: 'ผู้ดูแลระบบ' },
+];
+
+// Sub-routes grouped under the "การตั้งค่าอุปกรณ์" sidebar entry.
+const DEVICE_SETUP_LINKS = [
+    { path: '/onu-setup', label: 'ONU', Icon: RouterIcon },
+    { path: '/ata-setup', label: 'ATA', Icon: Phone },
+    { path: '/ap-setup', label: 'Access Point', Icon: Wifi },
 ];
 
 const ROLE_LABEL = {
@@ -41,6 +51,9 @@ export default function Layout() {
     const [mobileNavOpen, setMobileNavOpen] = useState(false);
     const [theme, toggleTheme] = useTheme();
 
+    const isDeviceSetupRoute = DEVICE_SETUP_LINKS.some((link) => location.pathname.startsWith(link.path));
+    const [deviceMenuOpen, setDeviceMenuOpen] = useState(isDeviceSetupRoute);
+
     // Closing on every route change covers both a nav-link tap and the
     // browser back/forward buttons, so the drawer never stays stuck open
     // over the new page on mobile.
@@ -48,9 +61,23 @@ export default function Layout() {
         setMobileNavOpen(false);
     }, [location.pathname]);
 
+    // A deep link straight into one of the device setup pages should land
+    // with the submenu already open, not collapsed around the active link.
+    useEffect(() => {
+        if (isDeviceSetupRoute) setDeviceMenuOpen(true);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isDeviceSetupRoute]);
+
     function handleLogout() {
         logout();
         navigate('/login', { replace: true });
+    }
+
+    // Collapsed sidebar has no room to show a submenu inline, so opening it
+    // also expands the sidebar back out.
+    function toggleDeviceMenu() {
+        if (collapsed) setCollapsed(false);
+        setDeviceMenuOpen((prev) => !prev);
     }
 
     const match = PAGE_TITLES.find((entry) => location.pathname.startsWith(entry.path));
@@ -101,10 +128,27 @@ export default function Layout() {
                         <span className="nav-icon"><Wrench size={22} /></span>
                         <span>ตรวจสอบงานเสีย</span>
                     </NavLink>
-                    <NavLink to="/onu-setup" className="nav-item" data-label="ตั้งค่าอุปกรณ์ ONU">
-                        <span className="nav-icon"><RouterIcon size={22} /></span>
-                        <span>ตั้งค่าอุปกรณ์ ONU</span>
-                    </NavLink>
+                    <div className="nav-group">
+                        <button
+                            type="button"
+                            className={`nav-item nav-group-toggle${deviceMenuOpen ? ' expanded' : ''}${isDeviceSetupRoute ? ' active' : ''}`}
+                            onClick={toggleDeviceMenu}
+                            aria-expanded={deviceMenuOpen}
+                            data-label="การตั้งค่าอุปกรณ์"
+                        >
+                            <span className="nav-icon"><RouterIcon size={22} /></span>
+                            <span>การตั้งค่าอุปกรณ์</span>
+                            <ChevronDown size={16} className="nav-group-chevron" />
+                        </button>
+                        <div className={`nav-submenu${deviceMenuOpen ? ' open' : ''}`}>
+                            {DEVICE_SETUP_LINKS.map(({ path, label, Icon }) => (
+                                <NavLink key={path} to={path} className="nav-item nav-subitem" data-label={label}>
+                                    <span className="nav-icon"><Icon size={18} /></span>
+                                    <span>{label}</span>
+                                </NavLink>
+                            ))}
+                        </div>
+                    </div>
                     <NavLink to="/phonebook" className="nav-item" data-label="สมุดโทรศัพท์">
                         <span className="nav-icon"><Phone size={22} /></span>
                         <span>สมุดโทรศัพท์</span>

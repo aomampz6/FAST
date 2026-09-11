@@ -509,6 +509,59 @@ html[data-theme='dark'] .nav-item.active .nav-icon {
     }
 }
 
+/* "การตั้งค่าอุปกรณ์" nav group — a toggle nav-item plus an indented list of
+   sub-links (ONU / ATA / Access Point) that expands/collapses under it. */
+.nav-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.nav-group-toggle {
+    cursor: pointer;
+}
+
+.nav-group-chevron {
+    margin-left: auto;
+    flex-shrink: 0;
+    transition: transform var(--duration-base) var(--ease-out);
+}
+
+.nav-group-toggle.expanded .nav-group-chevron {
+    transform: rotate(180deg);
+}
+
+.nav-submenu {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height var(--duration-base) var(--ease-out);
+}
+
+.nav-submenu.open {
+    max-height: 220px;
+    margin-top: 4px;
+}
+
+.nav-subitem {
+    min-height: 38px;
+    padding-left: 34px;
+    font-size: 14px;
+    opacity: 1;
+    transform: none;
+    animation: none;
+}
+
+.nav-subitem .nav-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.sidebar.collapsed .nav-submenu {
+    display: none;
+}
+
 /* Sits directly under the last nav item now, so it matches the nav's own
    horizontal padding and its 4px item gap instead of reading as a separate
    block pinned to the bottom. */

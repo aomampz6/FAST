@@ -445,7 +445,13 @@ export default function AdminDeviceConfigsTab({ deviceType }) {
                                 <input
                                     value={form.Model}
                                     onChange={(e) => setForm({ ...form, Model: e.target.value })}
-                                    placeholder={deviceType === 'ATA' ? 'เช่น HT812' : 'เช่น HG8145V5'}
+                                    placeholder={
+                                        deviceType === 'ATA'
+                                            ? 'เช่น HT812'
+                                            : deviceType === 'AP'
+                                              ? 'เช่น EAP225'
+                                              : 'เช่น HG8145V5'
+                                    }
                                     required
                                     autoFocus={addingModel}
                                 />
