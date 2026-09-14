@@ -187,6 +187,7 @@ export default function AdminUsersTab() {
                         <thead>
                             <tr>
                                 <th>ผู้ใช้งาน (Username)</th>
+                                <th>รหัสพนักงาน</th>
                                 <th>ชื่อ-นามสกุล</th>
                                 <th>สิทธิ์การใช้งาน</th>
                                 <th>สถานะ</th>
@@ -199,6 +200,7 @@ export default function AdminUsersTab() {
                                 return (
                                     <tr key={user._id}>
                                         <td>{user.username}</td>
+                                        <td>{user.empId || '—'}</td>
                                         <td>{toTitleCase(user.fullName)}</td>
                                         <td>{ROLE_LABELS[user.role] || user.role}</td>
                                         <td>
