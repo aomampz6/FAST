@@ -27,4 +27,21 @@ const statusSchema = z.object({
     isActive: z.boolean()
 });
 
-module.exports = { createUserSchema, updateUserSchema, statusSchema, validate };
+// Rows the admin reviewed in the Excel import preview, sent back to actually
+// write them. empId is re-validated here (not trusted from the client as a
+// password) because commit derives the password from it fresh.
+const importAccountSchema = z.object({
+    username: z.string().min(3),
+    empId: z.string().regex(/^\d+$/).max(8),
+    fullName: optionalText,
+    deptName: optionalText,
+    deptFullName: optionalText,
+    email: z.union([z.string().trim().email(), z.literal('')]).optional()
+});
+
+const importCommitSchema = z.object({
+    accounts: z.array(importAccountSchema).min(1),
+    resetPassword: z.boolean().optional()
+});
+
+module.exports = { createUserSchema, updateUserSchema, statusSchema, importCommitSchema, validate };

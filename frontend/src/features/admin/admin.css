@@ -1930,6 +1930,89 @@
     }
 }
 
+/* ---------------------------------------------------------------------- */
+/* Import users from Excel modal — reuses .user-modal's shell/footer/overlay */
+/* styling, just wider (needs room for the preview table) and with its own   */
+/* dropzone, summary badges, and result screen.                             */
+/* ---------------------------------------------------------------------- */
+.import-modal {
+    max-width: 960px;
+}
+
+.import-dropzone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 48px 24px;
+    margin: 16px 0;
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.import-dropzone p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.import-spin {
+    animation: spin 1s linear infinite;
+    color: var(--nt-yellow);
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.import-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 4px 0 16px;
+}
+
+.import-badge-update {
+    background: rgba(59, 130, 246, 0.12);
+    color: var(--info);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.import-reset-option {
+    margin-bottom: 16px;
+}
+
+.import-preview-scroll {
+    max-height: 420px;
+    overflow-y: auto;
+}
+
+.import-reason {
+    display: block;
+    max-width: 220px;
+}
+
+.import-result {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 32px 16px;
+    text-align: center;
+    color: var(--text-primary);
+}
+
+.import-result-icon {
+    color: var(--success);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .import-spin {
+        animation: none;
+    }
+}
+
 /* Explains an all-empty edit form: most imported accounts have no employee-
    register data stored yet, which otherwise reads as a failed load. */
 .user-modal-notice {

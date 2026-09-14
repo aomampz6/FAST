@@ -45,3 +45,27 @@ export async function setUserStatus(id, isActive) {
     const { data } = await httpClient.patch(`/users/${id}/status`, { isActive });
     return data;
 }
+
+/**
+ * Uploads an Excel employee roster and parses it against the current database
+ * without writing anything, so the admin can review it first. Returns
+ * `{ accounts, summary }` — see importUsersCommit for what happens next.
+ */
+export async function importUsersPreview(file) {
+    const form = new FormData();
+    form.append('file', file);
+    const { data } = await httpClient.post('/users/import/preview', form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return data;
+}
+
+/**
+ * Writes the reviewed create/update rows from importUsersPreview. Only rows
+ * with status 'create' or 'update' should be included — invalid rows are
+ * rejected by the server's validation anyway.
+ */
+export async function importUsersCommit(accounts, { resetPassword = false } = {}) {
+    const { data } = await httpClient.post('/users/import/commit', { accounts, resetPassword });
+    return data;
+}

@@ -1,4 +1,5 @@
 const usersService = require('./users.service');
+const usersImport = require('./users.import');
 
 function toSafeUser(user) {
     const obj = user.toObject();
@@ -72,4 +73,27 @@ async function setStatus(req, res, next) {
     }
 }
 
-module.exports = { list, getOne, create, update, remove, setStatus };
+async function importPreview(req, res, next) {
+    try {
+        if (!req.file) {
+            const err = new Error('กรุณาแนบไฟล์ Excel');
+            err.status = 400;
+            throw err;
+        }
+        const result = await usersImport.preview(req.file.buffer);
+        res.json(result);
+    } catch (err) {
+        next(err);
+    }
+}
+
+async function importCommit(req, res, next) {
+    try {
+        const result = await usersImport.commit(req.body.accounts, { resetPassword: Boolean(req.body.resetPassword) });
+        res.json(result);
+    } catch (err) {
+        next(err);
+    }
+}
+
+module.exports = { list, getOne, create, update, remove, setStatus, importPreview, importCommit };

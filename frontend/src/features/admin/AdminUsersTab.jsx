@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { ChevronLeft, ChevronRight, Inbox, Search, SearchX, Users } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileSpreadsheet, Inbox, Search, SearchX, Users } from 'lucide-react';
 import { useUsers, USERS_PAGE_SIZE } from '../users/useUsers';
 import { useAuth } from '../../shared/auth/AuthContext';
 import UserEditModal from './UserEditModal';
+import ImportUsersModal from './ImportUsersModal';
 import { toTitleCase } from '../../shared/format/names';
 
 function decodeJwt(token) {
@@ -34,6 +35,7 @@ export default function AdminUsersTab() {
         updateUser,
         deleteUser,
         setUserStatus,
+        refresh,
     } = useUsers({
         search,
         page: requestedPage,
@@ -48,6 +50,7 @@ export default function AdminUsersTab() {
     // record from the API; the inline form above the table only creates.
     const [editingUserId, setEditingUserId] = useState(null);
     const [formError, setFormError] = useState(null);
+    const [showImportModal, setShowImportModal] = useState(false);
 
     // A new search or filter can leave the requested page past the end of the
     // shorter result set, so start over at the first page.
@@ -98,7 +101,13 @@ export default function AdminUsersTab() {
     return (
         <div className="admin-section">
             <form className="admin-form" onSubmit={handleSubmit}>
-                <h3>เพิ่มผู้ใช้งานใหม่</h3>
+                <div className="admin-card-header-row">
+                    <h3>เพิ่มผู้ใช้งานใหม่</h3>
+                    <button type="button" onClick={() => setShowImportModal(true)}>
+                        <FileSpreadsheet size={16} style={{ marginRight: 6, verticalAlign: -3 }} />
+                        นำเข้าจาก Excel
+                    </button>
+                </div>
                 {formError && <div className="error-banner">{formError}</div>}
                 <div className="form-grid">
                     <label>
@@ -285,6 +294,10 @@ export default function AdminUsersTab() {
                     // through instead of swallowing it here.
                     onSave={(payload) => updateUser(editingUserId, payload)}
                 />
+            )}
+
+            {showImportModal && (
+                <ImportUsersModal onClose={() => setShowImportModal(false)} onImported={refresh} />
             )}
         </div>
     );
