@@ -18,7 +18,10 @@ export default function LoginPage() {
             await login(username, password);
             navigate('/', { replace: true });
         } catch (err) {
-            setError(err.response?.data?.message || 'เข้าสู่ระบบไม่สำเร็จ กรุณาตรวจสอบชื่อผู้ใช้งานและรหัสผ่าน');
+            setError(
+                err.response?.data?.message
+                    || 'เข้าสู่ระบบไม่สำเร็จ กรุณาตรวจสอบชื่อผู้ใช้งาน/รหัสพนักงาน และรหัสผ่าน'
+            );
         } finally {
             setSubmitting(false);
         }
@@ -34,15 +37,18 @@ export default function LoginPage() {
                 </div>
                 {error && <div className="error-banner">{error}</div>}
                 <label>
-                    ชื่อผู้ใช้งาน (Username)
+                    ชื่อผู้ใช้งาน หรือ รหัสพนักงาน
                     <input
                         type="text"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         autoComplete="username"
-                        placeholder="กรอกชื่อผู้ใช้งาน"
+                        placeholder="กรอกชื่อผู้ใช้งาน หรือ รหัสพนักงาน"
                         required
                     />
+                    <span className="login-hint">
+                        ใช้ได้ทั้งชื่อผู้ใช้งาน (เช่น somchai.p) และรหัสพนักงาน (เช่น 12345678)
+                    </span>
                 </label>
                 <label>
                     รหัสผ่าน (Password)

@@ -11,7 +11,11 @@ const userSchema = new mongoose.Schema({
     // export CSV, and editable afterwards from the admin user modal — all
     // optional because accounts created via POST /auth/register (admin
     // bootstrap, seed-admin) never set them.
-    empId: { type: String, required: false },
+    // Indexed because login accepts รหัสพนักงาน as an alternative to username
+    // (see auth.service.findByIdentifier) and that lookup would otherwise scan
+    // every one of the ~2,400 accounts. Not unique: the HR export has never
+    // guaranteed it, and most non-imported accounts have no empId at all.
+    empId: { type: String, required: false, index: true },
     // ชื่อ-อังกฤษ / นามสกุล-อังกฤษ. Kept as their own fields as well as joined
     // into fullName, because the admin modal edits them individually.
     firstName: { type: String, required: false },

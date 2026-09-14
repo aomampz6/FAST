@@ -933,6 +933,17 @@ html[data-theme='dark'] .role-badge-admin {
     color: #9a9aa0;
 }
 
+/* Sits under the identifier field inside its <label>, so the 8px label gap
+   already separates it from the input — pull it back to read as a caption on
+   the field rather than a third element in the stack. */
+.login-hint {
+    margin-top: -3px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.5;
+    color: #6e6e73;
+}
+
 .login-form input:focus {
     border-color: var(--nt-yellow);
     background: #ffffff;

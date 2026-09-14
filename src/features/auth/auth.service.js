@@ -3,8 +3,50 @@ const { jwtSecret } = require('../../config/env');
 const User = require('./auth.model');
 const { onLoginSuccess, onLoginFailure } = require('./auth.hooks');
 
+/**
+ * Resolves what the user typed into the login box to a single account.
+ *
+ * Technicians know themselves by two things: the username derived from their
+ * e-mail (somchai.p) and their รหัสพนักงาน (12345678), so either one is
+ * accepted here.
+ *
+ * username always wins over empId. The two namespaces are not guaranteed to be
+ * disjoint, and if someone's employee id happened to equal another person's
+ * username, matching the username first keeps that account reachable by its
+ * owner instead of being shadowed.
+ *
+ * empId carries no unique index — the HR import has never enforced one — so a
+ * duplicated employee id is possible. Authenticating one of several candidates
+ * would be a guess about whose account is being opened, so an ambiguous empId
+ * is refused outright rather than resolved arbitrarily.
+ */
+async function findByIdentifier(identifier) {
+    const trimmed = String(identifier || '').trim();
+    if (!trimmed) return null;
+
+    const byUsername = await User.findOne({ username: trimmed });
+    if (byUsername) return byUsername;
+
+    // Limited to 2: one match is usable, and anything beyond the second tells
+    // us nothing more than "ambiguous".
+    const byEmpId = await User.find({ empId: { $in: empIdVariants(trimmed) } }).limit(2);
+    return byEmpId.length === 1 ? byEmpId[0] : null;
+}
+
+// The roster stores รหัสพนักงาน exactly as the HR export spelled it, while the
+// import derives the default password by zero-padding it to 8 digits — so
+// people have seen their id both ways and will type either. Match on any
+// numerically-equal spelling; two accounts whose ids differ only in leading
+// zeros come back as an ambiguous pair and are refused above, so widening the
+// query cannot hand anyone someone else's account.
+function empIdVariants(value) {
+    if (!/^\d+$/.test(value)) return [value];
+    const stripped = value.replace(/^0+(?=\d)/, '');
+    return [...new Set([value, stripped, stripped.padStart(8, '0')])];
+}
+
 async function login(username, password) {
-    const user = await User.findOne({ username });
+    const user = await findByIdentifier(username);
     if (!user || !(await user.comparePassword(password))) {
         onLoginFailure(username);
         const err = new Error('Invalid credentials');
@@ -52,4 +94,4 @@ async function register({ username, password, role, fullName }) {
     return user;
 }
 
-module.exports = { login, register, getProfile };
+module.exports = { login, register, getProfile, findByIdentifier };
