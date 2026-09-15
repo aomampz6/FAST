@@ -4,6 +4,8 @@ import {
     ArrowLeft,
     AtSign,
     Building2,
+    CheckCircle2,
+    Clock,
     Eye,
     EyeOff,
     Hash,
@@ -59,6 +61,22 @@ function formatExpiry(expSeconds) {
         date: at.toLocaleDateString('th-TH'),
         time: at.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }),
     };
+}
+
+// Mirrors AdminFeedbackTab's own resolve/new badge so a technician sees the
+// same status the admin sees on their side — "resolved" here specifically
+// means an admin has already acted on this suggestion (see the ทำเครื่องหมาย
+// ว่าเรียบร้อยแล้ว button in AdminFeedbackTab), not just that the row was
+// opened.
+function FeedbackStatusBadge({ status }) {
+    const isResolved = status === 'resolved';
+    const Icon = isResolved ? CheckCircle2 : Clock;
+    return (
+        <span className={`profile-feedback-status ${isResolved ? 'is-resolved' : 'is-pending'}`}>
+            <Icon size={13} aria-hidden="true" />
+            {isResolved ? 'แอดมินดำเนินการแก้ไขให้แล้ว' : 'รอผู้ดูแลระบบตรวจสอบ'}
+        </span>
+    );
 }
 
 function DetailRow({ icon: Icon, label, value, children }) {
@@ -230,7 +248,10 @@ export default function ProfilePage() {
                         {myFeedback.map((f) => (
                             <div key={f._id} className="profile-feedback-item">
                                 <div className="profile-feedback-meta">
-                                    <span className="profile-feedback-scope">{SCOPE_LABEL[f.scope] || f.scope}</span>
+                                    <span className="profile-feedback-scope-group">
+                                        <span className="profile-feedback-scope">{SCOPE_LABEL[f.scope] || f.scope}</span>
+                                        <FeedbackStatusBadge status={f.status} />
+                                    </span>
                                     <span className="profile-feedback-side">
                                         <span className="profile-feedback-rating">
                                             <Star size={13} color="var(--nt-yellow)" fill="var(--nt-yellow)" />

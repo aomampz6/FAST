@@ -311,10 +311,46 @@
     gap: 8px;
 }
 
+.profile-feedback-scope-group {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
 .profile-feedback-scope {
     font-size: 13px;
     font-weight: 600;
     color: var(--text-primary);
+}
+
+/* Tells a technician whether an admin has already acted on this suggestion —
+   same "new"/"resolved" status AdminFeedbackTab shows, from the technician's
+   side of it. Colors are intentionally the reverse of admin's fb-badge-new
+   (amber = needs attention there): here "resolved" is the good outcome, so it
+   gets the positive color and "pending" stays neutral rather than alarming. */
+.profile-feedback-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.3;
+    white-space: nowrap;
+}
+
+.profile-feedback-status.is-resolved {
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--success, #10b981);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.profile-feedback-status.is-pending {
+    background: var(--bg-surface);
+    color: var(--text-tertiary);
+    border: 1px solid var(--border-light);
 }
 
 .profile-feedback-side {
