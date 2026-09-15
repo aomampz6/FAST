@@ -211,9 +211,29 @@ export const ResizableImage = Image.extend({
             sep1.className = 'rte-image-toolbar-sep';
             toolbar.appendChild(sep1);
 
-            /** Width of the area the image can occupy, used by the presets. */
+            /**
+             * Width of the area the image can occupy, used by the presets.
+             *
+             * `editor.view` is a getter that *throws* (not returns undefined)
+             * until ProseMirror's view finishes constructing — and a node view
+             * for an image already present in the editor's initial content is
+             * built synchronously as part of that same construction, so this
+             * can run before `editor.view` exists. That crashed here uncaught,
+             * which — with no error boundary anywhere in the app — unmounted
+             * the whole page to blank white on every admin who reopened a
+             * Scom/ONU/ATA/AP step that already had an image in it. Returning
+             * null instead lets render() skip the size-preset highlight for
+             * this one paint; the node view's update() hook re-runs render()
+             * on the very next transaction, by which point the view always
+             * exists, so the highlight self-corrects immediately.
+             */
             function contentWidth() {
-                const editable = editor.view.dom;
+                let editable;
+                try {
+                    editable = editor.view.dom;
+                } catch {
+                    return null;
+                }
                 const style = window.getComputedStyle(editable);
                 const inner =
                     editable.clientWidth - parseFloat(style.paddingLeft || 0) - parseFloat(style.paddingRight || 0);
@@ -291,11 +311,15 @@ export const ResizableImage = Image.extend({
                 alignButtons.forEach((btn, i) => btn.classList.toggle('active', ALIGNMENTS[i] === align));
                 frameButton.classList.toggle('active', Boolean(attrs.frame));
                 // No preset is "current" unless the width matches one, which is
-                // the common case right after clicking it.
+                // the common case right after clicking it. `target` is null on
+                // the very first paint of an image that was already in the
+                // editor's initial content (see contentWidth's comment) — none
+                // of the presets highlight for that one frame, correcting
+                // itself on the node view's next update().
                 const target = contentWidth();
                 sizeButtons.forEach((btn, i) => {
-                    const expected = Math.round(target * SIZE_PRESETS[i].ratio);
-                    btn.classList.toggle('active', Boolean(attrs.width) && Math.abs(attrs.width - expected) <= 2);
+                    const expected = target != null ? Math.round(target * SIZE_PRESETS[i].ratio) : null;
+                    btn.classList.toggle('active', expected != null && Boolean(attrs.width) && Math.abs(attrs.width - expected) <= 2);
                 });
             }
 
