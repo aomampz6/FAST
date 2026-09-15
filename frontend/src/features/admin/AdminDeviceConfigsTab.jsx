@@ -74,6 +74,7 @@ export default function AdminDeviceConfigsTab({ deviceType }) {
     const [formError, setFormError] = useState(null);
     const [imageFiles, setImageFiles] = useState({});
     const [search, setSearch] = useState('');
+    const [modelFilter, setModelFilter] = useState('all');
     const [page, setPage] = useState(1);
     // Brand and Model are picked from what already exists; these flip the
     // matching box back to a text input when the admin adds a new one.
@@ -117,25 +118,36 @@ export default function AdminDeviceConfigsTab({ deviceType }) {
     );
     const modeOptions = useMemo(() => topicsForDeviceType.map((t) => t.Label), [topicsForDeviceType]);
 
+    // Distinct model names already saved for this device type, across every
+    // brand — the list-level filter dropdown, separate from `modelOptions`
+    // above (which narrows to the "add new" form's currently-picked Brand).
+    const modelFilterOptions = useMemo(() => {
+        const set = new Set(
+            configs.filter((c) => (c.DeviceType || 'ONU') === deviceType && c.Model).map((c) => c.Model)
+        );
+        return Array.from(set).sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
+    }, [configs, deviceType]);
+
     const filteredConfigs = useMemo(() => {
         let base = configs.filter((c) => (c.DeviceType || 'ONU') === deviceType);
+        if (modelFilter !== 'all') base = base.filter((c) => c.Model === modelFilter);
         const q = normalize(search.trim());
         if (q) {
             base = base.filter((c) => [c.Brand, c.Model, c.Mode].some((field) => normalize(field).includes(q)));
         }
         return base;
-    }, [configs, deviceType, search]);
+    }, [configs, deviceType, modelFilter, search]);
 
     const totalPages = Math.max(1, Math.ceil(filteredConfigs.length / PAGE_SIZE));
     const pagedConfigs = filteredConfigs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
     const rangeStart = filteredConfigs.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
     const rangeEnd = Math.min(page * PAGE_SIZE, filteredConfigs.length);
 
-    // Reset to page 1 whenever the search term changes so a filter never
-    // leaves the view stranded on a now-empty later page.
+    // Reset to page 1 whenever a filter changes so it never leaves the view
+    // stranded on a now-empty later page.
     useEffect(() => {
         setPage(1);
-    }, [search]);
+    }, [search, modelFilter]);
 
     function startEdit(item) {
         setEditingId(item._id);
@@ -608,13 +620,28 @@ export default function AdminDeviceConfigsTab({ deviceType }) {
                                 <span className="admin-count-badge">{filteredConfigs.length} รายการ</span>
                             </div>
                             <p className="admin-card-subtitle">
-                                {!search.trim() && 'แสดงรายการล่าสุด'}
-                                {search.trim() && `พบ ${filteredConfigs.length} รายการที่ตรงกับการค้นหา`}
+                                {modelFilter === 'all' && !search.trim() && 'แสดงรายการล่าสุด'}
+                                {modelFilter !== 'all' && `รุ่น "${modelFilter}" ${filteredConfigs.length} รายการ`}
+                                {search.trim() &&
+                                    `${modelFilter !== 'all' ? ' · ' : ''}พบ ${filteredConfigs.length} รายการที่ตรงกับการค้นหา`}
                                 {filteredConfigs.length > PAGE_SIZE && ` · หน้า ${page}/${totalPages}`}
                             </p>
                         </div>
                     </div>
                     <div className="admin-scoms-filters">
+                        <select
+                            className="admin-group-filter"
+                            value={modelFilter}
+                            onChange={(e) => setModelFilter(e.target.value)}
+                            aria-label="กรองตามรุ่น"
+                        >
+                            <option value="all">ทุกรุ่น</option>
+                            {modelFilterOptions.map((m) => (
+                                <option key={m} value={m}>
+                                    {m}
+                                </option>
+                            ))}
+                        </select>
                         <div className="admin-search-box">
                             <Search size={16} className="admin-search-icon" />
                             <input
@@ -719,10 +746,18 @@ export default function AdminDeviceConfigsTab({ deviceType }) {
                             <p>
                                 {search.trim()
                                     ? `ไม่พบรายการที่ตรงกับ "${search}"`
-                                    : `ยังไม่มีข้อมูลการตั้งค่า ${deviceType}`}
+                                    : modelFilter !== 'all'
+                                      ? `ไม่พบรายการในรุ่น "${modelFilter}"`
+                                      : `ยังไม่มีข้อมูลการตั้งค่า ${deviceType}`}
                             </p>
-                            {search.trim() && (
-                                <button type="button" onClick={() => setSearch('')}>
+                            {(search.trim() || modelFilter !== 'all') && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setSearch('');
+                                        setModelFilter('all');
+                                    }}
+                                >
                                     ล้างตัวกรอง
                                 </button>
                             )}
