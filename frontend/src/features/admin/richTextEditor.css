@@ -405,7 +405,7 @@
     border: 1px solid var(--border-color);
     background-color: var(--bg-surface);
     box-shadow: var(--shadow-md);
-    font-family: 'Prompt', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Prompt', 'Noto Sans Thai', -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
 }
 
 :root[data-theme='dark'] .rte-table-menu {
