@@ -97,15 +97,21 @@ function extractSteps(raw) {
 function buildChecklist(item) {
     const checks = [];
     if (item.CheckPoint) {
-        checks.push({ title: null, text: String(item.CheckPoint).replace(/"/g, '') });
+        checks.push({ title: null, text: String(item.CheckPoint).replace(/"/g, ''), isHtml: false });
     }
     if (item.StepItems?.length > 0) {
         item.StepItems.forEach((step) => {
             const hasContent = step.StepTitle?.trim() || step.Description?.replace(/<[^>]*>/g, '').trim();
-            if (hasContent) checks.push({ title: step.StepTitle || null, text: step.Description || '' });
+            // Description always comes from the admin's rich text editor (see
+            // ScomFormBody), so it's HTML whether or not this particular step
+            // happens to have a title — a step with an empty StepTitle is not
+            // a plain-text step, it's an HTML step whose title is blank.
+            if (hasContent) checks.push({ title: step.StepTitle || null, text: step.Description || '', isHtml: true });
         });
     } else if (item.Steps) {
-        extractSteps(item.Steps).forEach((text) => checks.push({ title: null, text }));
+        // extractSteps() already reduces this legacy blob to plain text
+        // (.textContent of each <p>/<li>), so it is genuinely plain text here.
+        extractSteps(item.Steps).forEach((text) => checks.push({ title: null, text, isHtml: false }));
     }
     return checks;
 }
@@ -409,19 +415,17 @@ export default function TroubleshootPage() {
                                         <li className="sg-step" key={i}>
                                             <span className="sg-step-node">{i + 1}</span>
                                             <span className="sg-step-text">
-                                                {check.title ? (
-                                                    <>
-                                                        <strong className="sg-step-title">{check.title}</strong>
-                                                        <span
-                                                            className="sg-step-description rich-text-content"
-                                                            dangerouslySetInnerHTML={{
-                                                                __html: DOMPurify.sanitize(check.text),
-                                                            }}
-                                                            onClick={(e) => {
-                                                                if (e.target.tagName === 'IMG') setLightboxSrc(e.target.src);
-                                                            }}
-                                                        />
-                                                    </>
+                                                {check.title && <strong className="sg-step-title">{check.title}</strong>}
+                                                {check.isHtml ? (
+                                                    <span
+                                                        className="sg-step-description rich-text-content"
+                                                        dangerouslySetInnerHTML={{
+                                                            __html: DOMPurify.sanitize(check.text),
+                                                        }}
+                                                        onClick={(e) => {
+                                                            if (e.target.tagName === 'IMG') setLightboxSrc(e.target.src);
+                                                        }}
+                                                    />
                                                 ) : (
                                                     check.text
                                                 )}
