@@ -116,6 +116,37 @@ const FONT_FAMILIES = [
 ];
 
 /**
+ * Strips `font-family` out of inline `style="..."` attributes on HTML pasted
+ * from an external source (Word/Outlook/Google Docs are the common culprits).
+ * Those pastes come attached to fonts like "Cordia New", "Angsana New", or
+ * Calibri that this app never loads — left in place, the browser can't find
+ * the font and falls back to the OS's own default serif/sans-serif instead of
+ * the app's Prompt stack, so pasted text visibly stops matching everything
+ * else on the page (this shipped for real: see the four ONU setup guides
+ * fixed alongside this change). Every other inline style (font-size, bold,
+ * color, ...) is left untouched — only font-family is presumed to be paste
+ * debris, never something worth keeping from an external source.
+ *
+ * Deliberate choices made through this editor's own "รูปแบบตัวอักษร" dropdown
+ * are unaffected: those are applied to the document afterwards, as the admin
+ * picks them, not baked into HTML that arrives via paste.
+ */
+function stripPastedFontFamily(html) {
+    return html.replace(/\s*style="([^"]*)"/gi, (full, rawStyleContent) => {
+        // The style attribute is itself inside a double-quoted HTML
+        // attribute, so a literal quote around a font name (e.g. "Cordia
+        // New") arrives HTML-escaped as `&quot;` — decode that first so
+        // splitting on `;` doesn't cut through the entity's own `;`.
+        const styleContent = rawStyleContent.replace(/&quot;/g, '"');
+        const decls = styleContent.split(';').map((s) => s.trim()).filter(Boolean);
+        const kept = decls.filter((decl) => !/^font-family\s*:/i.test(decl));
+        if (kept.length === 0) return '';
+        const rebuilt = kept.join('; ').replace(/"/g, '&quot;');
+        return ` style="${rebuilt}"`;
+    });
+}
+
+/**
  * Rich text editor for the ONU config "Details" field. Renders to/from an
  * HTML string (same shape the field already stored as plain text, now with
  * markup) — the caller owns that string via `value`/`onChange`.
@@ -214,6 +245,7 @@ export default function RichTextEditor({
 
     const editorProps = useMemo(
         () => ({
+            transformPastedHTML: stripPastedFontFamily,
             handlePaste: (view, event) => {
                 if (!onUploadImageRef.current) return false;
                 const file = Array.from(event.clipboardData?.files || []).find((f) => f.type.startsWith('image/'));
