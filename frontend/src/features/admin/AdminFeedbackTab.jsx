@@ -29,6 +29,11 @@ export default function AdminFeedbackTab() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [scopeFilter, setScopeFilter] = useState('all');
+    // Which queue is showing — "ทำเครื่องหมายว่าเรียบร้อย" no longer just
+    // relabels a row in place, it moves the item out of view entirely: once
+    // resolved, an item only shows up under the "ดำเนินการแล้ว" tab. Starts on
+    // "new" so an admin opening this page lands on the queue that needs them.
+    const [statusFilter, setStatusFilter] = useState('new');
     const [resolvingId, setResolvingId] = useState(null);
     const [deletingId, setDeletingId] = useState(null);
 
@@ -44,8 +49,11 @@ export default function AdminFeedbackTab() {
             .finally(() => setLoading(false));
     }, []);
 
-    // Updated in place, never re-sorted — createdAt (and therefore the
-    // "newest first" order the list was fetched in) never changes here.
+    // Updated in place in `feedback` (never re-sorted — createdAt, and
+    // therefore the "newest first" order the list was fetched in, never
+    // changes here), but the status flip alone is what moves the row out of
+    // the "ใหม่" tab and into "ดำเนินการแล้ว" — `filteredFeedback` re-derives
+    // from this on every render, so no separate "move it" step is needed.
     // One-way: once resolved there's no button to flip it back to "ใหม่".
     async function handleResolve(item) {
         setResolvingId(item._id);
@@ -97,10 +105,17 @@ export default function AdminFeedbackTab() {
         return map;
     }, [scoms, configs]);
 
-    const filteredFeedback = useMemo(
-        () => (scopeFilter === 'all' ? feedback : feedback.filter((f) => f.scope === scopeFilter)),
-        [feedback, scopeFilter]
+    const newCount = useMemo(
+        () => feedback.filter((f) => (f.status || 'new') === 'new').length,
+        [feedback]
     );
+    const resolvedCount = feedback.length - newCount;
+
+    const filteredFeedback = useMemo(() => {
+        let base = feedback.filter((f) => (f.status || 'new') === statusFilter);
+        if (scopeFilter !== 'all') base = base.filter((f) => f.scope === scopeFilter);
+        return base;
+    }, [feedback, scopeFilter, statusFilter]);
 
     // A record can be deleted after someone left feedback on it, so a missing
     // title is normal: show the bare id and say so instead of linking to a page
@@ -150,8 +165,8 @@ export default function AdminFeedbackTab() {
                         <div>
                             <h3>คำแนะนำจากผู้ใช้งาน</h3>
                             <p className="admin-card-subtitle">
-                                {feedback.length} รายการทั้งหมด
-                                {scopeFilter !== 'all' && ` · ${SCOPE_LABEL[scopeFilter] || scopeFilter} ${filteredFeedback.length} รายการ`}
+                                {statusFilter === 'new' ? 'รอดำเนินการ' : 'ดำเนินการแล้ว'} {filteredFeedback.length} รายการ
+                                {scopeFilter !== 'all' && ` · ${SCOPE_LABEL[scopeFilter] || scopeFilter}`}
                             </p>
                         </div>
                     </div>
@@ -172,11 +187,33 @@ export default function AdminFeedbackTab() {
                     </div>
                 </div>
 
+                <div className="fb-status-tabs" role="tablist" aria-label="กรองตามสถานะการดำเนินการ">
+                    <button
+                        type="button"
+                        role="tab"
+                        aria-selected={statusFilter === 'new'}
+                        className={`fb-status-tab${statusFilter === 'new' ? ' active' : ''}`}
+                        onClick={() => setStatusFilter('new')}
+                    >
+                        <Sparkles size={13} /> ใหม่
+                        <span className="fb-status-tab-count">{newCount}</span>
+                    </button>
+                    <button
+                        type="button"
+                        role="tab"
+                        aria-selected={statusFilter === 'resolved'}
+                        className={`fb-status-tab${statusFilter === 'resolved' ? ' active' : ''}`}
+                        onClick={() => setStatusFilter('resolved')}
+                    >
+                        <Check size={13} /> ดำเนินการแล้ว
+                        <span className="fb-status-tab-count">{resolvedCount}</span>
+                    </button>
+                </div>
+
                 <div className="table-scroll">
                     <table className="data-table">
                         <thead>
                             <tr>
-                                <th>สถานะ</th>
                                 <th>วันที่</th>
                                 <th>ประเภท</th>
                                 <th>เนื้อหาที่ให้คำแนะนำ</th>
@@ -191,17 +228,6 @@ export default function AdminFeedbackTab() {
                                 const isNew = (f.status || 'new') === 'new';
                                 return (
                                     <tr key={f._id}>
-                                        <td>
-                                            <span className={`fb-badge ${isNew ? 'fb-badge-new' : 'fb-badge-read'}`}>
-                                                {isNew ? (
-                                                    <>
-                                                        <Sparkles size={12} /> ใหม่
-                                                    </>
-                                                ) : (
-                                                    'อ่านแล้ว'
-                                                )}
-                                            </span>
-                                        </td>
                                         <td style={{ whiteSpace: 'nowrap' }}>{formatDate(f.createdAt)}</td>
                                         <td>{SCOPE_LABEL[f.scope] || f.scope}</td>
                                         <td>{renderRefCell(f)}</td>
@@ -242,7 +268,17 @@ export default function AdminFeedbackTab() {
                     {filteredFeedback.length === 0 && (
                         <div className="admin-empty-state">
                             <Inbox size={32} />
-                            <p>{feedback.length === 0 ? 'ยังไม่มีคำแนะนำจากผู้ใช้งาน' : 'ไม่พบรายการในประเภทนี้'}</p>
+                            <p>
+                                {feedback.length === 0
+                                    ? 'ยังไม่มีคำแนะนำจากผู้ใช้งาน'
+                                    : statusFilter === 'new'
+                                      ? scopeFilter === 'all'
+                                          ? 'ไม่มีคำแนะนำที่รอดำเนินการ — ตรวจสอบครบแล้วทุกรายการ'
+                                          : `ไม่มีคำแนะนำที่รอดำเนินการในประเภท "${SCOPE_LABEL[scopeFilter] || scopeFilter}"`
+                                      : scopeFilter === 'all'
+                                        ? 'ยังไม่มีรายการที่ดำเนินการแล้ว'
+                                        : `ยังไม่มีรายการที่ดำเนินการแล้วในประเภท "${SCOPE_LABEL[scopeFilter] || scopeFilter}"`}
+                            </p>
                         </div>
                     )}
                 </div>
