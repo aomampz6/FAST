@@ -11,13 +11,16 @@ function formatDate(value) {
     return new Date(value).toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' });
 }
 
-// Which user-facing page a piece of feedback was left on. The pages read the
-// `?ref=` query themselves and open that record straight away.
+// Where "เนื้อหาที่ให้คำแนะนำ" links to for each scope — the *admin* editor
+// for that record, not the user-facing page a technician would see. Each
+// target page reads `?editId=` itself and opens straight into edit mode (see
+// AdminScomsTab / AdminDeviceConfigsTab), so an admin lands ready to fix the
+// thing a user complained about instead of just viewing it.
 const SCOPE_PATH = {
-    troubleshoot: '/troubleshoot',
-    'onu-setup': '/onu-setup',
-    'ata-setup': '/ata-setup',
-    'ap-setup': '/ap-setup',
+    troubleshoot: '/admin/scoms',
+    'onu-setup': '/admin/onu-configs',
+    'ata-setup': '/admin/ata-configs',
+    'ap-setup': '/admin/ap-configs',
 };
 
 // Read-only except for triage (resolve/delete) — admins only view what users
@@ -134,7 +137,7 @@ export default function AdminFeedbackTab() {
         }
 
         return (
-            <Link className="fb-ref-link" to={`${path}?ref=${encodeURIComponent(f.refId)}`} title={f.refId}>
+            <Link className="fb-ref-link" to={`${path}?editId=${encodeURIComponent(f.refId)}`} title={f.refId}>
                 {label}
                 <ExternalLink size={13} aria-hidden="true" />
             </Link>

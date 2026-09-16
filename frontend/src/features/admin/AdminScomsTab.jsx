@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
     Wrench,
     ListChecks,
@@ -61,6 +62,7 @@ function getPageNumbers(current, total) {
 
 export default function AdminScomsTab() {
     const { scoms, loading, error, refresh, createScom, updateScom, deleteScom } = useScoms();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [form, setForm] = useState(emptyForm);
     const [formStep, setFormStep] = useState(1);
     const [newGroupInput, setNewGroupInput] = useState('');
@@ -74,6 +76,24 @@ export default function AdminScomsTab() {
     // holding the full record (not just an id) lets the modal seed its own
     // form state without waiting on a lookup.
     const [editingItem, setEditingItem] = useState(null);
+
+    // `?editId=<scom id or legacy ID code>` opens that record's edit modal
+    // straight away — AdminFeedbackTab's "เนื้อหาที่ให้คำแนะนำ" link uses this
+    // so an admin lands ready to fix the thing a user complained about,
+    // instead of just viewing the same page a technician would see. Matched
+    // on both keys because feedback.refId can hold either (see
+    // TroubleshootPage: it submits `active._id || active.ID`).
+    useEffect(() => {
+        const editId = searchParams.get('editId');
+        if (!editId || scoms.length === 0) return;
+
+        const target = scoms.find((s) => String(s._id) === editId || String(s.ID) === editId);
+        if (target) setEditingItem(target);
+
+        const next = new URLSearchParams(searchParams);
+        next.delete('editId');
+        setSearchParams(next, { replace: true });
+    }, [scoms, searchParams, setSearchParams]);
 
     const groupOptions = useMemo(() => {
         const seen = new Set();

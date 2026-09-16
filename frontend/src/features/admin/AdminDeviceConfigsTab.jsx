@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
     ArrowDown,
     ArrowUp,
@@ -68,6 +69,7 @@ export default function AdminDeviceConfigsTab({ deviceType }) {
         updateModeTopic,
         deleteModeTopic,
     } = useModeTopics();
+    const [searchParams, setSearchParams] = useSearchParams();
     const emptyForm = { Brand: '', Model: '', Mode: '', Details: '', Hidden: false, DeviceType: deviceType };
     const [form, setForm] = useState(emptyForm);
     const [editingId, setEditingId] = useState(null);
@@ -148,6 +150,31 @@ export default function AdminDeviceConfigsTab({ deviceType }) {
     useEffect(() => {
         setPage(1);
     }, [search, modelFilter]);
+
+    // `?editId=<config id>` opens that record straight into the edit form —
+    // AdminFeedbackTab's "เนื้อหาที่ให้คำแนะนำ" link uses this so an admin
+    // lands ready to fix the thing a user complained about, instead of just
+    // viewing the page a technician would see. Waits on both configs and
+    // topics (startEdit reads topicsForDeviceType to decide whether Mode
+    // needs the free-text fallback box) so it doesn't run against a
+    // still-empty topic list and misjudge that. Matches on DeviceType too,
+    // not just id, so a stray link never opens this tab's form with a record
+    // that actually belongs to a different device type's tab.
+    useEffect(() => {
+        const editId = searchParams.get('editId');
+        if (!editId || loading || topicsLoading) return;
+
+        const target = configs.find((c) => String(c._id) === editId && (c.DeviceType || 'ONU') === deviceType);
+        if (target) startEdit(target);
+
+        const next = new URLSearchParams(searchParams);
+        next.delete('editId');
+        setSearchParams(next, { replace: true });
+        // startEdit is intentionally excluded — it's redefined every render,
+        // and depending on it would re-run this effect on every keystroke in
+        // the form it opens.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [configs, loading, topicsLoading, deviceType, searchParams, setSearchParams]);
 
     function startEdit(item) {
         setEditingId(item._id);
