@@ -27,6 +27,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useScoms } from './useScoms';
 import { submitFeedback } from '../feedback/feedbackService';
 import { useFirstFeedbackGate } from '../../shared/hooks/useFirstFeedbackGate';
+import { useNavigationGate } from '../../shared/navigation/NavigationGateContext';
 import SuccessPopup from '../../components/SuccessPopup';
 import ImageZoomModal from '../../components/ImageZoomModal';
 import './symptomGuide.css';
@@ -123,6 +124,7 @@ export default function TroubleshootPage() {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const { isRequired, markDone } = useFirstFeedbackGate();
+    const { setActive: setNavGateActive, registerNudge } = useNavigationGate();
 
     const [selectedGroup, setSelectedGroup] = useState(null);
     const [search, setSearch] = useState('');
@@ -216,6 +218,24 @@ export default function TroubleshootPage() {
         feedbackRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         setTimeout(() => setGateShake(false), 1500);
     }
+
+    // Reports this page's gate state up to Layout's sidebar (see
+    // NavigationGateContext) so a blocked sidebar click gets the same shake
+    // as clicking "กลับหน้าหมวดหมู่" below while gated — only actually
+    // "active" once a group is open (feedbackRequired alone is true from the
+    // moment the account has never given feedback, even on the plain
+    // category grid, where there's no feedback form to block leaving from).
+    useEffect(() => {
+        setNavGateActive(Boolean(selectedGroup) && feedbackRequired);
+        registerNudge(triggerGateShake);
+        return () => {
+            setNavGateActive(false);
+            registerNudge(null);
+        };
+        // triggerGateShake closes over feedbackRef/setGateShake, both stable
+        // across renders, so it's safe to leave out of the deps below.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedGroup, feedbackRequired, setNavGateActive, registerNudge]);
 
     // Leaving the detail view used to be blocked by not letting its bottom
     // sheet close; there's no sheet anymore, so the same rule now guards

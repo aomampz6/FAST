@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import DOMPurify from 'dompurify';
 import {
@@ -22,6 +22,7 @@ import { useGuides } from '../guides/useGuides';
 import { readGuide } from '../guides/guidesService';
 import { submitFeedback } from '../feedback/feedbackService';
 import { useFirstFeedbackGate } from '../../shared/hooks/useFirstFeedbackGate';
+import { useNavigationGate } from '../../shared/navigation/NavigationGateContext';
 import { RoleGate } from '../../shared/auth/access';
 import SuccessPopup from '../../components/SuccessPopup';
 import ImageZoomModal from '../../components/ImageZoomModal';
@@ -62,6 +63,7 @@ export default function OnuSetupPage({ deviceType = 'ONU' }) {
     const { topics: modeTopics } = useModeTopics();
     const { guides } = useGuides();
     const { isRequired, markDone } = useFirstFeedbackGate();
+    const { setActive: setNavGateActive, registerNudge } = useNavigationGate();
 
     const [stage, setStage] = useState('home');
     const [selectedBrand, setSelectedBrand] = useState(null);
@@ -69,6 +71,7 @@ export default function OnuSetupPage({ deviceType = 'ONU' }) {
     const [selectedMode, setSelectedMode] = useState(null);
     const [guideContent, setGuideContent] = useState(null);
     const [lightboxSrc, setLightboxSrc] = useState(null);
+    const feedbackRef = useRef(null);
 
     const [rating, setRating] = useState(5);
     const [comment, setComment] = useState('');
@@ -210,7 +213,21 @@ export default function OnuSetupPage({ deviceType = 'ONU' }) {
         setSelectedMode(topic);
     }
 
+    function triggerGateShake() {
+        setGateShake(true);
+        feedbackRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => setGateShake(false), 1500);
+    }
+
+    // Previously this had no gate at all — a user could always bail out to
+    // the brand/model grid without ever submitting their required first
+    // feedback, bypassing closeDetail's own check entirely. Mirrors
+    // TroubleshootPage's backToGroup.
     function backToHome() {
+        if (selectedMode && feedbackRequired) {
+            triggerGateShake();
+            return;
+        }
         setStage('home');
         setSelectedBrand(null);
         setSelectedModel(null);
@@ -222,12 +239,28 @@ export default function OnuSetupPage({ deviceType = 'ONU' }) {
         setSelectedMode(null);
     }
 
+    // Reports this page's gate state up to Layout's sidebar (see
+    // NavigationGateContext) — active only once a Mode's content is actually
+    // open (feedbackRequired alone is true from the moment the account has
+    // never given feedback, even on the brand/model picker, where there's no
+    // feedback form yet to block leaving from).
+    useEffect(() => {
+        setNavGateActive(Boolean(selectedMode) && feedbackRequired);
+        registerNudge(triggerGateShake);
+        return () => {
+            setNavGateActive(false);
+            registerNudge(null);
+        };
+        // triggerGateShake closes over feedbackRef/setGateShake, both stable
+        // across renders, so it's safe to leave out of the deps below.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedMode, feedbackRequired, setNavGateActive, registerNudge]);
+
     async function handleFeedback(e) {
         e.preventDefault();
 
         if (feedbackRequired && !comment.trim()) {
-            setGateShake(true);
-            setTimeout(() => setGateShake(false), 500);
+            triggerGateShake();
             return;
         }
 
@@ -447,7 +480,7 @@ export default function OnuSetupPage({ deviceType = 'ONU' }) {
                                     </RoleGate>
                                 )}
 
-                                <div className="feedback-panel" style={{ marginTop: 20 }}>
+                                <div className="feedback-panel" style={{ marginTop: 20 }} ref={feedbackRef}>
                                     <div className="feedback-section">
                                         <div className="feedback-label">
                                             <MessageCircle size={16} /> คำแนะนำเพิ่มเติมจากผู้ใช้งาน{' '}

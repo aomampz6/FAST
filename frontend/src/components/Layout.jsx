@@ -20,6 +20,7 @@ import { useAuth } from '../shared/auth/AuthContext';
 import { toTitleCase } from '../shared/format/names';
 import { RoleGate } from '../shared/auth/access';
 import { useTheme } from '../shared/hooks/useTheme';
+import { NavigationGateProvider, useNavigationGate } from '../shared/navigation/NavigationGateContext';
 
 const PAGE_TITLES = [
     { path: '/troubleshoot', title: 'ตรวจสอบและแก้ไขงานเสีย' },
@@ -43,13 +44,41 @@ const ROLE_LABEL = {
     user: 'ช่างเทคนิค',
 };
 
-export default function Layout() {
+// Wrapped by the default export below so both this component's sidebar and
+// the routed pages inside its <Outlet> (TroubleshootPage, OnuSetupPage, ...)
+// sit inside the same NavigationGateProvider — a gated page reports itself
+// upward through that context, this component reads it back down to decide
+// whether to block a sidebar click. See NavigationGateContext for why a
+// page's own in-content "back" button guard can't reach the sidebar on its
+// own.
+function LayoutInner() {
     const { role, logout, fullName } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const [collapsed, setCollapsed] = useState(false);
     const [mobileNavOpen, setMobileNavOpen] = useState(false);
     const [theme, toggleTheme] = useTheme();
+    const { active: feedbackGateActive, requestNudge } = useNavigationGate();
+
+    // Only "ผู้ใช้งานทั่วไป" (technicians) are held to the first-feedback
+    // gate — ผู้ดูแลระบบ (admin) never needs to give feedback, so their
+    // sidebar never blocks regardless of what a gated page reports.
+    const navigationBlocked = role === 'user' && feedbackGateActive;
+
+    // Attach to every sidebar link that actually changes the route. Leaves
+    // ออกจากระบบ (logout) and the mobile/sidebar-collapse toggles alone on
+    // purpose — logging out is always allowed, and neither toggle navigates
+    // anywhere for this to block.
+    function guardNavClick(e) {
+        if (!navigationBlocked) return;
+        e.preventDefault();
+        // The mobile drawer would otherwise cover the page the nudge is
+        // trying to draw attention to — the non-blocked path doesn't need
+        // this because the location.pathname effect below already closes it
+        // once navigation actually happens.
+        setMobileNavOpen(false);
+        requestNudge();
+    }
 
     const isDeviceSetupRoute = DEVICE_SETUP_LINKS.some((link) => location.pathname.startsWith(link.path));
     const [deviceMenuOpen, setDeviceMenuOpen] = useState(isDeviceSetupRoute);
@@ -120,11 +149,11 @@ export default function Layout() {
                 </div>
 
                 <nav className="sidebar-nav">
-                    <NavLink to="/" end className="nav-item" data-label="หน้าหลัก">
+                    <NavLink to="/" end className="nav-item" data-label="หน้าหลัก" onClick={guardNavClick}>
                         <span className="nav-icon"><LayoutDashboard size={22} /></span>
                         <span>หน้าหลัก</span>
                     </NavLink>
-                    <NavLink to="/troubleshoot" className="nav-item" data-label="ตรวจสอบงานเสีย">
+                    <NavLink to="/troubleshoot" className="nav-item" data-label="ตรวจสอบงานเสีย" onClick={guardNavClick}>
                         <span className="nav-icon"><Wrench size={22} /></span>
                         <span>ตรวจสอบงานเสีย</span>
                     </NavLink>
@@ -142,18 +171,24 @@ export default function Layout() {
                         </button>
                         <div className={`nav-submenu${deviceMenuOpen ? ' open' : ''}`}>
                             {DEVICE_SETUP_LINKS.map(({ path, label, Icon }) => (
-                                <NavLink key={path} to={path} className="nav-item nav-subitem" data-label={label}>
+                                <NavLink
+                                    key={path}
+                                    to={path}
+                                    className="nav-item nav-subitem"
+                                    data-label={label}
+                                    onClick={guardNavClick}
+                                >
                                     <span className="nav-icon"><Icon size={18} /></span>
                                     <span>{label}</span>
                                 </NavLink>
                             ))}
                         </div>
                     </div>
-                    <NavLink to="/phonebook" className="nav-item" data-label="สมุดโทรศัพท์">
+                    <NavLink to="/phonebook" className="nav-item" data-label="สมุดโทรศัพท์" onClick={guardNavClick}>
                         <span className="nav-icon"><Phone size={22} /></span>
                         <span>สมุดโทรศัพท์</span>
                     </NavLink>
-                    <NavLink to="/profile" className="nav-item" data-label="ข้อมูลส่วนตัว">
+                    <NavLink to="/profile" className="nav-item" data-label="ข้อมูลส่วนตัว" onClick={guardNavClick}>
                         <span className="nav-icon"><User size={22} /></span>
                         <span>ข้อมูลส่วนตัว</span>
                     </NavLink>
@@ -214,5 +249,13 @@ export default function Layout() {
                 </main>
             </div>
         </div>
+    );
+}
+
+export default function Layout() {
+    return (
+        <NavigationGateProvider>
+            <LayoutInner />
+        </NavigationGateProvider>
     );
 }
