@@ -21,6 +21,7 @@ import { useModeTopics } from './useModeTopics';
 import { useGuides } from '../guides/useGuides';
 import { readGuide } from '../guides/guidesService';
 import { submitFeedback } from '../feedback/feedbackService';
+import { useAuth } from '../../shared/auth/AuthContext';
 import { useFirstFeedbackGate } from '../../shared/hooks/useFirstFeedbackGate';
 import { useNavigationGate } from '../../shared/navigation/NavigationGateContext';
 import { RoleGate } from '../../shared/auth/access';
@@ -60,6 +61,7 @@ function getTopicIcon(modeName) {
 export default function OnuSetupPage({ deviceType = 'ONU' }) {
     const [searchParams, setSearchParams] = useSearchParams();
     const { configs, loading, error } = useOnuConfigs();
+    const { role } = useAuth();
     const { topics: modeTopics } = useModeTopics();
     const { guides } = useGuides();
     const { isRequired, markDone } = useFirstFeedbackGate();
@@ -188,10 +190,14 @@ export default function OnuSetupPage({ deviceType = 'ONU' }) {
 
     // Recompute the first-time gate whenever a new config detail is opened —
     // mirrors archive/app.js calling needsFirstFeedback() at the top of
-    // showOnuConfigDetails() every time it renders.
+    // showOnuConfigDetails() every time it renders. ผู้ดูแลระบบ (admin) is
+    // never held to this gate — only ช่างเทคนิค (role 'user') is — so every
+    // consumer of feedbackRequired below (backToHome/closeDetail's block, the
+    // submit validation, the "* จำเป็น..." label) automatically respects that
+    // too, instead of each needing its own role check.
     useEffect(() => {
         if (selectedMode) {
-            setFeedbackRequired(isRequired());
+            setFeedbackRequired(role === 'user' && isRequired());
             setFeedbackStatus(null);
             setComment('');
             setRating(5);

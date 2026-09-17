@@ -26,6 +26,7 @@ import {
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useScoms } from './useScoms';
 import { submitFeedback } from '../feedback/feedbackService';
+import { useAuth } from '../../shared/auth/AuthContext';
 import { useFirstFeedbackGate } from '../../shared/hooks/useFirstFeedbackGate';
 import { useNavigationGate } from '../../shared/navigation/NavigationGateContext';
 import SuccessPopup from '../../components/SuccessPopup';
@@ -121,6 +122,7 @@ const FALLBACK_TIP = 'เคล็ดลับ: บันทึกค่าท�
 
 export default function TroubleshootPage() {
     const { scoms, loading, error } = useScoms();
+    const { role } = useAuth();
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const { isRequired, markDone } = useFirstFeedbackGate();
@@ -200,7 +202,12 @@ export default function TroubleshootPage() {
         setSearchParams(next, { replace: true });
     }, [scoms, searchParams, setSearchParams]);
 
-    const feedbackRequired = isRequired();
+    // ผู้ดูแลระบบ (admin) is never held to this gate — only ช่างเทคนิค (role
+    // 'user') is. Computing that here, in the one place feedbackRequired is
+    // derived, means every consumer below (backToGroup's block, the submit
+    // validation, the "* จำเป็น..." label) automatically respects it too,
+    // instead of each needing its own role check.
+    const feedbackRequired = role === 'user' && isRequired();
     const headerMeta = selectedGroup ? getGroupHeaderMeta(selectedGroup) : null;
     const active = symptomsInGroup[activeIndex] || null;
     const checks = active ? buildChecklist(active) : [];
