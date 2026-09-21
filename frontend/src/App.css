@@ -3457,6 +3457,48 @@ html[data-theme='dark'] .feedback-textarea::placeholder {
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
     touch-action: none;
     user-select: none;
+    -webkit-user-select: none;
+    /* Panning with one finger otherwise trips iOS's "Save Image" callout. */
+    -webkit-touch-callout: none;
+}
+
+/* The gesture hint is for touch only; `pointer: coarse` below turns it on, so
+   a mouse-driven desktop never renders it. */
+.image-zoom-hint {
+    display: none;
+}
+
+/* Touch devices (phones/tablets). Everything above is left as-is, so nothing
+   here reaches a desktop pointer. */
+@media (pointer: coarse) {
+    .image-zoom-toolbar {
+        top: calc(12px + env(safe-area-inset-top, 0px));
+        right: calc(12px + env(safe-area-inset-right, 0px));
+        gap: 4px;
+        padding: 6px 8px;
+    }
+
+    /* 34px is a cramped target for a fingertip. */
+    .image-zoom-toolbar button {
+        width: 42px;
+        height: 42px;
+    }
+
+    .image-zoom-hint {
+        display: block;
+        position: fixed;
+        left: 50%;
+        bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+        transform: translateX(-50%);
+        margin: 0;
+        padding: 7px 14px;
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.55);
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 12.5px;
+        white-space: nowrap;
+        pointer-events: none;
+    }
 }
 
 /* Rich-text content images (Details/Steps screenshots) get a hover/press
