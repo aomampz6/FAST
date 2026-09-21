@@ -245,6 +245,20 @@ export default function OnuSetupPage({ deviceType = 'ONU' }) {
         setSelectedMode(null);
     }
 
+    // The reference guide is rendered via srcDoc, which — with no `sandbox`
+    // attribute — loads as same-origin `about:srcdoc`, so its document is
+    // reachable here. Wire the same "click an IMG to zoom" behaviour used for
+    // the rich-text Details/Steps content, since a click inside the iframe
+    // never bubbles out to this page's own onClick handlers. Re-runs on every
+    // load (srcDoc change included), so nothing needs cleaning up between them.
+    function handleGuideIframeLoad(e) {
+        const doc = e.currentTarget.contentDocument;
+        if (!doc) return;
+        doc.addEventListener('click', (ev) => {
+            if (ev.target.tagName === 'IMG') setLightboxSrc(ev.target.src);
+        });
+    }
+
     // Reports this page's gate state up to Layout's sidebar (see
     // NavigationGateContext) — active only once a Mode's content is actually
     // open (feedbackRequired alone is true from the moment the account has
@@ -451,6 +465,7 @@ export default function OnuSetupPage({ deviceType = 'ONU' }) {
                                         <iframe
                                             title="คู่มือการตั้งค่า"
                                             srcDoc={guideContent}
+                                            onLoad={handleGuideIframeLoad}
                                             style={{
                                                 width: '100%',
                                                 height: 'clamp(480px, 85vh, 720px)',
