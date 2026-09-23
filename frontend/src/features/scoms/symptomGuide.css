@@ -348,6 +348,7 @@ html[data-theme='dark'] .sg-list li {
     list-style: none;
     display: flex;
     flex-direction: column;
+    gap: 12px;
 }
 
 .sg-step {
@@ -355,21 +356,16 @@ html[data-theme='dark'] .sg-list li {
     display: flex;
     align-items: flex-start;
     gap: 14px;
-    padding-bottom: 22px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: #eceff1;
+    border: 1px solid #d3d8dd;
 }
 
-.sg-step:last-child {
-    padding-bottom: 0;
-}
-
-.sg-step:not(:last-child)::before {
-    content: '';
-    position: absolute;
-    top: var(--sg-step-node-size);
-    bottom: 0;
-    left: calc(var(--sg-step-node-size) / 2 - 1px);
-    width: 2px;
-    background: var(--sg-accent-ring);
+:root[data-theme='dark'] .sg-step,
+html[data-theme='dark'] .sg-step {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.14);
 }
 
 .sg-step-node {
@@ -403,14 +399,24 @@ html[data-theme='dark'] .sg-list li {
 .sg-step-title {
     display: block;
     font-weight: 700;
-    color: var(--text-primary);
+    color: #1a1f24;
     margin-bottom: 4px;
 }
 
 .sg-step-description {
     display: block;
     font-size: 13px;
-    color: var(--text-secondary);
+    color: #3a4148;
+}
+
+:root[data-theme='dark'] .sg-step-title,
+html[data-theme='dark'] .sg-step-title {
+    color: #f5f6f7;
+}
+
+:root[data-theme='dark'] .sg-step-description,
+html[data-theme='dark'] .sg-step-description {
+    color: #cbd1d6;
 }
 
 .sg-step-end-text {
