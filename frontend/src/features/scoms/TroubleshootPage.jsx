@@ -316,6 +316,7 @@ export default function TroubleshootPage() {
                         <button type="button" className="back-btn" onClick={() => navigate('/dashboard')}>
                             <ArrowLeft size={20} /> กลับหน้าหลัก
                         </button>
+                        {/* ซ่อนช่องค้นหาไว้ก่อน
                         <div className="ts-search-wrap">
                             <Search size={20} className="ts-search-icon" />
                             <input
@@ -326,6 +327,7 @@ export default function TroubleshootPage() {
                                 onChange={(e) => setSearch(e.target.value)}
                             />
                         </div>
+                        */}
                     </div>
 
                     <h3 className="ts-section-title">
