@@ -68,6 +68,22 @@ export default function ImageZoomModal({ src, onClose }) {
     const viewRef = useRef(view);
     viewRef.current = view;
 
+    const overlayRef = useRef(null);
+    /** Latest handleWheel, so the native listener below never goes stale. */
+    const wheelRef = useRef(null);
+
+    // React binds onWheel as passive, so its preventDefault() is ignored and
+    // Ctrl+wheel / a laptop trackpad pinch zoomed the whole page instead of
+    // the picture. A native non-passive listener can actually cancel that.
+    // Wheel only comes from a mouse or trackpad, so touch is untouched.
+    useEffect(() => {
+        const el = overlayRef.current;
+        if (!el) return undefined;
+        const onWheel = (e) => wheelRef.current?.(e);
+        el.addEventListener('wheel', onWheel, { passive: false });
+        return () => el.removeEventListener('wheel', onWheel);
+    }, [src]);
+
     useEffect(() => {
         function onKeyDown(e) {
             if (e.key === 'Escape') onClose();
@@ -139,6 +155,7 @@ export default function ImageZoomModal({ src, onClose }) {
         e.preventDefault();
         zoomAt(viewRef.current.scale + (e.deltaY < 0 ? STEP : -STEP), e.clientX, e.clientY);
     }
+    wheelRef.current = handleWheel;
 
     function handleDoubleClick(e) {
         e.stopPropagation();
@@ -154,7 +171,12 @@ export default function ImageZoomModal({ src, onClose }) {
 
         if (pointers.size === 0) gestureRef.current = { moved: false, pinched: false };
         pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, startX: e.clientX, startY: e.clientY });
-        capturePointer(e.currentTarget, e.pointerId, false);
+        // Mouse is left uncaptured: capturing it on the overlay retargets the
+        // following click there too, so a click on the image read as a click
+        // on the backdrop and closed the viewer before a double-click could
+        // zoom. The overlay already covers the whole screen, so a mouse drag
+        // never leaves it anyway.
+        if (pointerTypeRef.current !== 'mouse') capturePointer(e.currentTarget, e.pointerId, false);
 
         if (pointers.size === 2) {
             const [a, b] = [...pointers.values()];
@@ -214,7 +236,7 @@ export default function ImageZoomModal({ src, onClose }) {
     function handlePointerUp(e) {
         const pointers = pointersRef.current;
         pointers.delete(e.pointerId);
-        capturePointer(e.currentTarget, e.pointerId, true);
+        if (pointerTypeRef.current !== 'mouse') capturePointer(e.currentTarget, e.pointerId, true);
 
         if (pointers.size < 2) pinchRef.current = null;
         if (pointers.size === 0) {
@@ -254,9 +276,9 @@ export default function ImageZoomModal({ src, onClose }) {
 
     return createPortal(
         <div
+            ref={overlayRef}
             className="image-zoom-overlay"
             onClick={handleOverlayClick}
-            onWheel={handleWheel}
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
@@ -288,6 +310,7 @@ export default function ImageZoomModal({ src, onClose }) {
                 }}
             />
             <p className="image-zoom-hint">ใช้สองนิ้วเพื่อซูม · แตะสองครั้งเพื่อขยาย</p>
+            <p className="image-zoom-hint-desktop">เลื่อนล้อเมาส์เพื่อซูม · ดับเบิลคลิกเพื่อขยาย · ลากเพื่อเลื่อนภาพ</p>
         </div>,
         document.body
     );

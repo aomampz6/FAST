@@ -3501,6 +3501,30 @@ html[data-theme='dark'] .feedback-textarea::placeholder {
     }
 }
 
+/* Desktop (mouse) counterpart of the touch hint above. Only `pointer: fine`
+   renders it, so phones and tablets never see it. */
+.image-zoom-hint-desktop {
+    display: none;
+}
+
+@media (pointer: fine) {
+    .image-zoom-hint-desktop {
+        display: block;
+        position: fixed;
+        left: 50%;
+        bottom: 18px;
+        transform: translateX(-50%);
+        margin: 0;
+        padding: 7px 14px;
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.55);
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 12.5px;
+        white-space: nowrap;
+        pointer-events: none;
+    }
+}
+
 /* Rich-text content images (Details/Steps screenshots) get a hover/press
    affordance so it's clear they're clickable to zoom. */
 .rich-text-content img {
