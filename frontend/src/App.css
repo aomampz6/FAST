@@ -3747,3 +3747,127 @@ html[data-theme='dark'] .feedback-textarea::placeholder {
 .app-crash-card button:hover {
     background: var(--nt-yellow-hover, #ffc700);
 }
+
+/* ---------------------------------------------------------------------- */
+/* PDF download (PdfDownloadButton / shared/pdf/exportPdf.js)              */
+/* ---------------------------------------------------------------------- */
+.pdf-download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    margin-left: auto;
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.pdf-download-btn:hover:not(:disabled) {
+    background: var(--nt-yellow);
+    border-color: var(--nt-yellow);
+    color: var(--nt-dark);
+}
+
+.pdf-download-btn:disabled {
+    opacity: 0.7;
+    cursor: progress;
+}
+
+.pdf-download-spin {
+    animation: pdfSpin 0.9s linear infinite;
+}
+
+@keyframes pdfSpin {
+    to { transform: rotate(360deg); }
+}
+
+@media (max-width: 480px) {
+    .pdf-download-btn span {
+        display: none;
+    }
+}
+
+/* Panel headers that carry the button: let a long topic title keep its
+   width and drop the button onto its own line instead of squeezing the
+   title to one word per line or pushing the button out of the card. */
+.sg-panel-header,
+.step-panel-header {
+    flex-wrap: wrap;
+}
+
+.sg-panel-header > div,
+.step-panel-header > .step-panel-title {
+    flex: 1 1 160px;
+    min-width: 0;
+}
+
+/* The off-screen copy that html2pdf rasterises. Theme tokens are pinned to
+   the light values so a dark-mode viewer still gets black-on-white paper,
+   and entry animations are disabled so the capture never catches a panel
+   mid-fade at opacity 0. */
+.pdf-export {
+    --bg-main: #f5f5f7;
+    --bg-surface: #ffffff;
+    --bg-surface-hover: #f9fafb;
+    --text-primary: #1d1d1f;
+    --text-secondary: #555559;
+    --text-tertiary: #86868b;
+    --border-color: #d2d2d7;
+    --border-light: rgba(210, 210, 215, 0.5);
+    --shadow-sm: none;
+    --shadow-md: none;
+    background: #ffffff;
+    color: #1d1d1f;
+    font-family: inherit;
+}
+
+.pdf-export,
+.pdf-export * {
+    animation: none !important;
+    transition: none !important;
+}
+
+.pdf-export > :not(.pdf-export-header) {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+}
+
+.pdf-export-header {
+    padding-bottom: 12px;
+    margin-bottom: 18px;
+    border-bottom: 3px solid #ffd100;
+}
+
+.pdf-export-brand {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #86868b;
+    text-transform: uppercase;
+}
+
+.pdf-export-title {
+    margin-top: 4px;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1d1d1f;
+}
+
+.pdf-export-meta {
+    margin-top: 4px;
+    font-size: 12px;
+    color: #555559;
+}
+
+.pdf-export img {
+    max-width: 100%;
+    cursor: default;
+}

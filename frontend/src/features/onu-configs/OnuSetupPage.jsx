@@ -27,6 +27,7 @@ import { useNavigationGate } from '../../shared/navigation/NavigationGateContext
 import { RoleGate } from '../../shared/auth/access';
 import SuccessPopup from '../../components/SuccessPopup';
 import ImageZoomModal from '../../components/ImageZoomModal';
+import PdfDownloadButton from '../../components/PdfDownloadButton';
 import '../admin/richTextEditor.css';
 
 function slug(value) {
@@ -74,6 +75,7 @@ export default function OnuSetupPage({ deviceType = 'ONU' }) {
     const [guideContent, setGuideContent] = useState(null);
     const [lightboxSrc, setLightboxSrc] = useState(null);
     const feedbackRef = useRef(null);
+    const panelRef = useRef(null);
 
     const [rating, setRating] = useState(5);
     const [comment, setComment] = useState('');
@@ -431,7 +433,7 @@ export default function OnuSetupPage({ deviceType = 'ONU' }) {
                                 <span>เลือกหัวข้อการตั้งค่าทางด้านซ้ายเพื่อดูรายละเอียด</span>
                             </div>
                         ) : (
-                            <div className="step-panel">
+                            <div className="step-panel" ref={panelRef}>
                                 <div className="step-panel-header">
                                     <span className="step-panel-badge">
                                         <Settings size={16} />
@@ -439,13 +441,21 @@ export default function OnuSetupPage({ deviceType = 'ONU' }) {
                                     <h4 className="step-panel-title">
                                         {selectedMode.Brand} — {selectedMode.Mode}
                                     </h4>
+                                    <PdfDownloadButton
+                                        targetRef={panelRef}
+                                        filename={[deviceType, selectedMode.Brand, selectedMode.Model, selectedMode.Mode]
+                                            .filter(Boolean)
+                                            .join(' ')}
+                                        title={[selectedMode.Brand, deviceType, selectedModel].filter(Boolean).join(' ')}
+                                        subtitle="คู่มือการตั้งค่าอุปกรณ์ปลายทาง"
+                                    />
                                     {!feedbackRequired && (
                                         <button
                                             type="button"
                                             className="icon-btn"
-                                            style={{ marginLeft: 'auto' }}
                                             onClick={closeDetail}
                                             aria-label="ปิด"
+                                            data-pdf-exclude
                                         >
                                             <X size={18} />
                                         </button>
@@ -454,6 +464,7 @@ export default function OnuSetupPage({ deviceType = 'ONU' }) {
 
                                 {guideContent && (
                                     <div
+                                        data-pdf-exclude
                                         style={{
                                             marginBottom: 16,
                                             borderRadius: 'var(--radius-md)',
@@ -501,7 +512,7 @@ export default function OnuSetupPage({ deviceType = 'ONU' }) {
                                     </RoleGate>
                                 )}
 
-                                <div className="feedback-panel" style={{ marginTop: 20 }} ref={feedbackRef}>
+                                <div className="feedback-panel" style={{ marginTop: 20 }} ref={feedbackRef} data-pdf-exclude>
                                     <div className="feedback-section">
                                         <div className="feedback-label">
                                             <MessageCircle size={16} /> คำแนะนำเพิ่มเติมจากผู้ใช้งาน{' '}

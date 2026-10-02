@@ -31,6 +31,7 @@ import { useFirstFeedbackGate } from '../../shared/hooks/useFirstFeedbackGate';
 import { useNavigationGate } from '../../shared/navigation/NavigationGateContext';
 import SuccessPopup from '../../components/SuccessPopup';
 import ImageZoomModal from '../../components/ImageZoomModal';
+import PdfDownloadButton from '../../components/PdfDownloadButton';
 import './symptomGuide.css';
 
 // Per-group icon/color for the home grid tiles — mirrors archive/app.js
@@ -431,6 +432,12 @@ export default function TroubleshootPage() {
                                     </div>
                                     <h2 className="sg-panel-title">{active.Symptom || 'ไม่ระบุอาการ'}</h2>
                                 </div>
+                                <PdfDownloadButton
+                                    targetRef={panelRef}
+                                    filename={[active.ID, active.Symptom || selectedGroup].filter(Boolean).join(' ')}
+                                    title={selectedGroup.replace(' / ไม่มีสัญญาณ', '')}
+                                    subtitle="ตรวจสอบและแก้ไขงานเสีย"
+                                />
                             </div>
 
                             <p className="sg-lead">{active.Scoms || 'รายละเอียดอาการนี้ยังไม่มีคำอธิบายเพิ่มเติมในระบบ'}</p>
@@ -480,7 +487,7 @@ export default function TroubleshootPage() {
                                 <span>{FALLBACK_TIP}</span>
                             </div>
 
-                            <div className="sg-panel-nav">
+                            <div className="sg-panel-nav" data-pdf-exclude>
                                 <button
                                     type="button"
                                     className="sg-panel-nav-btn"
@@ -502,7 +509,7 @@ export default function TroubleshootPage() {
                                 </button>
                             </div>
 
-                            <div className="feedback-section" ref={feedbackRef}>
+                            <div className="feedback-section" ref={feedbackRef} data-pdf-exclude>
                                 <div className="feedback-label">
                                     <MessageCircle size={16} /> คำแนะนำเพิ่มเติมจากผู้ใช้งาน{' '}
                                     {feedbackRequired ? (
