@@ -1,14 +1,38 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MessageSquareText, Inbox, Check, ExternalLink, Sparkles, Trash2 } from 'lucide-react';
+import {
+    MessageSquareText,
+    Inbox,
+    Check,
+    ExternalLink,
+    Sparkles,
+    Trash2,
+    ChevronLeft,
+    ChevronRight,
+} from 'lucide-react';
 import { getFeedback, updateFeedbackStatus, deleteFeedback } from '../feedback/feedbackService';
 import { SCOPE_LABEL } from '../feedback/scopeLabels';
 import { toTitleCase } from '../../shared/format/names';
 import { useScoms } from '../scoms/useScoms';
 import { useOnuConfigs } from '../onu-configs/useOnuConfigs';
 
+const PAGE_SIZE_OPTIONS = [10, 20];
+
 function formatDate(value) {
     return new Date(value).toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' });
+}
+
+// Same 1-neighbor windowed pager as AdminScomsTab: 1 ... p-1 p p+1 ... total.
+function getPageNumbers(current, total) {
+    const delta = 1;
+    const pages = [1];
+    const start = Math.max(2, current - delta);
+    const end = Math.min(total - 1, current + delta);
+    if (start > 2) pages.push('...');
+    for (let i = start; i <= end; i++) pages.push(i);
+    if (end < total - 1) pages.push('...');
+    if (total > 1) pages.push(total);
+    return pages;
 }
 
 // Where "เนื้อหาที่ให้คำแนะนำ" links to for each scope — the *admin* editor
@@ -39,6 +63,8 @@ export default function AdminFeedbackTab() {
     const [statusFilter, setStatusFilter] = useState('new');
     const [resolvingId, setResolvingId] = useState(null);
     const [deletingId, setDeletingId] = useState(null);
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
 
     // Only used to turn `refId` into a readable link label — the table still
     // renders (with the raw id) if either of these fails to load.
@@ -119,6 +145,23 @@ export default function AdminFeedbackTab() {
         if (scopeFilter !== 'all') base = base.filter((f) => f.scope === scopeFilter);
         return base;
     }, [feedback, scopeFilter, statusFilter]);
+
+    const totalPages = Math.max(1, Math.ceil(filteredFeedback.length / pageSize));
+    const pagedFeedback = filteredFeedback.slice((page - 1) * pageSize, page * pageSize);
+    const rangeStart = filteredFeedback.length === 0 ? 0 : (page - 1) * pageSize + 1;
+    const rangeEnd = Math.min(page * pageSize, filteredFeedback.length);
+
+    // Back to page 1 whenever the queue, scope or page size changes so the
+    // view never lands on a page that no longer exists.
+    useEffect(() => {
+        setPage(1);
+    }, [statusFilter, scopeFilter, pageSize]);
+
+    // Resolving/deleting the last row on the last page shrinks totalPages —
+    // step back instead of showing an empty page.
+    useEffect(() => {
+        if (page > totalPages) setPage(totalPages);
+    }, [page, totalPages]);
 
     // A record can be deleted after someone left feedback on it, so a missing
     // title is normal: show the bare id and say so instead of linking to a page
@@ -227,7 +270,7 @@ export default function AdminFeedbackTab() {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredFeedback.map((f) => {
+                            {pagedFeedback.map((f) => {
                                 const isNew = (f.status || 'new') === 'new';
                                 return (
                                     <tr key={f._id}>
@@ -285,6 +328,72 @@ export default function AdminFeedbackTab() {
                         </div>
                     )}
                 </div>
+
+                {filteredFeedback.length > 0 && (
+                    <div className="admin-pagination">
+                        <div className="fb-pagination-info">
+                            <span className="admin-pagination-range">
+                                แสดง {rangeStart} ถึง {rangeEnd} จาก {filteredFeedback.length} รายการ
+                            </span>
+                            <label className="fb-page-size">
+                                แสดงหน้าละ
+                                <select
+                                    className="admin-group-filter"
+                                    value={pageSize}
+                                    onChange={(e) => setPageSize(Number(e.target.value))}
+                                    aria-label="จำนวนรายการต่อหน้า"
+                                >
+                                    {PAGE_SIZE_OPTIONS.map((n) => (
+                                        <option key={n} value={n}>
+                                            {n}
+                                        </option>
+                                    ))}
+                                </select>
+                                รายการ
+                            </label>
+                        </div>
+                        {totalPages > 1 && (
+                            <div className="admin-pagination-controls">
+                                <button
+                                    type="button"
+                                    className="admin-page-nav"
+                                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                                    disabled={page === 1}
+                                    aria-label="หน้าก่อนหน้า"
+                                >
+                                    <ChevronLeft size={16} />
+                                </button>
+                                {getPageNumbers(page, totalPages).map((p, idx) =>
+                                    p === '...' ? (
+                                        <span key={`ellipsis-${idx}`} className="admin-pagination-ellipsis">
+                                            …
+                                        </span>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            key={p}
+                                            className={`admin-page-number${p === page ? ' active' : ''}`}
+                                            onClick={() => setPage(p)}
+                                            aria-current={p === page ? 'page' : undefined}
+                                            aria-label={`หน้า ${p}`}
+                                        >
+                                            {p}
+                                        </button>
+                                    )
+                                )}
+                                <button
+                                    type="button"
+                                    className="admin-page-nav"
+                                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                                    disabled={page === totalPages}
+                                    aria-label="หน้าถัดไป"
+                                >
+                                    <ChevronRight size={16} />
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

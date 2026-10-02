@@ -1100,6 +1100,26 @@
     padding: 0 2px;
 }
 
+/* Feedback table — range label + "แสดงหน้าละ [10|20] รายการ" on the left. */
+.admin-page .fb-pagination-info {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.admin-page .fb-page-size {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.admin-page .fb-page-size .admin-group-filter {
+    padding: 6px 10px;
+}
+
 /* ---------------------------------------------------------------------- */
 /* Tables                                                                  */
 /* ---------------------------------------------------------------------- */
