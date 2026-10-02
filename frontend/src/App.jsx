@@ -11,11 +11,13 @@ import SymptomGuidePage from './features/scoms/SymptomGuidePage';
 import OnuSetupPage from './features/onu-configs/OnuSetupPage';
 import PhonebookPage from './features/phonebook/PhonebookPage';
 import AdminPage from './features/admin/AdminPage';
+import UsageTracker from './features/usage/UsageTracker';
 import './App.css';
 
 export default function App() {
     return (
         <AuthProvider>
+            <UsageTracker />
             <Routes>
                 <Route path="/login" element={<LoginPage />} />
                 <Route

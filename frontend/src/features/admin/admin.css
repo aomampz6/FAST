@@ -2129,3 +2129,228 @@
     font-size: 12px;
     white-space: nowrap;
 }
+
+/* ---------------------------------------------------------------------- */
+/* Usage statistics (AdminUsageTab)                                        */
+/* ---------------------------------------------------------------------- */
+.admin-page .usage-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.admin-page .usage-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 28px;
+}
+
+.admin-page .usage-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px 18px;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    background: var(--bg-main);
+}
+
+.admin-page .usage-stat-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.admin-page .usage-stat-value {
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+}
+
+.admin-page .usage-stat-note {
+    font-size: 12px;
+    color: var(--text-tertiary);
+}
+
+.admin-page .usage-chart-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.admin-page .usage-chart-header h4,
+.admin-page .usage-card-title {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.admin-page .usage-card-title {
+    margin-bottom: 16px;
+}
+
+/* Single-series bar chart. Bar color #b88a00 is a darkened NT yellow that
+   holds ≥3:1 against both the light and dark card surfaces — brand
+   #ffd100 itself is too pale to read as a mark on white. */
+.admin-page .usage-chart {
+    --usage-bar: #b88a00;
+    --usage-bar-hover: var(--nt-yellow);
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.admin-page .usage-chart-axis {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 220px;
+    margin-top: -7px;
+    margin-bottom: -7px;
+    font-size: 11px;
+    color: var(--text-tertiary);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    min-width: 24px;
+}
+
+.admin-page .usage-chart-plot {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+}
+
+.admin-page .usage-chart-grid {
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 220px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    pointer-events: none;
+}
+
+.admin-page .usage-chart-grid span {
+    border-top: 1px solid var(--border-light);
+}
+
+.admin-page .usage-chart-grid span:last-child {
+    border-top-color: var(--border-color);
+}
+
+.admin-page .usage-chart-bars {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 220px;
+}
+
+.admin-page .usage-bar-col {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    cursor: default;
+    outline: none;
+}
+
+.admin-page .usage-bar-col.hovered,
+.admin-page .usage-bar-col:focus-visible {
+    background: var(--bg-surface-hover);
+    border-radius: 4px 4px 0 0;
+}
+
+.admin-page .usage-bar {
+    width: 100%;
+    max-width: 28px;
+    background: var(--usage-bar);
+    border-radius: 4px 4px 0 0;
+    transition: height var(--duration-base) var(--ease-out), background-color var(--duration-fast);
+}
+
+.admin-page .usage-bar-col.hovered .usage-bar {
+    background: var(--usage-bar-hover);
+}
+
+.admin-page .usage-tooltip {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 12px;
+    min-width: 150px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: var(--bg-surface);
+    box-shadow: var(--shadow-md);
+    font-size: 12px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.admin-page .usage-tooltip.align-right {
+    left: auto;
+    right: 50%;
+}
+
+.admin-page .usage-tooltip strong {
+    color: var(--text-primary);
+    font-size: 12.5px;
+    margin-bottom: 2px;
+}
+
+.admin-page .usage-chart-xlabels {
+    display: flex;
+    gap: 2px;
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--text-tertiary);
+}
+
+.admin-page .usage-chart-xlabels span {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: visible;
+}
+
+.admin-page .usage-table-toggle {
+    margin-top: 20px;
+}
+
+.admin-page .usage-table-toggle summary {
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+}
+
+.admin-page .usage-two-col {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 20px;
+}
+
+@media (max-width: 640px) {
+    .admin-page .usage-two-col {
+        grid-template-columns: 1fr;
+    }
+}

@@ -8,6 +8,7 @@ import AdminGuidesTab from './AdminGuidesTab';
 import AdminPhonebookTab from './AdminPhonebookTab';
 import AdminUsersTab from './AdminUsersTab';
 import AdminFeedbackTab from './AdminFeedbackTab';
+import AdminUsageTab from './AdminUsageTab';
 import './admin.css';
 
 export default function AdminPage() {
@@ -48,6 +49,9 @@ export default function AdminPage() {
                 <NavLink to="/admin/feedback" className={({ isActive }) => (isActive ? 'active' : undefined)}>
                     คำแนะนำจากผู้ใช้งาน
                 </NavLink>
+                <NavLink to="/admin/usage" className={({ isActive }) => (isActive ? 'active' : undefined)}>
+                    สถิติการเข้าใช้งาน
+                </NavLink>
             </nav>
             <div className="admin-tab-content" key={location.pathname}>
                 <Routes>
@@ -61,6 +65,7 @@ export default function AdminPage() {
                     <Route path="phonebook" element={<AdminPhonebookTab />} />
                     <Route path="users" element={<AdminUsersTab />} />
                     <Route path="feedback" element={<AdminFeedbackTab />} />
+                    <Route path="usage" element={<AdminUsageTab />} />
                 </Routes>
             </div>
         </div>

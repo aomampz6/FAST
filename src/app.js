@@ -13,6 +13,7 @@ const guidesRouter = require('./features/guides/guides.router');
 const phonebookRouter = require('./features/phonebook/phonebook.router');
 const feedbackRouter = require('./features/feedback/feedback.router');
 const usersRouter = require('./features/users/users.router');
+const usageRouter = require('./features/usage/usage.router');
 const errorHandler = require('./middleware/errorHandler');
 const { trustProxy } = require('./config/env');
 
@@ -55,6 +56,7 @@ app.use('/api/guides', guidesRouter);
 app.use('/api/phonebook', phonebookRouter);
 app.use('/api/feedback', feedbackRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/usage', usageRouter);
 
 // The Docker build copies the built React app into ./public (see Dockerfile).
 // In local backend-only dev this directory doesn't exist — the frontend runs
