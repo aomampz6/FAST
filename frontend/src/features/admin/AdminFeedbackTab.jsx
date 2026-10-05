@@ -9,6 +9,9 @@ import {
     Trash2,
     ChevronLeft,
     ChevronRight,
+    FileSpreadsheet,
+    CalendarRange,
+    X,
 } from 'lucide-react';
 import { getFeedback, updateFeedbackStatus, deleteFeedback } from '../feedback/feedbackService';
 import { SCOPE_LABEL } from '../feedback/scopeLabels';
@@ -20,6 +23,21 @@ const PAGE_SIZE_OPTIONS = [10, 20];
 
 function formatDate(value) {
     return new Date(value).toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' });
+}
+
+// <input type="date"> values are YYYY-MM-DD with no time zone; appending a
+// time without "Z" makes Date read them as the admin's local day, so the
+// end date includes everything up to 23:59:59.999 that day.
+function startOfDay(value) {
+    return new Date(`${value}T00:00:00`);
+}
+
+function endOfDay(value) {
+    return new Date(`${value}T23:59:59.999`);
+}
+
+function formatDay(value) {
+    return startOfDay(value).toLocaleDateString('th-TH', { dateStyle: 'medium' });
 }
 
 // Same 1-neighbor windowed pager as AdminScomsTab: 1 ... p-1 p p+1 ... total.
@@ -65,6 +83,13 @@ export default function AdminFeedbackTab() {
     const [deletingId, setDeletingId] = useState(null);
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
+    const [exporting, setExporting] = useState(false);
+    // Optional ช่วงวันที่ (YYYY-MM-DD, '' = open-ended). Filters the table
+    // as well as the Excel download, so what's on screen is always exactly
+    // what the file will contain.
+    const [dateFrom, setDateFrom] = useState('');
+    const [dateTo, setDateTo] = useState('');
+    const [exportError, setExportError] = useState(null);
 
     // Only used to turn `refId` into a readable link label — the table still
     // renders (with the raw id) if either of these fails to load.
@@ -134,34 +159,96 @@ export default function AdminFeedbackTab() {
         return map;
     }, [scoms, configs]);
 
+    const hasDateRange = Boolean(dateFrom || dateTo);
+    const dateRangeInvalid = Boolean(dateFrom && dateTo && dateFrom > dateTo);
+
+    // Applied before the status split so the ใหม่ / ดำเนินการแล้ว tab counts
+    // describe the chosen period too.
+    const feedbackInRange = useMemo(() => {
+        if (dateRangeInvalid) return [];
+        const from = dateFrom ? startOfDay(dateFrom) : null;
+        const to = dateTo ? endOfDay(dateTo) : null;
+        if (!from && !to) return feedback;
+        return feedback.filter((f) => {
+            const created = new Date(f.createdAt);
+            return (!from || created >= from) && (!to || created <= to);
+        });
+    }, [feedback, dateFrom, dateTo, dateRangeInvalid]);
+
     const newCount = useMemo(
-        () => feedback.filter((f) => (f.status || 'new') === 'new').length,
-        [feedback]
+        () => feedbackInRange.filter((f) => (f.status || 'new') === 'new').length,
+        [feedbackInRange]
     );
-    const resolvedCount = feedback.length - newCount;
+    const resolvedCount = feedbackInRange.length - newCount;
 
     const filteredFeedback = useMemo(() => {
-        let base = feedback.filter((f) => (f.status || 'new') === statusFilter);
+        let base = feedbackInRange.filter((f) => (f.status || 'new') === statusFilter);
         if (scopeFilter !== 'all') base = base.filter((f) => f.scope === scopeFilter);
         return base;
-    }, [feedback, scopeFilter, statusFilter]);
+    }, [feedbackInRange, scopeFilter, statusFilter]);
 
     const totalPages = Math.max(1, Math.ceil(filteredFeedback.length / pageSize));
     const pagedFeedback = filteredFeedback.slice((page - 1) * pageSize, page * pageSize);
     const rangeStart = filteredFeedback.length === 0 ? 0 : (page - 1) * pageSize + 1;
     const rangeEnd = Math.min(page * pageSize, filteredFeedback.length);
 
-    // Back to page 1 whenever the queue, scope or page size changes so the
-    // view never lands on a page that no longer exists.
+    // Back to page 1 whenever the queue, scope, date range or page size
+    // changes so the view never lands on a page that no longer exists.
     useEffect(() => {
         setPage(1);
-    }, [statusFilter, scopeFilter, pageSize]);
+    }, [statusFilter, scopeFilter, dateFrom, dateTo, pageSize]);
 
     // Resolving/deleting the last row on the last page shrinks totalPages —
     // step back instead of showing an empty page.
     useEffect(() => {
         if (page > totalPages) setPage(totalPages);
     }, [page, totalPages]);
+
+    // Exports exactly what the admin is looking at — the current status tab,
+    // scope filter and date range — but every page of it, not just the
+    // visible 10/20.
+    // Built in the browser rather than by the API because the readable
+    // "เนื้อหาที่ให้คำแนะนำ" titles only exist here (refIndex), resolved from
+    // the Scoms/config lists this page has already loaded.
+    async function handleExport() {
+        setExporting(true);
+        setExportError(null);
+        try {
+            // SheetJS is only needed on click, so it stays out of the main bundle.
+            const XLSX = await import('xlsx');
+            const rows = filteredFeedback.map((f) => ({
+                วันที่: formatDate(f.createdAt),
+                สถานะ: (f.status || 'new') === 'new' ? 'ใหม่' : 'ดำเนินการแล้ว',
+                ประเภท: SCOPE_LABEL[f.scope] || f.scope,
+                เนื้อหาที่ให้คำแนะนำ: refIndex.get(String(f.refId)) || '(ไม่พบข้อมูลนี้แล้ว)',
+                รหัสอ้างอิง: f.refId,
+                คะแนน: f.rating,
+                ผู้ใช้งาน: toTitleCase(f.fullName) || '',
+                Username: f.username || f.userId,
+                คำแนะนำ: f.comment || '',
+            }));
+
+            const sheet = XLSX.utils.json_to_sheet(rows);
+            sheet['!cols'] = [18, 14, 26, 44, 26, 8, 26, 20, 60].map((wch) => ({ wch }));
+            const book = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(book, sheet, 'คำแนะนำจากผู้ใช้งาน');
+
+            const today = new Intl.DateTimeFormat('en-CA').format(new Date());
+            const parts = [
+                'คำแนะนำจากผู้ใช้งาน',
+                statusFilter === 'new' ? 'ใหม่' : 'ดำเนินการแล้ว',
+                scopeFilter !== 'all' && (SCOPE_LABEL[scopeFilter] || scopeFilter),
+                hasDateRange ? `${dateFrom || 'เริ่มต้น'}_ถึง_${dateTo || today}` : today,
+            ];
+            const filename = parts.filter(Boolean).join('_').replace(/[\\/:*?"<>|]+/g, '-');
+            XLSX.writeFile(book, `${filename}.xlsx`);
+        } catch (err) {
+            console.error('feedback_export_failed', err);
+            setExportError('ดาวน์โหลดไฟล์ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
+        } finally {
+            setExporting(false);
+        }
+    }
 
     // A record can be deleted after someone left feedback on it, so a missing
     // title is normal: show the bare id and say so instead of linking to a page
@@ -213,10 +300,23 @@ export default function AdminFeedbackTab() {
                             <p className="admin-card-subtitle">
                                 {statusFilter === 'new' ? 'รอดำเนินการ' : 'ดำเนินการแล้ว'} {filteredFeedback.length} รายการ
                                 {scopeFilter !== 'all' && ` · ${SCOPE_LABEL[scopeFilter] || scopeFilter}`}
+                                {hasDateRange &&
+                                    !dateRangeInvalid &&
+                                    ` · ${dateFrom ? formatDay(dateFrom) : 'ตั้งแต่เริ่มต้น'} – ${dateTo ? formatDay(dateTo) : 'ปัจจุบัน'}`}
                             </p>
                         </div>
                     </div>
                     <div className="admin-scoms-filters">
+                        <button
+                            type="button"
+                            className="fb-export-btn"
+                            onClick={handleExport}
+                            disabled={exporting || filteredFeedback.length === 0}
+                            title={`ดาวน์โหลดรายการในแท็บนี้ทั้งหมด ${filteredFeedback.length} รายการเป็นไฟล์ Excel`}
+                        >
+                            <FileSpreadsheet size={16} />
+                            {exporting ? 'กำลังสร้างไฟล์...' : 'ดาวน์โหลด Excel'}
+                        </button>
                         <select
                             className="admin-group-filter"
                             value={scopeFilter}
@@ -232,6 +332,46 @@ export default function AdminFeedbackTab() {
                         </select>
                     </div>
                 </div>
+
+                <div className="fb-date-range">
+                    <span className="fb-date-range-label">
+                        <CalendarRange size={16} /> ช่วงวันที่
+                    </span>
+                    <input
+                        type="date"
+                        className="fb-date-input"
+                        value={dateFrom}
+                        max={dateTo || undefined}
+                        onChange={(e) => setDateFrom(e.target.value)}
+                        aria-label="วันที่เริ่มต้น"
+                    />
+                    <span className="fb-date-range-sep">ถึง</span>
+                    <input
+                        type="date"
+                        className="fb-date-input"
+                        value={dateTo}
+                        min={dateFrom || undefined}
+                        onChange={(e) => setDateTo(e.target.value)}
+                        aria-label="วันที่สิ้นสุด"
+                    />
+                    {hasDateRange && (
+                        <button
+                            type="button"
+                            className="fb-date-clear"
+                            onClick={() => {
+                                setDateFrom('');
+                                setDateTo('');
+                            }}
+                        >
+                            <X size={14} /> ล้างช่วงวันที่
+                        </button>
+                    )}
+                    {dateRangeInvalid && (
+                        <span className="fb-date-range-error">วันที่เริ่มต้นต้องไม่เกินวันที่สิ้นสุด</span>
+                    )}
+                </div>
+
+                {exportError && <div className="error-banner">{exportError}</div>}
 
                 <div className="fb-status-tabs" role="tablist" aria-label="กรองตามสถานะการดำเนินการ">
                     <button
@@ -317,7 +457,11 @@ export default function AdminFeedbackTab() {
                             <p>
                                 {feedback.length === 0
                                     ? 'ยังไม่มีคำแนะนำจากผู้ใช้งาน'
-                                    : statusFilter === 'new'
+                                    : dateRangeInvalid
+                                      ? 'ช่วงวันที่ไม่ถูกต้อง — วันที่เริ่มต้นต้องไม่เกินวันที่สิ้นสุด'
+                                      : hasDateRange
+                                        ? 'ไม่มีคำแนะนำในช่วงวันที่ที่เลือก'
+                                        : statusFilter === 'new'
                                       ? scopeFilter === 'all'
                                           ? 'ไม่มีคำแนะนำที่รอดำเนินการ — ตรวจสอบครบแล้วทุกรายการ'
                                           : `ไม่มีคำแนะนำที่รอดำเนินการในประเภท "${SCOPE_LABEL[scopeFilter] || scopeFilter}"`

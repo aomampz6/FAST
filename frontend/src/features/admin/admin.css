@@ -1100,6 +1100,95 @@
     padding: 0 2px;
 }
 
+/* "ดาวน์โหลด Excel" beside the feedback scope filter — sized to match the
+   select next to it. */
+.admin-page .fb-export-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.admin-page .fb-export-btn:hover:not(:disabled) {
+    background-color: var(--nt-yellow);
+    border-color: var(--nt-yellow);
+    color: var(--nt-dark);
+}
+
+.admin-page .fb-export-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Feedback ช่วงวันที่ row — filters both the table and the Excel export. */
+.admin-page .fb-date-range {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+    margin-bottom: 4px;
+}
+
+.admin-page .fb-date-range-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.admin-page .fb-date-input {
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    font: inherit;
+    font-size: 13.5px;
+}
+
+:root[data-theme='dark'] .admin-page .fb-date-input {
+    color-scheme: dark;
+}
+
+.admin-page .fb-date-range-sep {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.admin-page .fb-date-clear {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.admin-page .fb-date-clear:hover {
+    background-color: var(--bg-surface-hover);
+    color: var(--text-primary);
+}
+
+.admin-page .fb-date-range-error {
+    font-size: 12.5px;
+    color: var(--danger);
+}
+
 /* Feedback table — range label + "แสดงหน้าละ [10|20] รายการ" on the left. */
 .admin-page .fb-pagination-info {
     display: flex;
