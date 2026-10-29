@@ -72,7 +72,7 @@ function ParameterRows({ parameters }) {
     if (!parameters || parameters.length === 0) {
         return (
             <tr>
-                <td colSpan={4} style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: 24 }}>
+                <td colSpan={3} style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: 24 }}>
                     ยังไม่มีข้อมูลพารามิเตอร์อ้างอิงในระบบ
                 </td>
             </tr>
@@ -95,7 +95,6 @@ function ParameterRows({ parameters }) {
                         {p.Standard}
                     </span>
                 </td>
-                <td data-label="คำแนะนำของระบบ">{p.Recommendation || '-'}</td>
             </tr>
         );
     });
@@ -154,7 +153,6 @@ export default function DashboardPage() {
                                     <th>ประเภทอุปกรณ์ (Type)</th>
                                     <th>พารามิเตอร์ (Parameter)</th>
                                     <th>เกณฑ์มาตรฐาน (Standard)</th>
-                                    <th>คำแนะนำของระบบ (Recommendation)</th>
                                 </tr>
                             </thead>
                             <tbody>

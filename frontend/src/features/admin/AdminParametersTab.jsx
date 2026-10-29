@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useParameters } from '../parameters/useParameters';
 
-const emptyForm = { Type: '', Parameter: '', Standard: '', Recommendation: '', Level: 'none' };
+// Recommendation is no longer edited or shown; the form leaves it out, so saving
+// an edit keeps whatever value a record already has in the database.
+const emptyForm = { Type: '', Parameter: '', Standard: '', Level: 'none' };
 const LEVELS = ['danger', 'warning', 'info', 'none'];
 // Exact bilingual wording from the old admin panel's Level <select>.
 const LEVEL_OPTION_LABELS = {
@@ -25,7 +27,6 @@ export default function AdminParametersTab() {
             Type: item.Type || '',
             Parameter: item.Parameter || '',
             Standard: item.Standard || '',
-            Recommendation: item.Recommendation || '',
             Level: item.Level || 'none',
         });
     }
@@ -88,13 +89,6 @@ export default function AdminParametersTab() {
                             value={form.Standard}
                             onChange={(e) => setForm({ ...form, Standard: e.target.value })}
                             required
-                        />
-                    </label>
-                    <label>
-                        คำแนะนำของระบบ (Recommendation)
-                        <input
-                            value={form.Recommendation}
-                            onChange={(e) => setForm({ ...form, Recommendation: e.target.value })}
                         />
                     </label>
                     <label>
