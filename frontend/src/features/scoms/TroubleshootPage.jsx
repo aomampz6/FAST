@@ -168,6 +168,14 @@ export default function TroubleshootPage() {
         [scoms, selectedGroup]
     );
 
+    // Every SCOMS code filed under the selected group, in ID order (the API
+    // sorts by ID). Each symptom's header shows the whole set, with its own
+    // code marked, so the technician sees all the codes the group covers.
+    const groupCodes = useMemo(
+        () => [...new Set(symptomsInGroup.map((item) => item.ID).filter(Boolean))],
+        [symptomsInGroup]
+    );
+
     useEffect(() => {
         if (!drawerOpen) return undefined;
         document.body.style.overflow = 'hidden';
@@ -428,7 +436,19 @@ export default function TroubleshootPage() {
                                 <div>
                                     <div className="symptom-card-label" style={{ color: headerMeta.color }}>
                                         <headerMeta.Icon size={14} /> {headerMeta.label}
-                                        {active.ID && <span className="symptom-id-badge" style={{ marginLeft: 8 }}>{active.ID}</span>}
+                                        {groupCodes.length > 0 && (
+                                            <span className="symptom-id-badges">
+                                                {groupCodes.map((code) => (
+                                                    <span
+                                                        key={code}
+                                                        className={`symptom-id-badge${code === active.ID ? ' is-current' : ''}`}
+                                                        title={code === active.ID ? 'รหัสของอาการนี้' : undefined}
+                                                    >
+                                                        {code}
+                                                    </span>
+                                                ))}
+                                            </span>
+                                        )}
                                     </div>
                                     <h2 className="sg-panel-title">{active.Symptom || 'ไม่ระบุอาการ'}</h2>
                                 </div>

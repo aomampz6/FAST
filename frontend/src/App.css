@@ -2580,8 +2580,9 @@ html[data-theme='dark'] .badge.warning {
 
 .symptom-card-label {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 8px;
+    gap: 4px 8px;
     font-size: 12px;
     font-weight: 700;
     letter-spacing: 1px;
@@ -2600,6 +2601,25 @@ html[data-theme='dark'] .badge.warning {
     background: rgba(148, 163, 184, 0.1);
     padding: 2px 8px;
     border-radius: 6px;
+}
+
+/* All SCOMS codes of a troubleshoot group, side by side; the open symptom's
+   own code is outlined in the group colour (the label's `color`). Every badge
+   gets a transparent border so the outlined one doesn't change size. */
+.symptom-id-badges {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    min-width: 0;
+}
+
+.symptom-id-badges .symptom-id-badge {
+    border: 1px solid transparent;
+}
+
+.symptom-id-badges .symptom-id-badge.is-current {
+    color: inherit;
+    border-color: currentColor;
 }
 
 .symptom-card-title {
