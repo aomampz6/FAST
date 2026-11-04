@@ -21,6 +21,7 @@ import { useModeTopics } from './useModeTopics';
 import { useGuides } from '../guides/useGuides';
 import { readGuide } from '../guides/guidesService';
 import { submitFeedback } from '../feedback/feedbackService';
+import MyFeedbackList from '../feedback/MyFeedbackList';
 import { useAuth } from '../../shared/auth/AuthContext';
 import { useFirstFeedbackGate } from '../../shared/hooks/useFirstFeedbackGate';
 import { useNavigationGate } from '../../shared/navigation/NavigationGateContext';
@@ -83,6 +84,7 @@ export default function OnuSetupPage({ deviceType = 'ONU' }) {
     const [submitting, setSubmitting] = useState(false);
     const [successOpen, setSuccessOpen] = useState(false);
     const [feedbackStatus, setFeedbackStatus] = useState(null);
+    const [feedbackReload, setFeedbackReload] = useState(0);
     const [gateShake, setGateShake] = useState(false);
 
     // The backend `/onu-configs` list endpoint returns every record regardless
@@ -296,6 +298,7 @@ export default function OnuSetupPage({ deviceType = 'ONU' }) {
             });
 
             setComment('');
+            setFeedbackReload((n) => n + 1);
             if (feedbackRequired) {
                 markDone();
                 setFeedbackRequired(false);
@@ -556,6 +559,11 @@ export default function OnuSetupPage({ deviceType = 'ONU' }) {
                                             </button>
                                             {feedbackStatus && <p className="feedback-status">{feedbackStatus}</p>}
                                         </form>
+                                        <MyFeedbackList
+                                            scope={`${deviceType.toLowerCase()}-setup`}
+                                            refId={selectedMode._id}
+                                            reloadKey={feedbackReload}
+                                        />
                                     </div>
                                 </div>
                             </div>

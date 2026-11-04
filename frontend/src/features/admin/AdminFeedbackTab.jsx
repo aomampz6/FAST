@@ -13,7 +13,7 @@ import {
     CalendarRange,
     X,
 } from 'lucide-react';
-import { getFeedback, updateFeedbackStatus, deleteFeedback } from '../feedback/feedbackService';
+import { getFeedback, updateFeedbackStatus, updateFeedbackReply, deleteFeedback } from '../feedback/feedbackService';
 import { SCOPE_LABEL } from '../feedback/scopeLabels';
 import { toTitleCase } from '../../shared/format/names';
 import { useScoms } from '../scoms/useScoms';
@@ -65,10 +65,9 @@ const SCOPE_PATH = {
     'ap-setup': '/admin/ap-configs',
 };
 
-// Read-only except for triage (resolve/delete) — admins only view what users
-// submitted here, this data isn't shown anywhere on the user-facing pages
-// (those just fire-and-forget a POST /feedback and show a success popup, see
-// TroubleshootPage/OnuSetupPage).
+// Admins triage (resolve/delete) and reply to what users submitted. The reply
+// and status are shown back to the author — only to them — on the page they
+// commented on (see MyFeedbackList in TroubleshootPage/OnuSetupPage).
 export default function AdminFeedbackTab() {
     const [feedback, setFeedback] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -81,6 +80,11 @@ export default function AdminFeedbackTab() {
     const [statusFilter, setStatusFilter] = useState('new');
     const [resolvingId, setResolvingId] = useState(null);
     const [deletingId, setDeletingId] = useState(null);
+    // Unsaved reply text per feedback id; a missing key means "untouched", so
+    // the textarea falls back to the saved adminComment.
+    const [replyDrafts, setReplyDrafts] = useState({});
+    const [savingReplyId, setSavingReplyId] = useState(null);
+    const [replyErrorId, setReplyErrorId] = useState(null);
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
     const [exporting, setExporting] = useState(false);
@@ -118,6 +122,29 @@ export default function AdminFeedbackTab() {
             setError(err.response?.data?.message || 'อัปเดตสถานะไม่สำเร็จ');
         } finally {
             setResolvingId(null);
+        }
+    }
+
+    async function handleSaveReply(item) {
+        const text = (replyDrafts[item._id] ?? item.adminComment ?? '').trim();
+        setSavingReplyId(item._id);
+        setReplyErrorId(null);
+        try {
+            const updated = await updateFeedbackReply(item._id, text);
+            setFeedback((prev) =>
+                prev.map((f) =>
+                    f._id === item._id ? { ...f, adminComment: updated.adminComment, adminCommentAt: updated.adminCommentAt } : f
+                )
+            );
+            setReplyDrafts((prev) => {
+                const rest = { ...prev };
+                delete rest[item._id];
+                return rest;
+            });
+        } catch {
+            setReplyErrorId(item._id);
+        } finally {
+            setSavingReplyId(null);
         }
     }
 
@@ -226,10 +253,11 @@ export default function AdminFeedbackTab() {
                 ผู้ใช้งาน: toTitleCase(f.fullName) || '',
                 Username: f.username || f.userId,
                 คำแนะนำ: f.comment || '',
+                คอมเมนต์ผู้ดูแลระบบ: f.adminComment || '',
             }));
 
             const sheet = XLSX.utils.json_to_sheet(rows);
-            sheet['!cols'] = [18, 14, 26, 44, 26, 8, 26, 20, 60].map((wch) => ({ wch }));
+            sheet['!cols'] = [18, 14, 26, 44, 26, 8, 26, 20, 60, 60].map((wch) => ({ wch }));
             const book = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(book, sheet, 'คำแนะนำจากผู้ใช้งาน');
 
@@ -406,6 +434,7 @@ export default function AdminFeedbackTab() {
                                 <th>คะแนน</th>
                                 <th>ผู้ใช้งาน</th>
                                 <th>คำแนะนำ</th>
+                                <th>คอมเมนต์ผู้ดูแลระบบ</th>
                                 <th>การดำเนินการ</th>
                             </tr>
                         </thead>
@@ -420,6 +449,43 @@ export default function AdminFeedbackTab() {
                                         <td>{f.rating} / 5</td>
                                         <td>{toTitleCase(f.fullName) || f.username || f.userId}</td>
                                         <td style={{ maxWidth: 360, whiteSpace: 'pre-wrap' }}>{f.comment || '-'}</td>
+                                        <td className="fb-reply-cell">
+                                            {(() => {
+                                                const saved = f.adminComment || '';
+                                                const draft = replyDrafts[f._id] ?? saved;
+                                                const dirty = draft.trim() !== saved;
+                                                return (
+                                                    <>
+                                                        <textarea
+                                                            className="fb-reply-input"
+                                                            rows={2}
+                                                            maxLength={2000}
+                                                            value={draft}
+                                                            placeholder="พิมพ์ข้อความตอบกลับผู้ใช้งาน..."
+                                                            aria-label="คอมเมนต์ผู้ดูแลระบบ"
+                                                            onChange={(e) =>
+                                                                setReplyDrafts((prev) => ({ ...prev, [f._id]: e.target.value }))
+                                                            }
+                                                        />
+                                                        {(dirty || replyErrorId === f._id) && (
+                                                            <div className="fb-reply-actions">
+                                                                <button
+                                                                    type="button"
+                                                                    className="fb-reply-save"
+                                                                    onClick={() => handleSaveReply(f)}
+                                                                    disabled={savingReplyId === f._id}
+                                                                >
+                                                                    {savingReplyId === f._id ? 'กำลังบันทึก...' : 'บันทึกคอมเมนต์'}
+                                                                </button>
+                                                                {replyErrorId === f._id && (
+                                                                    <span className="fb-reply-error">บันทึกไม่สำเร็จ</span>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </>
+                                                );
+                                            })()}
+                                        </td>
                                         <td>
                                             <div className="fb-actions">
                                                 {isNew ? (

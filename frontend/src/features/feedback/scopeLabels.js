@@ -1,6 +1,5 @@
-// Shared by AdminFeedbackTab (all users' feedback) and ProfilePage (a user's
-// own feedback history) so the Thai label for a given `scope` value stays in
-// sync in exactly one place.
+// Thai label for each feedback `scope` value, kept in one place for
+// AdminFeedbackTab.
 export const SCOPE_LABEL = {
     troubleshoot: 'แก้ไขปัญหา (Troubleshoot)',
     'onu-setup': 'ตั้งค่า ONU',

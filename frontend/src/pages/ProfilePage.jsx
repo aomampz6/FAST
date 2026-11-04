@@ -1,24 +1,18 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     ArrowLeft,
     AtSign,
     Building2,
-    CheckCircle2,
-    Clock,
     Eye,
     EyeOff,
     Hash,
     IdCard,
     Lock,
     Mail,
-    MessageSquareText,
-    Star,
     User,
 } from 'lucide-react';
 import { useAuth } from '../shared/auth/AuthContext';
-import { getMyFeedback } from '../features/feedback/feedbackService';
-import { SCOPE_LABEL } from '../features/feedback/scopeLabels';
 import { toTitleCase } from '../shared/format/names';
 import './profile.css';
 
@@ -49,10 +43,6 @@ function formatDuration(iatSeconds) {
     return hours > 0 ? `${hours} ชั่วโมง ${mins} นาที` : `${mins} นาที`;
 }
 
-function formatFeedbackDate(value) {
-    return new Date(value).toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' });
-}
-
 // Date and time are rendered at different weights in the expiry tile, so they
 // are formatted separately rather than with one toLocaleString call.
 function formatExpiry(expSeconds) {
@@ -61,22 +51,6 @@ function formatExpiry(expSeconds) {
         date: at.toLocaleDateString('th-TH'),
         time: at.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }),
     };
-}
-
-// Mirrors AdminFeedbackTab's own resolve/new badge so a technician sees the
-// same status the admin sees on their side — "resolved" here specifically
-// means an admin has already acted on this suggestion (see the ทำเครื่องหมาย
-// ว่าเรียบร้อยแล้ว button in AdminFeedbackTab), not just that the row was
-// opened.
-function FeedbackStatusBadge({ status }) {
-    const isResolved = status === 'resolved';
-    const Icon = isResolved ? CheckCircle2 : Clock;
-    return (
-        <span className={`profile-feedback-status ${isResolved ? 'is-resolved' : 'is-pending'}`}>
-            <Icon size={13} aria-hidden="true" />
-            {isResolved ? 'แอดมินดำเนินการแก้ไขให้แล้ว' : 'รอผู้ดูแลระบบตรวจสอบ'}
-        </span>
-    );
 }
 
 function DetailRow({ icon: Icon, label, value, children }) {
@@ -108,16 +82,6 @@ export default function ProfilePage() {
     // real password — see the note where the row is rendered.
     const [showPassword, setShowPassword] = useState(false);
 
-    const [myFeedback, setMyFeedback] = useState([]);
-    const [feedbackLoading, setFeedbackLoading] = useState(true);
-    const [feedbackError, setFeedbackError] = useState(null);
-
-    useEffect(() => {
-        getMyFeedback()
-            .then(setMyFeedback)
-            .catch((err) => setFeedbackError(err.response?.data?.message || 'ไม่สามารถโหลดประวัติคำแนะนำได้'))
-            .finally(() => setFeedbackLoading(false));
-    }, []);
 
     return (
         <div className="page profile-page">
@@ -222,49 +186,6 @@ export default function ProfilePage() {
                 <p className="profile-foot-note">
                     ข้อมูลชุดนี้มาจากทะเบียนพนักงาน หากไม่ถูกต้องหรือแสดงเป็น &quot;-&quot; กรุณาแจ้งผู้ดูแลระบบเพื่อแก้ไข
                 </p>
-            </section>
-
-            <section className="card profile-card">
-                <div className="profile-card-head">
-                    <span className="profile-card-icon">
-                        <MessageSquareText size={20} />
-                    </span>
-                    <div>
-                        <h3>คำแนะนำที่คุณเคยส่ง</h3>
-                        <p>ประวัติคำแนะนำและคะแนนที่คุณให้ไว้</p>
-                    </div>
-                </div>
-
-                {feedbackError && <div className="error-banner">{feedbackError}</div>}
-
-                {feedbackLoading && !feedbackError && <p className="profile-empty-text">กำลังโหลดข้อมูล...</p>}
-
-                {!feedbackLoading && !feedbackError && myFeedback.length === 0 && (
-                    <p className="profile-empty-text">คุณยังไม่เคยส่งคำแนะนำเข้ามาในระบบ</p>
-                )}
-
-                {!feedbackLoading && myFeedback.length > 0 && (
-                    <div style={{ marginTop: 16 }}>
-                        {myFeedback.map((f) => (
-                            <div key={f._id} className="profile-feedback-item">
-                                <div className="profile-feedback-meta">
-                                    <span className="profile-feedback-scope-group">
-                                        <span className="profile-feedback-scope">{SCOPE_LABEL[f.scope] || f.scope}</span>
-                                        <FeedbackStatusBadge status={f.status} />
-                                    </span>
-                                    <span className="profile-feedback-side">
-                                        <span className="profile-feedback-rating">
-                                            <Star size={13} color="var(--nt-yellow)" fill="var(--nt-yellow)" />
-                                            {f.rating} / 5
-                                        </span>
-                                        {formatFeedbackDate(f.createdAt)}
-                                    </span>
-                                </div>
-                                {f.comment && <p className="profile-feedback-comment">{f.comment}</p>}
-                            </div>
-                        ))}
-                    </div>
-                )}
             </section>
         </div>
     );

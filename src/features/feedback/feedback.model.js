@@ -8,6 +8,10 @@ const feedbackSchema = new mongoose.Schema({
     comment: { type: String, required: false },
     // Admin triage: 'new' until an admin has acted on the suggestion and
     // marks it resolved from the admin feedback tab.
+    // Admin's answer to the suggestion, shown back to the user who wrote it
+    // on the page they commented on. Empty string = no reply yet.
+    adminComment: { type: String, default: '' },
+    adminCommentAt: { type: Date, default: null },
     status: { type: String, enum: ['new', 'resolved'], default: 'new' }
 }, {
     timestamps: true
