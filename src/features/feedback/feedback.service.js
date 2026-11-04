@@ -30,11 +30,29 @@ async function listFeedback({ scope, refId }) {
     }));
 }
 
-// A user's own feedback history — for the "ข้อมูลส่วนตัว" page, so anyone
-// can see what they've previously suggested (no admin role required, unlike
-// listFeedback, since it's scoped to the caller's own userId).
-async function listMyFeedback(userId) {
-    return Feedback.find({ userId }).sort({ createdAt: -1 });
+// A user's own feedback — shown on the page they commented on (filtered by
+// scope + refId) together with the admin's reply and status. No admin role
+// required, unlike listFeedback, since it's always scoped to the caller's
+// own userId.
+async function listMyFeedback(userId, { scope, refId } = {}) {
+    const filter = { userId };
+    if (scope) filter.scope = scope;
+    if (refId) filter.refId = refId;
+    return Feedback.find(filter).sort({ createdAt: -1 });
+}
+
+async function updateReply(id, adminComment) {
+    const feedback = await Feedback.findByIdAndUpdate(
+        id,
+        { adminComment, adminCommentAt: adminComment ? new Date() : null },
+        { new: true }
+    );
+    if (!feedback) {
+        const err = new Error('Feedback not found');
+        err.status = 404;
+        throw err;
+    }
+    return feedback;
 }
 
 async function updateStatus(id, status) {
@@ -57,4 +75,4 @@ async function deleteFeedback(id) {
     return feedback;
 }
 
-module.exports = { createFeedback, listFeedback, listMyFeedback, updateStatus, deleteFeedback };
+module.exports = { createFeedback, listFeedback, listMyFeedback, updateReply, updateStatus, deleteFeedback };

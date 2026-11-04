@@ -21,7 +21,8 @@ async function list(req, res, next) {
 
 async function listMine(req, res, next) {
     try {
-        const feedback = await feedbackService.listMyFeedback(req.user.id);
+        const { scope, refId } = req.query;
+        const feedback = await feedbackService.listMyFeedback(req.user.id, { scope, refId });
         res.json(feedback);
     } catch (err) {
         next(err);
@@ -37,6 +38,15 @@ async function updateStatus(req, res, next) {
     }
 }
 
+async function updateReply(req, res, next) {
+    try {
+        const feedback = await feedbackService.updateReply(req.params.id, req.body.adminComment);
+        res.json(feedback);
+    } catch (err) {
+        next(err);
+    }
+}
+
 async function remove(req, res, next) {
     try {
         await feedbackService.deleteFeedback(req.params.id);
@@ -46,4 +56,4 @@ async function remove(req, res, next) {
     }
 }
 
-module.exports = { create, list, listMine, updateStatus, remove };
+module.exports = { create, list, listMine, updateStatus, updateReply, remove };

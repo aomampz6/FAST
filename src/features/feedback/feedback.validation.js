@@ -11,6 +11,10 @@ const updateStatusSchema = z.object({
     status: z.enum(['new', 'resolved'])
 });
 
+const replySchema = z.object({
+    adminComment: z.string().trim().max(2000, 'ข้อความยาวเกิน 2000 ตัวอักษร')
+});
+
 function validate(schema) {
     return (req, res, next) => {
         const result = schema.safeParse(req.body);
@@ -22,4 +26,4 @@ function validate(schema) {
     };
 }
 
-module.exports = { createFeedbackSchema, updateStatusSchema, validate };
+module.exports = { createFeedbackSchema, updateStatusSchema, replySchema, validate };

@@ -10,8 +10,8 @@ export async function getFeedback() {
     return data;
 }
 
-export async function getMyFeedback() {
-    const { data } = await httpClient.get('/feedback/mine');
+export async function getMyFeedback(params) {
+    const { data } = await httpClient.get('/feedback/mine', { params });
     return data;
 }
 
@@ -22,4 +22,9 @@ export async function updateFeedbackStatus(id, status) {
 
 export async function deleteFeedback(id) {
     await httpClient.delete(`/feedback/${id}`);
+}
+
+export async function updateFeedbackReply(id, adminComment) {
+    const { data } = await httpClient.patch(`/feedback/${id}/reply`, { adminComment });
+    return data;
 }

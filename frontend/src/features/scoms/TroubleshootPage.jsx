@@ -26,6 +26,7 @@ import {
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useScoms } from './useScoms';
 import { submitFeedback } from '../feedback/feedbackService';
+import MyFeedbackList from '../feedback/MyFeedbackList';
 import { useAuth } from '../../shared/auth/AuthContext';
 import { useFirstFeedbackGate } from '../../shared/hooks/useFirstFeedbackGate';
 import { useNavigationGate } from '../../shared/navigation/NavigationGateContext';
@@ -139,6 +140,7 @@ export default function TroubleshootPage() {
 
     const [comment, setComment] = useState('');
     const [feedbackError, setFeedbackError] = useState(null);
+    const [feedbackReload, setFeedbackReload] = useState(0);
     const [gateShake, setGateShake] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [successOpen, setSuccessOpen] = useState(false);
@@ -292,6 +294,7 @@ export default function TroubleshootPage() {
                 comment: text,
             });
             setComment('');
+            setFeedbackReload((n) => n + 1);
             if (feedbackRequired) markDone();
             setSuccessOpen(true);
         } catch (err) {
@@ -557,6 +560,11 @@ export default function TroubleshootPage() {
                                         {feedbackError}
                                     </p>
                                 )}
+                                <MyFeedbackList
+                                    scope="troubleshoot"
+                                    refId={active._id || active.ID}
+                                    reloadKey={feedbackReload}
+                                />
                             </div>
                         </article>
                     ) : (
