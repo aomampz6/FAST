@@ -15,6 +15,11 @@ export async function getMyFeedback(params) {
     return data;
 }
 
+export async function getTopicFeedback(params) {
+    const { data } = await httpClient.get('/feedback/topic', { params });
+    return data;
+}
+
 export async function updateFeedbackStatus(id, status) {
     const { data } = await httpClient.patch(`/feedback/${id}/status`, { status });
     return data;

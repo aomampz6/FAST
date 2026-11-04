@@ -29,6 +29,19 @@ async function listMine(req, res, next) {
     }
 }
 
+async function listTopic(req, res, next) {
+    try {
+        const { scope, refId } = req.query;
+        if (!scope || !refId) {
+            return res.status(400).json({ message: 'scope and refId are required' });
+        }
+        const feedback = await feedbackService.listTopicFeedback(req.user.id, { scope, refId });
+        res.json(feedback);
+    } catch (err) {
+        next(err);
+    }
+}
+
 async function updateStatus(req, res, next) {
     try {
         const feedback = await feedbackService.updateStatus(req.params.id, req.body.status);
@@ -56,4 +69,4 @@ async function remove(req, res, next) {
     }
 }
 
-module.exports = { create, list, listMine, updateStatus, updateReply, remove };
+module.exports = { create, list, listMine, listTopic, updateStatus, updateReply, remove };

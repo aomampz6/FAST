@@ -6,6 +6,7 @@ const { validate, createFeedbackSchema, updateStatusSchema, replySchema } = requ
 
 router.post('/', verifyToken, validate(createFeedbackSchema), controller.create);
 router.get('/mine', verifyToken, controller.listMine);
+router.get('/topic', verifyToken, controller.listTopic);
 router.get('/', verifyToken, requireRole('admin'), controller.list);
 router.patch('/:id/status', verifyToken, requireRole('admin'), validate(updateStatusSchema), controller.updateStatus);
 router.patch('/:id/reply', verifyToken, requireRole('admin'), validate(replySchema), controller.updateReply);

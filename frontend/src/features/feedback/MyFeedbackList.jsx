@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { CheckCircle2, Clock, CornerDownRight, MessageSquareText, Star } from 'lucide-react';
-import { getMyFeedback } from './feedbackService';
+import { getTopicFeedback } from './feedbackService';
+import { toTitleCase } from '../../shared/format/names';
 import './myFeedback.css';
 
 function formatDate(value) {
@@ -20,9 +21,9 @@ function StatusBadge({ status }) {
     );
 }
 
-// The signed-in user's own suggestions for ONE page (scope + refId), with the
-// admin's reply and status. The API only ever returns the caller's own rows,
-// so each user sees just their comments. Renders nothing until there is
+// Every user's suggestions for ONE page (scope + refId), with the admin's
+// reply and status, so colleagues can see what was already raised and answered.
+// The caller's own rows are marked "คุณ". Renders nothing until there is
 // something to show. Bump `reloadKey` after submitting to refresh the list.
 export default function MyFeedbackList({ scope, refId, reloadKey = 0 }) {
     const [items, setItems] = useState([]);
@@ -34,7 +35,7 @@ export default function MyFeedbackList({ scope, refId, reloadKey = 0 }) {
             return undefined;
         }
         let cancelled = false;
-        getMyFeedback({ scope, refId })
+        getTopicFeedback({ scope, refId })
             .then((data) => {
                 if (cancelled) return;
                 setItems(data);
@@ -59,7 +60,12 @@ export default function MyFeedbackList({ scope, refId, reloadKey = 0 }) {
     const renderItem = (f) => (
         <div key={f._id} className={`my-fb-item${f.status === 'resolved' ? ' is-resolved' : ''}`}>
             <div className="my-fb-meta">
-                <StatusBadge status={f.status} />
+                <span className="my-fb-author-group">
+                    <span className={`my-fb-author${f.mine ? ' is-mine' : ''}`}>
+                        {f.mine ? 'คุณ' : toTitleCase(f.authorName) || 'ผู้ใช้งาน'}
+                    </span>
+                    <StatusBadge status={f.status} />
+                </span>
                 <span className="my-fb-side">
                     {scope !== 'troubleshoot' && (
                         <span className="my-fb-rating">
@@ -88,7 +94,7 @@ export default function MyFeedbackList({ scope, refId, reloadKey = 0 }) {
     return (
         <div className="my-fb" data-pdf-exclude>
             <div className="my-fb-title">
-                <MessageSquareText size={16} aria-hidden="true" /> คำแนะนำที่คุณเคยส่งในหัวข้อนี้
+                <MessageSquareText size={16} aria-hidden="true" /> คำแนะนำจากผู้ใช้งานในหัวข้อนี้
             </div>
             {pending.length > 0 && (
                 <div className="my-fb-group">

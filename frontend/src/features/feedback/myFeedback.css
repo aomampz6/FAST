@@ -141,3 +141,20 @@
 .my-fb-group-title.is-resolved {
     color: var(--success, #10b981);
 }
+
+.my-fb-author-group {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.my-fb-author {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.my-fb-author.is-mine {
+    color: var(--nt-yellow-dark, #b8860b);
+}
