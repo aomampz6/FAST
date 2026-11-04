@@ -15,7 +15,7 @@ function StatusBadge({ status }) {
     return (
         <span className={`my-fb-status ${isResolved ? 'is-resolved' : 'is-pending'}`}>
             <Icon size={13} aria-hidden="true" />
-            {isResolved ? 'แอดมินดำเนินการแก้ไขให้แล้ว' : 'รอผู้ดูแลระบบตรวจสอบ'}
+            {isResolved ? 'แอดมินแก้ไขแล้ว' : 'รอผู้ดูแลระบบตรวจสอบ'}
         </span>
     );
 }
@@ -59,7 +59,7 @@ export default function MyFeedbackList({ scope, refId, reloadKey = 0 }) {
                 <MessageSquareText size={16} aria-hidden="true" /> คำแนะนำที่คุณเคยส่งในหัวข้อนี้
             </div>
             {items.map((f) => (
-                <div key={f._id} className="my-fb-item">
+                <div key={f._id} className={`my-fb-item${f.status === 'resolved' ? ' is-resolved' : ''}`}>
                     <div className="my-fb-meta">
                         <StatusBadge status={f.status} />
                         <span className="my-fb-side">
