@@ -120,3 +120,24 @@
 .my-fb-item.is-resolved {
     border-left: 3px solid var(--success, #10b981);
 }
+
+.my-fb-group + .my-fb-group {
+    margin-top: 18px;
+}
+
+.my-fb-group-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.my-fb-group-title.is-pending {
+    color: var(--text-tertiary);
+}
+
+.my-fb-group-title.is-resolved {
+    color: var(--success, #10b981);
+}

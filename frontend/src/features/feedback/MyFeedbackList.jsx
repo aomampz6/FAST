@@ -53,39 +53,59 @@ export default function MyFeedbackList({ scope, refId, reloadKey = 0 }) {
     if (error) return <p className="my-fb-error">{error}</p>;
     if (items.length === 0) return null;
 
+    const pending = items.filter((f) => f.status !== 'resolved');
+    const resolved = items.filter((f) => f.status === 'resolved');
+
+    const renderItem = (f) => (
+        <div key={f._id} className={`my-fb-item${f.status === 'resolved' ? ' is-resolved' : ''}`}>
+            <div className="my-fb-meta">
+                <StatusBadge status={f.status} />
+                <span className="my-fb-side">
+                    {scope !== 'troubleshoot' && (
+                        <span className="my-fb-rating">
+                            <Star size={13} color="var(--nt-yellow)" fill="var(--nt-yellow)" />
+                            {f.rating} / 5
+                        </span>
+                    )}
+                    {formatDate(f.createdAt)}
+                </span>
+            </div>
+            {f.comment && <p className="my-fb-comment">{f.comment}</p>}
+            {f.adminComment && (
+                <div className="my-fb-reply">
+                    <span className="my-fb-reply-label">
+                        <CornerDownRight size={14} aria-hidden="true" /> ผู้ดูแลระบบตอบกลับ
+                        {f.adminCommentAt && (
+                            <span className="my-fb-reply-date">{formatDate(f.adminCommentAt)}</span>
+                        )}
+                    </span>
+                    <p>{f.adminComment}</p>
+                </div>
+            )}
+        </div>
+    );
+
     return (
         <div className="my-fb" data-pdf-exclude>
             <div className="my-fb-title">
                 <MessageSquareText size={16} aria-hidden="true" /> คำแนะนำที่คุณเคยส่งในหัวข้อนี้
             </div>
-            {items.map((f) => (
-                <div key={f._id} className={`my-fb-item${f.status === 'resolved' ? ' is-resolved' : ''}`}>
-                    <div className="my-fb-meta">
-                        <StatusBadge status={f.status} />
-                        <span className="my-fb-side">
-                            {scope !== 'troubleshoot' && (
-                                <span className="my-fb-rating">
-                                    <Star size={13} color="var(--nt-yellow)" fill="var(--nt-yellow)" />
-                                    {f.rating} / 5
-                                </span>
-                            )}
-                            {formatDate(f.createdAt)}
-                        </span>
+            {pending.length > 0 && (
+                <div className="my-fb-group">
+                    <div className="my-fb-group-title is-pending">
+                        <Clock size={14} aria-hidden="true" /> รอผู้ดูแลระบบตรวจสอบ ({pending.length})
                     </div>
-                    {f.comment && <p className="my-fb-comment">{f.comment}</p>}
-                    {f.adminComment && (
-                        <div className="my-fb-reply">
-                            <span className="my-fb-reply-label">
-                                <CornerDownRight size={14} aria-hidden="true" /> ผู้ดูแลระบบตอบกลับ
-                                {f.adminCommentAt && (
-                                    <span className="my-fb-reply-date">{formatDate(f.adminCommentAt)}</span>
-                                )}
-                            </span>
-                            <p>{f.adminComment}</p>
-                        </div>
-                    )}
+                    {pending.map(renderItem)}
                 </div>
-            ))}
+            )}
+            {resolved.length > 0 && (
+                <div className="my-fb-group">
+                    <div className="my-fb-group-title is-resolved">
+                        <CheckCircle2 size={14} aria-hidden="true" /> แอดมินแก้ไขแล้ว ({resolved.length})
+                    </div>
+                    {resolved.map(renderItem)}
+                </div>
+            )}
         </div>
     );
 }
