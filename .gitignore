@@ -2,6 +2,28 @@ node_modules/
 .env
 .DS_Store
 
+# Env variants (keep the example template tracked)
+.env.*
+!.env.example
+
+# Build output
+dist/
+frontend/dist/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS / editor
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Local Claude settings
+.claude/settings.local.json
+
 # Guide edit backups (created automatically before every overwrite); guide
 # HTML itself under guides/ is tracked, only the timestamped .bak copies are not.
 guides/.history/*.bak
