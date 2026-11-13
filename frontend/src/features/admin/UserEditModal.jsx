@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { getUser } from '../users/usersService';
+import { JOB_TYPES } from '../../shared/jobTypes';
 
 const EMPTY = {
     username: '',
@@ -13,6 +14,7 @@ const EMPTY = {
     deptFullName: '',
     deptName: '',
     email: '',
+    jobType: '',
 };
 
 /**
@@ -78,6 +80,7 @@ export default function UserEditModal({ userId, onClose, onSave }) {
                     deptFullName: user.deptFullName || '',
                     deptName: user.deptName || '',
                     email: user.email || '',
+                    jobType: user.jobType || '',
                 });
             })
             .catch((err) => {
@@ -125,6 +128,9 @@ export default function UserEditModal({ userId, onClose, onSave }) {
                 deptFullName: form.deptFullName.trim(),
                 deptName: form.deptName.trim(),
                 email: form.email.trim(),
+                // Admin accounts have no ประเภทผู้ใช้งาน — switching a user to
+                // admin clears it.
+                jobType: form.role === 'user' ? form.jobType || null : null,
             };
             // An untouched password box means "keep the current one" — sending
             // an empty string would fail the API's 8-character minimum.
@@ -201,6 +207,20 @@ export default function UserEditModal({ userId, onClose, onSave }) {
                                         <option value="admin">ผู้ดูแลระบบ (admin)</option>
                                     </select>
                                 </label>
+                                {form.role === 'user' && (
+                                    <label>
+                                        ประเภทผู้ใช้งาน
+                                        <select value={form.jobType} onChange={setField('jobType')}>
+                                            <option value="">ยังไม่ระบุ</option>
+                                            {JOB_TYPES.map((type) => (
+                                                <option key={type} value={type}>{type}</option>
+                                            ))}
+                                        </select>
+                                        <span className="field-hint">
+                                            ผู้ดูแลระบบแก้ไขช่องนี้ได้ไม่จำกัดจำนวนครั้ง ส่วนผู้ใช้แก้เองได้เพียง 1 ครั้ง (เลือก &quot;ยังไม่ระบุ&quot; เพื่อคืนสิทธิ์แก้ไข 1 ครั้งให้ผู้ใช้)
+                                        </span>
+                                    </label>
+                                )}
                                 <label>
                                     ชื่อ-อังกฤษ
                                     <input value={form.firstName} onChange={setField('firstName')} />

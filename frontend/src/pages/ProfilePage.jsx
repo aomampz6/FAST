@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
     ArrowLeft,
     AtSign,
+    Briefcase,
     Building2,
     Eye,
     EyeOff,
@@ -14,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../shared/auth/AuthContext';
 import { toTitleCase } from '../shared/format/names';
+import { JOB_TYPES } from '../shared/jobTypes';
 import './profile.css';
 
 function decodeJwt(token) {
@@ -64,6 +66,74 @@ function DetailRow({ icon: Icon, label, value, children }) {
                 <span className={`profile-row-value${value ? '' : ' empty'}`}>{value || '-'}</span>
             )}
         </div>
+    );
+}
+
+// ประเภทผู้ใช้งาน: a user may change it once; after that the server refuses
+// (403) and only an admin can change it, so the control turns read-only. Admin
+// accounts are never locked. The server is the real gate — this just mirrors it.
+function JobTypeEditor() {
+    const { role, profile, changeJobType } = useAuth();
+    const locked = role !== 'admin' && Boolean(profile?.jobTypeSelfSet);
+    const [selected, setSelected] = useState('');
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState(null);
+    const current = profile?.jobType || '';
+
+    if (locked) {
+        return (
+            <span className="profile-jobtype">
+                <span className="profile-row-value">{current || '-'}</span>
+                <span className="profile-jobtype-note">
+                    แก้ไขได้เพียง 1 ครั้ง หากต้องการเปลี่ยนกรุณาติดต่อผู้ดูแลระบบ
+                </span>
+            </span>
+        );
+    }
+
+    const value = selected || current;
+    const dirty = Boolean(value) && value !== current;
+
+    async function handleSave() {
+        if (role !== 'admin' && !window.confirm(
+            `ยืนยันเปลี่ยนประเภทผู้ใช้งานเป็น "${value}" ?\nแก้ไขได้เพียง 1 ครั้งเท่านั้น หลังจากนั้นต้องให้ผู้ดูแลระบบแก้ไขให้`
+        )) return;
+        setSaving(true);
+        setError(null);
+        try {
+            await changeJobType(value);
+            setSelected('');
+        } catch (err) {
+            setError(err.response?.data?.message || 'บันทึกไม่สำเร็จ');
+        } finally {
+            setSaving(false);
+        }
+    }
+
+    return (
+        <span className="profile-jobtype">
+            <span className="profile-jobtype-controls">
+                <select
+                    className="profile-jobtype-select"
+                    value={value}
+                    onChange={(e) => setSelected(e.target.value)}
+                    disabled={saving}
+                    aria-label="ประเภทผู้ใช้งาน"
+                >
+                    {!current && <option value="" disabled>เลือกประเภทผู้ใช้งาน</option>}
+                    {JOB_TYPES.map((type) => (
+                        <option key={type} value={type}>{type}</option>
+                    ))}
+                </select>
+                <button type="button" className="profile-jobtype-save" onClick={handleSave} disabled={!dirty || saving}>
+                    {saving ? 'กำลังบันทึก...' : 'บันทึก'}
+                </button>
+            </span>
+            {role !== 'admin' && (
+                <span className="profile-jobtype-note">แก้ไขได้เพียง 1 ครั้งเท่านั้น</span>
+            )}
+            {error && <span className="profile-jobtype-error">{error}</span>}
+        </span>
     );
 }
 
@@ -174,6 +244,12 @@ export default function ProfilePage() {
                             </button>
                         </span>
                     </DetailRow>
+
+                    {role === 'user' && (
+                        <DetailRow icon={Briefcase} label="ประเภทผู้ใช้งาน">
+                            <JobTypeEditor />
+                        </DetailRow>
+                    )}
 
                     <DetailRow icon={IdCard} label="รหัสพนักงาน" value={profile?.empId} />
                     <DetailRow icon={User} label="ชื่อ-อังกฤษ" value={toTitleCase(profile?.firstName)} />

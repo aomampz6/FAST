@@ -747,8 +747,8 @@ html[data-theme='dark'] .nav-item.active .nav-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, var(--nt-yellow), #ffa000);
-    color: var(--nt-dark);
+    background: #2d3a4f;
+    color: #ffffff;
     font-weight: 700;
     font-size: 13px;
     text-transform: uppercase;
@@ -766,35 +766,22 @@ html[data-theme='dark'] .nav-item.active .nav-icon {
     line-height: 1.2;
 }
 
-/* Role badge under the name in the header's user chip — admin gets the
-   brand yellow (an elevated role), everyone else a neutral blue. */
+/* ประเภทผู้ใช้งาน (or role, if none chosen yet) under the name in the
+   header's user chip — a small bordered label. */
 .role-badge {
     display: inline-flex;
     align-items: center;
-    padding: 2px 9px;
-    border-radius: 999px;
-    font-size: 10.5px;
-    font-weight: 700;
-    letter-spacing: 0.2px;
+    gap: 6px;
+    padding: 2px 8px 2px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
     white-space: nowrap;
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
 }
 
-.role-badge-admin {
-    background: rgba(255, 209, 0, 0.18);
-    color: #a17400;
-    border: 1px solid rgba(255, 209, 0, 0.4);
-}
-
-:root[data-theme='dark'] .role-badge-admin,
-html[data-theme='dark'] .role-badge-admin {
-    color: var(--nt-yellow);
-}
-
-.role-badge-user {
-    background: rgba(59, 130, 246, 0.12);
-    color: var(--info);
-    border: 1px solid rgba(59, 130, 246, 0.3);
-}
 
 .content {
     flex: 1;

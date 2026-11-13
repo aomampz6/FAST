@@ -1,5 +1,6 @@
 const { z } = require('zod');
 const { validate } = require('../auth/auth.validation');
+const { JOB_TYPES } = require('../../shared/jobTypes');
 
 // Every HR field is optional and accepts an empty string: the admin modal
 // always submits the whole form, and most of the ~2,400 imported accounts have
@@ -18,7 +19,9 @@ const createUserSchema = z.object({
     deptFullName: optionalText,
     // Validate the address only when one was actually typed — clearing the
     // field must stay allowed.
-    email: z.union([z.string().trim().email(), z.literal('')]).optional()
+    email: z.union([z.string().trim().email(), z.literal('')]).optional(),
+    // Admin-only path: no once-only limit applies here. null clears the choice.
+    jobType: z.enum(JOB_TYPES).nullable().optional()
 });
 
 const updateUserSchema = createUserSchema.partial();

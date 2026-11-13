@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
-import { loginRequest, getMe } from '../../features/auth/authService';
+import { loginRequest, getMe, updateMyJobType } from '../../features/auth/authService';
 
 const AuthContext = createContext(null);
 
@@ -43,9 +43,19 @@ export function AuthProvider({ children }) {
         setRole(null);
     }, []);
 
+    const changeJobType = useCallback(async (jobType) => {
+        const updated = await updateMyJobType(jobType);
+        setProfile(updated);
+        return updated;
+    }, []);
+
     const value = useMemo(
-        () => ({ token, role, profile, fullName: profile?.fullName || null, isAuthenticated: !!token, login, logout }),
-        [token, role, profile, login, logout]
+        () => ({
+            token, role, profile, fullName: profile?.fullName || null,
+            jobType: profile?.jobType || null,
+            isAuthenticated: !!token, login, logout, changeJobType,
+        }),
+        [token, role, profile, login, logout, changeJobType]
     );
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

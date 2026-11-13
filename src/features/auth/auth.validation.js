@@ -1,4 +1,5 @@
 const { z } = require('zod');
+const { JOB_TYPES } = require('../../shared/jobTypes');
 
 const loginSchema = z.object({
     username: z.string().min(1),
@@ -12,6 +13,10 @@ const registerSchema = z.object({
     fullName: z.string().optional()
 });
 
+const jobTypeSchema = z.object({
+    jobType: z.enum(JOB_TYPES)
+});
+
 function validate(schema) {
     return (req, res, next) => {
         const result = schema.safeParse(req.body);
@@ -23,4 +28,4 @@ function validate(schema) {
     };
 }
 
-module.exports = { loginSchema, registerSchema, validate };
+module.exports = { loginSchema, registerSchema, jobTypeSchema, validate };

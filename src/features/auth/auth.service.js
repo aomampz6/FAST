@@ -71,7 +71,7 @@ async function getProfile(userId) {
     // shown on the profile page, and nothing else about the account leaks to
     // the browser.
     const user = await User.findById(userId).select(
-        'username fullName role empId firstName lastName deptName deptFullName email'
+        'username fullName role empId firstName lastName deptName deptFullName email jobType jobTypeSelfSet'
     );
     if (!user) {
         const err = new Error('User not found');
@@ -79,6 +79,33 @@ async function getProfile(userId) {
         throw err;
     }
     return user;
+}
+
+// Self-service change of ประเภทผู้ใช้งาน: allowed exactly once per account.
+// The conditional update makes "check then write" atomic, so two concurrent
+// requests cannot both succeed. Admin accounts have no ประเภทผู้ใช้งาน at all;
+// admins change other people's through PUT /users/:id.
+async function setOwnJobType(userId, role, jobType) {
+    if (role === 'admin') {
+        const err = new Error('บัญชีผู้ดูแลระบบไม่มีประเภทผู้ใช้งาน');
+        err.status = 403;
+        throw err;
+    }
+
+    const user = await User.findOneAndUpdate(
+        { _id: userId, role: 'user', jobTypeSelfSet: { $ne: true } },
+        { jobType, jobTypeSelfSet: true },
+        { returnDocument: 'after', runValidators: true }
+    );
+    if (!user) {
+        const exists = await User.exists({ _id: userId });
+        const err = new Error(exists
+            ? 'แก้ไขประเภทผู้ใช้งานได้เพียง 1 ครั้ง หากต้องการแก้ไขกรุณาติดต่อผู้ดูแลระบบ'
+            : 'User not found');
+        err.status = exists ? 403 : 404;
+        throw err;
+    }
+    return getProfile(userId);
 }
 
 async function register({ username, password, role, fullName }) {
@@ -94,4 +121,4 @@ async function register({ username, password, role, fullName }) {
     return user;
 }
 
-module.exports = { login, register, getProfile, findByIdentifier };
+module.exports = { login, register, getProfile, setOwnJobType, findByIdentifier };

@@ -93,6 +93,17 @@ async function update(id, data) {
 
     Object.assign(user, data);
 
+    // Once an admin has set a ประเภทผู้ใช้งาน the user's one self-service
+    // change is considered spent; clearing it (null) gives the user their
+    // single change back.
+    if (data.jobType !== undefined) user.jobTypeSelfSet = data.jobType !== null;
+
+    // Admin accounts have no ประเภทผู้ใช้งาน, whatever the request carried.
+    if (user.role === 'admin') {
+        user.jobType = null;
+        user.jobTypeSelfSet = false;
+    }
+
     // The edit modal shows ชื่อ-อังกฤษ / นามสกุล-อังกฤษ separately but the roster
     // table and the search filter both read fullName, so keep it derived from
     // the two parts unless the caller set fullName itself.

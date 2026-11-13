@@ -16,7 +16,7 @@ function decodeJwt(token) {
     }
 }
 
-const emptyForm = { username: '', password: '', role: 'user', fullName: '' };
+const emptyForm = { username: '', password: '', role: 'user', empId: '', fullName: '' };
 const ROLE_LABELS = { user: 'ผู้ใช้งานทั่วไป', admin: 'ผู้ดูแลระบบ' };
 
 export default function AdminUsersTab() {
@@ -67,7 +67,9 @@ export default function AdminUsersTab() {
         e.preventDefault();
         setFormError(null);
         try {
-            await createUser(form);
+            // Leave empId out entirely when blank rather than storing ''.
+            const { empId, ...rest } = form;
+            await createUser(empId.trim() ? { ...rest, empId: empId.trim() } : rest);
             resetForm();
         } catch (err) {
             setFormError(err.response?.data?.message || 'บันทึกไม่สำเร็จ');
@@ -133,6 +135,14 @@ export default function AdminUsersTab() {
                             <option value="user">ผู้ใช้งานทั่วไป (user)</option>
                             <option value="admin">ผู้ดูแลระบบ (admin)</option>
                         </select>
+                    </label>
+                    <label>
+                        รหัสพนักงาน
+                        <input
+                            value={form.empId}
+                            onChange={(e) => setForm({ ...form, empId: e.target.value })}
+                            inputMode="numeric"
+                        />
                     </label>
                     <label>
                         ชื่อ-นามสกุล

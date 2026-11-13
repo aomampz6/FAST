@@ -28,4 +28,13 @@ async function me(req, res, next) {
     }
 }
 
-module.exports = { login, register, me };
+async function updateJobType(req, res, next) {
+    try {
+        const profile = await authService.setOwnJobType(req.user.id, req.user.role, req.body.jobType);
+        res.json(profile);
+    } catch (err) {
+        next(err);
+    }
+}
+
+module.exports = { login, register, me, updateJobType };

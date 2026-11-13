@@ -52,7 +52,7 @@ const ROLE_LABEL = {
 // page's own in-content "back" button guard can't reach the sidebar on its
 // own.
 function LayoutInner() {
-    const { role, logout, fullName } = useAuth();
+    const { role, logout, fullName, jobType } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const [collapsed, setCollapsed] = useState(false);
@@ -239,7 +239,7 @@ function LayoutInner() {
                             </span>
                             <div className="user-profile-text">
                                 <span className="user-profile-name">{toTitleCase(fullName) || ROLE_LABEL[role] || role}</span>
-                                <span className={`role-badge role-badge-${role}`}>{ROLE_LABEL[role] || role}</span>
+                                <span className="role-badge">{jobType || ROLE_LABEL[role] || role}</span>
                             </div>
                         </div>
                     </div>

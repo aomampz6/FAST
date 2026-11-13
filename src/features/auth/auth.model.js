@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const { JOB_TYPES } = require('../../shared/jobTypes');
 
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
@@ -23,7 +24,12 @@ const userSchema = new mongoose.Schema({
     // ส่วนงาน (short code) and ชื่อเต็มส่วนงาน (full department name).
     deptName: { type: String, required: false },
     deptFullName: { type: String, required: false },
-    email: { type: String, required: false }
+    email: { type: String, required: false },
+    // ประเภทผู้ใช้งาน. null until chosen. A user may set it once from the
+    // profile page (jobTypeSelfSet flips to true); after that only an admin
+    // can change it, through PUT /users/:id.
+    jobType: { type: String, enum: JOB_TYPES, required: false, default: null },
+    jobTypeSelfSet: { type: Boolean, default: false }
 }, {
     timestamps: true
 });
