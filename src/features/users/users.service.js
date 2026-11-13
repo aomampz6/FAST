@@ -30,7 +30,7 @@ async function list({ search = '', page = 1, limit = DEFAULT_PAGE_SIZE, role, is
     const term = String(search).trim();
     if (term) {
         const pattern = new RegExp(escapeRegex(term), 'i');
-        filter.$or = [{ username: pattern }, { fullName: pattern }];
+        filter.$or = [{ username: pattern }, { fullName: pattern }, { empId: pattern }];
     }
     if (role === 'user' || role === 'admin') filter.role = role;
     if (typeof isActive === 'boolean') filter.isActive = isActive;

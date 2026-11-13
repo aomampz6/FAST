@@ -185,7 +185,7 @@ export default function AdminUsersTab() {
                                 type="search"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                placeholder="ค้นหา username หรือชื่อ-นามสกุล..."
+                                placeholder="ค้นหา username, รหัสพนักงาน หรือชื่อ-นามสกุล..."
                                 aria-label="ค้นหาผู้ใช้งาน"
                             />
                         </div>
