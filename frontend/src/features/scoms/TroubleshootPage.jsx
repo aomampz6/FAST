@@ -7,6 +7,7 @@ import {
     ArrowRight,
     CheckCircle2,
     ClipboardList,
+    EyeOff,
     Gauge,
     Globe,
     Info,
@@ -378,13 +379,19 @@ export default function TroubleshootPage() {
                     key={item._id || item.ID || i}
                     type="button"
                     aria-current={i === activeIndex ? 'true' : undefined}
-                    className={`sg-nav-btn${i === activeIndex ? ' active' : ''}`}
+                    className={`sg-nav-btn${i === activeIndex ? ' active' : ''}${item.hidden ? ' is-hidden-item' : ''}`}
                     onClick={() => selectSymptom(i)}
+                    title={item.hidden ? 'หัวข้อนี้ถูกซ่อน ผู้ใช้ทั่วไปมองไม่เห็น' : undefined}
                 >
                     <span className="sg-nav-badge">{i + 1}</span>
                     <span className="sg-nav-label">
                         <span className="sg-nav-label-main">{item.Symptom || 'ไม่ระบุอาการ'}</span>
                         {item.Scoms && <span className="sg-nav-label-sub">{item.Scoms}</span>}
+                        {item.hidden && (
+                            <span className="sg-hidden-tag">
+                                <EyeOff size={12} aria-hidden="true" /> ถูกซ่อน
+                            </span>
+                        )}
                     </span>
                 </button>
             ))}
@@ -434,6 +441,12 @@ export default function TroubleshootPage() {
 
                     {active ? (
                         <article className="sg-panel" key={active._id || active.ID} ref={panelRef}>
+                            {active.hidden && (
+                                <div className="sg-hidden-banner" role="status">
+                                    <EyeOff size={16} aria-hidden="true" />
+                                    หัวข้อนี้ถูกซ่อน — ผู้ใช้ทั่วไปมองไม่เห็น เห็นเฉพาะผู้ดูแลระบบ
+                                </div>
+                            )}
                             <div className="sg-panel-header">
                                 <span className="sg-panel-badge">{activeIndex + 1}</span>
                                 <div>

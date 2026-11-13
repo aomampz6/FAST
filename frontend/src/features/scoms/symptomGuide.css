@@ -201,6 +201,57 @@ html[data-theme='dark'] .sg-nav-badge {
     opacity: 0.8;
 }
 
+/* --- Hidden symptoms (visible to admins only) --------------------------- */
+.sg-nav-btn.is-hidden-item {
+    border: 1px dashed var(--border-color);
+    background: repeating-linear-gradient(
+        135deg,
+        transparent 0,
+        transparent 8px,
+        rgba(120, 130, 150, 0.1) 8px,
+        rgba(120, 130, 150, 0.1) 16px
+    );
+}
+
+.sg-nav-btn.is-hidden-item .sg-nav-badge,
+.sg-nav-btn.is-hidden-item .sg-nav-label-main,
+.sg-nav-btn.is-hidden-item .sg-nav-label-sub {
+    opacity: 0.55;
+}
+
+.sg-nav-btn.is-hidden-item.active {
+    border-style: dashed;
+}
+
+.sg-hidden-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    align-self: flex-start;
+    margin-top: 2px;
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: rgba(239, 68, 68, 0.12);
+    color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.sg-hidden-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px dashed rgba(239, 68, 68, 0.4);
+    color: #dc2626;
+    font-size: 13.5px;
+    font-weight: 600;
+}
+
 /* --- Detail panel ------------------------------------------------------- */
 
 .sg-panel {
